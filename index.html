@@ -1516,31 +1516,19 @@ async function sendPolicyChat(){
   ].join('\n');
 
   try{
-    // Route through Apps Script to avoid CORS — Apps Script calls Anthropic server-side
+    // POST to Apps Script to avoid URL length limits with large policy content
     var payload={
       action:'policyChat',
+      token:SES&&SES.token||'',
       systemPrompt:sysPrompt,
       messages:polChatHistory.slice(0,-1).concat([{role:'user',content:msg}])
     };
-    var q=new URLSearchParams({action:'policyChat',token:SES?.token||'',body:encodeURIComponent(JSON.stringify(payload))});
-    var res=await fetch(API+'?'+q).then(function(r){return r.json();});
-
-    removeTypingIndicator(typingId);
-    var reply=res.reply||(res.success===false?'The AI service is temporarily unavailable. Please try again in a moment.':'I could not process your request. Please try again.');
-    polChatHistory.push({role:'assistant',content:reply});
-    addChatMsg(reply,'bot');
-
-    // Auto-link document if user asks for it
-    var lower=msg.toLowerCase();
-    if(lower.includes('download')||lower.includes('get the')||lower.includes('send me')||lower.includes('share')||lower.includes('view')){
-      var matched=POLICIES.find(function(p){
-        var words=p.title.toLowerCase().split(' ').slice(0,3).join(' ');
-        return lower.includes(words);
-      });
-      if(matched&&matched.fileUrl){
-        addChatMsg('Here is the document: <a href="'+matched.fileUrl+'" target="_blank" style="color:var(--p600);font-weight:700;text-decoration:underline">'+matched.title+' (PDF)</a>','bot',true);
-      }
-    }
+    var res=await fetch(API,{
+      method:'POST',
+      mode:'cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    }).then(function(r){return r.json();});
   }catch(e){
     removeTypingIndicator(typingId);
     addChatMsg('Unable to connect to AI. Please try again shortly.','bot');
