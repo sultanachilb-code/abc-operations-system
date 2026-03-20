@@ -241,6 +241,7 @@ tr:hover td{background:var(--p50)}
 
 @media(max-width:720px){.sidebar{display:none}.fgrid,.fg3{grid-template-columns:1fr}.sr{grid-template-columns:1fr 1fr}.ui{display:none}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -322,26 +323,81 @@ tr:hover td{background:var(--p50)}
       <!-- DASHBOARD -->
       <div class="view on" id="view-dashboard">
         <div class="ph">
-          <div><div class="pht">Dashboard</div><div class="phs" id="dash-dt"></div></div>
-          <button class="btn btn-p" onclick="navigate('new-inc')"><i class="fas fa-plus"></i> New Incident Report</button>
+          <div><div class="pht">Operations Dashboard</div><div class="phs" id="dash-dt"></div></div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-o btn-sm" onclick="ldDash()"><i class="fas fa-rotate"></i> Refresh</button>
+            <button class="btn btn-p" onclick="navigate('new-ho')"><i class="fas fa-rotate"></i> New Handover</button>
+          </div>
         </div>
+
+        <!-- KPI STATS ROW -->
         <div class="sr">
           <div class="sc"><div class="si sip"><i class="fas fa-triangle-exclamation"></i></div><div><div class="sv" id="st0">–</div><div class="sl">Total Incidents</div></div></div>
+          <div class="sc"><div class="si sir"><i class="fas fa-circle-exclamation"></i></div><div><div class="sv" id="st4">–</div><div class="sl">Critical</div></div></div>
+          <div class="sc"><div class="si sib"><i class="fas fa-calendar-day"></i></div><div><div class="sv" id="st5">–</div><div class="sl">This Month</div></div></div>
           <div class="sc"><div class="si sio"><i class="fas fa-shield-halved"></i></div><div><div class="sv" id="st1">–</div><div class="sl">Security</div></div></div>
           <div class="sc"><div class="si sig"><i class="fas fa-heart-pulse"></i></div><div><div class="sv" id="st2">–</div><div class="sl">Medical</div></div></div>
           <div class="sc"><div class="si sir"><i class="fas fa-fire"></i></div><div><div class="sv" id="st3">–</div><div class="sl">Fire & Safety</div></div></div>
-          <div class="sc"><div class="si sip"><i class="fas fa-circle-exclamation"></i></div><div><div class="sv" id="st4">–</div><div class="sl">Critical</div></div></div>
-          <div class="sc"><div class="si sib"><i class="fas fa-calendar-day"></i></div><div><div class="sv" id="st5">–</div><div class="sl">This Month</div></div></div>
         </div>
+
+        <!-- CHARTS ROW -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card" style="margin-bottom:0">
+            <div class="ch"><div class="ct"><i class="fas fa-chart-pie"></i> Incidents by Category</div></div>
+            <div class="cb" style="display:flex;align-items:center;justify-content:center;min-height:220px">
+              <canvas id="chart-cat" style="max-height:200px"></canvas>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:0">
+            <div class="ch"><div class="ct"><i class="fas fa-chart-bar"></i> Incidents by Severity</div></div>
+            <div class="cb" style="display:flex;align-items:center;justify-content:center;min-height:220px">
+              <canvas id="chart-sev" style="max-height:200px"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- TODAY & TOMORROW TASKS FROM LATEST HANDOVER -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+          <!-- TODAY TASKS -->
+          <div class="card" style="margin-bottom:0">
+            <div style="background:linear-gradient(135deg,#065F46,#059669);padding:12px 18px;display:flex;align-items:center;justify-content:space-between">
+              <div style="font-family:var(--ff);font-weight:800;font-size:13px;color:white;display:flex;align-items:center;gap:8px"><i class="fas fa-sun"></i> Today's Tasks</div>
+              <span style="font-size:11px;color:rgba(255,255,255,.6)" id="dash-today-src">From latest handover</span>
+            </div>
+            <div id="dash-today-ops" style="padding:14px 16px;border-bottom:1px solid var(--g100)">
+              <div style="font-size:10.5px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Operations</div>
+              <div id="dash-ops-items"><div class="empty" style="padding:16px 0"><i class="fas fa-sun" style="font-size:24px"></i><p>No ops tasks today</p></div></div>
+            </div>
+            <div id="dash-today-ss" style="padding:14px 16px">
+              <div style="font-size:10.5px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Soft Services</div>
+              <div id="dash-ss-items"><div class="empty" style="padding:16px 0"><i class="fas fa-broom" style="font-size:24px"></i><p>No soft services tasks</p></div></div>
+            </div>
+          </div>
+
+          <!-- TOMORROW TASKS -->
+          <div class="card" style="margin-bottom:0">
+            <div style="background:linear-gradient(135deg,#4A0E8F,#7C3AED);padding:12px 18px;display:flex;align-items:center;justify-content:space-between">
+              <div style="font-family:var(--ff);font-weight:800;font-size:13px;color:white;display:flex;align-items:center;gap:8px"><i class="fas fa-calendar-day"></i> Tomorrow's Tasks</div>
+              <span style="font-size:11px;color:rgba(255,255,255,.6)" id="dash-tmr-src">From latest handover</span>
+            </div>
+            <div id="dash-tmr-items" style="padding:14px 16px">
+              <div class="empty" style="padding:16px 0"><i class="fas fa-calendar-day" style="font-size:24px"></i><p>No tasks for tomorrow</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCHEDULED WORKS FROM LATEST HANDOVER -->
         <div class="card">
-          <div class="ch"><div class="ct"><i class="fas fa-clock-rotate-left"></i> Recent Incidents</div><button class="btn btn-o btn-sm" onclick="navigate('log')">View All</button></div>
-          <div class="tw"><table><thead><tr><th>Incident #</th><th>Date & Time</th><th>Location</th><th>Category</th><th>Severity</th><th>Reporter</th><th></th></tr></thead>
-          <tbody id="dash-tb"></tbody></table></div>
+          <div style="background:linear-gradient(135deg,#1E3A5F,#2563EB);padding:12px 18px;display:flex;align-items:center;justify-content:space-between">
+            <div style="font-family:var(--ff);font-weight:800;font-size:13px;color:white;display:flex;align-items:center;gap:8px"><i class="fas fa-hard-hat"></i> Scheduled Works</div>
+            <button class="btn btn-sm" onclick="navigate('new-ho')" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> New Handover</button>
+          </div>
+          <div id="dash-sw-items" style="padding:14px 16px">
+            <div class="empty" style="padding:16px 0"><i class="fas fa-hard-hat" style="font-size:24px"></i><p>No scheduled works in latest handover</p></div>
+          </div>
         </div>
-        <div class="card">
-          <div class="ch"><div class="ct"><i class="fas fa-rotate"></i> Recent Handovers</div><button class="btn btn-o btn-sm" onclick="navigate('ho-log')">View All</button></div>
-          <div id="dash-ho-grid" style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
-        </div>
+
       </div>
 
       <!-- NEW INCIDENT -->
@@ -711,26 +767,49 @@ function navigate(v,btn){
 function toggleSB(){sbCol=!sbCol;document.getElementById('sb').classList.toggle('col',sbCol);}
 
 // DASHBOARD
+let catChart=null,sevChart=null;
 async function ldDash(){
   document.getElementById('dash-dt').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   showL('Loading dashboard…');
   try{
     const[sr,ir,hr]=await Promise.all([api('GET',{action:'getStats'}),api('GET',{action:'getIncidents'}),api('GET',{action:'getHandovers'})]);
-    if(sr.success){const s=sr.stats;[s.total,s.security,s.medical,s.fire,s.critical,s.thisMonth].forEach((v,i)=>document.getElementById('st'+i).textContent=v);}
-    if(ir.success){INCS=ir.incidents;document.getElementById('sb-ct').textContent=INCS.length;renderDTbl(INCS.slice(0,6));}
-    if(hr.success){HOS=hr.handovers;document.getElementById('sb-ho-ct').textContent=HOS.length;renderDashHO(HOS.slice(0,4));}
+    if(sr.success){const s=sr.stats;document.getElementById('st0').textContent=s.total;document.getElementById('st1').textContent=s.security;document.getElementById('st2').textContent=s.medical;document.getElementById('st3').textContent=s.fire;document.getElementById('st4').textContent=s.critical;document.getElementById('st5').textContent=s.thisMonth;}
+    if(ir.success){INCS=ir.incidents;document.getElementById('sb-ct').textContent=INCS.length;renderCatChart(INCS);renderSevChart(INCS);}
+    if(hr.success){HOS=hr.handovers;document.getElementById('sb-ho-ct').textContent=HOS.length;renderTaskTracker(HOS);}
   }catch(e){toast('Failed to load. Check connection.','err');}
   hideL();
 }
-function renderDTbl(rows){
-  const tb=document.getElementById('dash-tb');
-  if(!rows.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty"><i class="fas fa-folder-open"></i><h3>No incidents yet</h3></div></td></tr>`;return;}
-  tb.innerHTML=rows.map(i=>{const bc=CB[i['Category']]||'bx',sc=SC[i['Severity']]||'';const ij=JSON.stringify(i).replace(/'/g,"\\'");return`<tr><td><span class="tl" onclick='opDet(${ij})'>${i['Incident #']}</span></td><td>${fd(i['Date'])}<br><span style="font-size:10px;color:var(--g400)">${i['Time']||''}</span></td><td style="font-size:12px">${i['Location']||'–'}</td><td><span class="badge ${bc}">${i['Category']||'–'}</span></td><td class="${sc}" style="font-size:12px">${i['Severity']||'–'}</td><td style="font-size:12px">${i['Reporter']||'–'}</td><td><button class="btn btn-o btn-sm" onclick='opDet(${ij})'><i class="fas fa-eye"></i></button></td></tr>`;}).join('');
+function renderCatChart(incs){
+  const cats=['Security','Fire & Safety','Medical','Operations','Maintenance','Customer Service','Environmental','Other'];
+  const counts=cats.map(c=>incs.filter(i=>i['Category']===c).length);
+  const colors=['#EF4444','#F97316','#22C55E','#3B82F6','#8B5CF6','#EC4899','#14B8A6','#6B7280'];
+  const al=cats.filter((_,i)=>counts[i]>0),ac=counts.filter(v=>v>0),ax=colors.filter((_,i)=>counts[i]>0);
+  const ctx=document.getElementById('chart-cat');if(!ctx)return;
+  if(catChart){catChart.destroy();catChart=null;}
+  if(!incs.length){ctx.parentElement.innerHTML='<div class="empty" style="padding:20px 0"><i class="fas fa-chart-pie" style="font-size:32px;color:var(--g300)"></i><p>No data yet</p></div>';return;}
+  catChart=new Chart(ctx,{type:'doughnut',data:{labels:al,datasets:[{data:ac,backgroundColor:ax,borderWidth:2,borderColor:'white'}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:8}}}}});
 }
-function renderDashHO(rows){
-  const g=document.getElementById('dash-ho-grid');
-  if(!rows.length){g.innerHTML=`<div class="empty" style="grid-column:1/-1"><i class="fas fa-book-open"></i><h3>No handovers yet</h3></div>`;return;}
-  g.innerHTML=rows.map((h,i)=>buildHOCard(h)).join('');
+function renderSevChart(incs){
+  const sevs=['Low','Medium','High','Critical'],counts=sevs.map(s=>incs.filter(i=>i['Severity']===s).length),colors=['#22C55E','#F59E0B','#EF4444','#7C3AED'];
+  const ctx=document.getElementById('chart-sev');if(!ctx)return;
+  if(sevChart){sevChart.destroy();sevChart=null;}
+  if(!incs.length){ctx.parentElement.innerHTML='<div class="empty" style="padding:20px 0"><i class="fas fa-chart-bar" style="font-size:32px;color:var(--g300)"></i><p>No data yet</p></div>';return;}
+  sevChart=new Chart(ctx,{type:'bar',data:{labels:sevs,datasets:[{data:counts,backgroundColor:colors,borderRadius:6,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}});
+}
+function mkTR(t,c){return '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px;color:var(--g700);border-bottom:1px solid var(--g100)"><i class="fas fa-circle-dot" style="color:'+c+';font-size:11px;margin-top:3px;flex-shrink:0"></i><span>'+t+'</span></div>';}
+function renderTaskTracker(hos){
+  if(!hos.length)return;
+  const h=hos[0],src=h['Handover #']+' · '+fd(h['Date']||'');
+  document.getElementById('dash-today-src').textContent=src;
+  document.getElementById('dash-tmr-src').textContent=src;
+  const ops=hoSplit(h['Ops Tasks']);
+  document.getElementById('dash-ops-items').innerHTML=ops.length?ops.map(t=>mkTR(t,'#059669')).join(''):'<p style="font-size:12px;color:var(--g400);padding:8px 0">No ops tasks</p>';
+  const ss=hoSplit(h['SS Tasks']);
+  document.getElementById('dash-ss-items').innerHTML=ss.length?ss.map(t=>mkTR(t,'#EA580C')).join(''):'<p style="font-size:12px;color:var(--g400);padding:8px 0">No soft services tasks</p>';
+  const tmr=hoSplit(h['Tmr Tasks']);
+  document.getElementById('dash-tmr-items').innerHTML=tmr.length?tmr.map(t=>mkTR(t,'#7C3AED')).join(''):'<div class="empty" style="padding:16px 0"><i class="fas fa-calendar-day" style="font-size:24px;color:var(--g300)"></i><p>No tasks for tomorrow</p></div>';
+  const sw=hoSplit(h['Scheduled Works']);
+  document.getElementById('dash-sw-items').innerHTML=sw.length?sw.map(t=>mkTR(t,'#2563EB')).join(''):'<div class="empty" style="padding:16px 0"><i class="fas fa-hard-hat" style="font-size:24px;color:var(--g300)"></i><p>No scheduled works</p></div>';
 }
 
 // INCIDENTS
