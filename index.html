@@ -1456,55 +1456,56 @@ async function sendPolicyChat(){
   input.value='';
   const btn=document.getElementById('pol-send-btn');btn.disabled=true;
 
-  // Add user message
   addChatMsg(msg,'user');
-  // Add typing indicator
   const typingId='typing_'+Date.now();
   addTypingIndicator(typingId);
 
-  // Build messages array
   polChatHistory.push({role:'user',content:msg});
   if(polChatHistory.length>20)polChatHistory=polChatHistory.slice(-20);
 
-  // Build system prompt with policy context
-  const systemPrompt=`You are the ABC Operations System Policy Assistant for ABC Mall Group in Lebanon. You help staff find, understand and apply company policies and procedures.
-
-AVAILABLE POLICIES:
-${polCurrentContext||'No policies uploaded yet. Inform the user that documents need to be uploaded by an Admin first.'}
-
-INSTRUCTIONS:
-- Answer questions about policies clearly and professionally
-- If asked about a specific policy, explain its key points
-- If the policy document is available, mention that the user can click "View PDF" to access it
-- If a policy doesn't exist in the system, say so clearly and suggest contacting the operations manager
-- Keep answers concise but complete
-- Use bullet points for key information
-- Always maintain a professional corporate tone
-- You work for ABC Verdun Mall operations team`;
+  // Build system prompt
+  var ctx=polCurrentContext||'No policies uploaded yet.';
+  var sysPrompt=[
+    'You are the ABC Policy Assistant for ABC Mall Group Lebanon.',
+    'Help staff find and understand company policies.',
+    '',
+    'AVAILABLE POLICIES:',
+    ctx,
+    '',
+    'INSTRUCTIONS:',
+    '- Answer clearly and professionally',
+    '- Explain key points of specific policies',
+    '- Mention View PDF button if document is available',
+    '- If policy does not exist say so clearly',
+    '- Use bullet points for key info',
+    '- Professional corporate tone',
+    '- You work for ABC Verdun Mall'
+  ].join('\n');
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system:systemPrompt,
-        messages:polChatHistory.slice(0,-1).concat([{role:'user',content:msg}])
-      })
-    }).then(r=>r.json());
+    // Route through Apps Script to avoid CORS — Apps Script calls Anthropic server-side
+    var payload={
+      action:'policyChat',
+      systemPrompt:sysPrompt,
+      messages:polChatHistory.slice(0,-1).concat([{role:'user',content:msg}])
+    };
+    var q=new URLSearchParams({action:'policyChat',token:SES?.token||'',body:encodeURIComponent(JSON.stringify(payload))});
+    var res=await fetch(API+'?'+q).then(function(r){return r.json();});
 
     removeTypingIndicator(typingId);
-    const reply=res.content?.[0]?.text||'I could not process your request. Please try again.';
+    var reply=(res.reply)||'I could not process your request. Please try again.';
     polChatHistory.push({role:'assistant',content:reply});
     addChatMsg(reply,'bot');
 
-    // Check if user is asking for a document
-    const lowerMsg=msg.toLowerCase();
-    if(lowerMsg.includes('download')||lowerMsg.includes('get the')||lowerMsg.includes('send me')||lowerMsg.includes('share')){
-      const matchedPol=POLICIES.find(p=>lowerMsg.includes(p.title.toLowerCase().split(' ').slice(0,3).join(' ').toLowerCase()));
-      if(matchedPol&&matchedPol.fileUrl){
-        addChatMsg(`📎 Here is the document: <a href="${matchedPol.fileUrl}" target="_blank" style="color:var(--p600);font-weight:700;text-decoration:underline">${matchedPol.title} (PDF)</a>`,'bot',true);
+    // Auto-link document if user asks for it
+    var lower=msg.toLowerCase();
+    if(lower.includes('download')||lower.includes('get the')||lower.includes('send me')||lower.includes('share')||lower.includes('view')){
+      var matched=POLICIES.find(function(p){
+        var words=p.title.toLowerCase().split(' ').slice(0,3).join(' ');
+        return lower.includes(words);
+      });
+      if(matched&&matched.fileUrl){
+        addChatMsg('Here is the document: <a href="'+matched.fileUrl+'" target="_blank" style="color:var(--p600);font-weight:700;text-decoration:underline">'+matched.title+' (PDF)</a>','bot',true);
       }
     }
   }catch(e){
