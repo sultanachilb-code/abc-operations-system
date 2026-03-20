@@ -247,14 +247,25 @@ tr:hover td{background:var(--p50)}
 
 <!-- APP -->
 <div id="app">
-  <div class="topbar">
+  <div class="topbar" style="position:relative">
     <div class="tbl">
       <button class="hbtn" onclick="toggleSB()"><i class="fas fa-bars"></i></button>
       <a class="lw" href="#"><div class="li">ABC</div><div><div class="lt">ABC Operations</div><div class="ls" id="tb-prop">Verdun Mall</div></div></a>
     </div>
     <div class="tbr">
       <button class="tbb"><i class="fas fa-magnifying-glass"></i></button>
-      <button class="tbb"><i class="fas fa-bell"></i><span class="ndot"></span></button>
+      <button class="tbb" onclick="toggleNotifPanel()" id="bell-btn" style="position:relative">
+        <i class="fas fa-bell"></i>
+        <span id="notif-count" style="position:absolute;top:3px;right:3px;min-width:16px;height:16px;background:var(--err);border-radius:20px;font-size:9px;font-weight:800;color:white;display:none;align-items:center;justify-content:center;padding:0 4px;font-family:var(--ff);border:2px solid white">0</span>
+      </button>
+      <!-- NOTIFICATION PANEL -->
+      <div id="notif-panel" style="display:none;position:absolute;top:54px;right:16px;width:340px;background:white;border-radius:var(--rl);box-shadow:var(--s3);border:1px solid var(--g200);z-index:300;max-height:420px;overflow:hidden;flex-direction:column">
+        <div style="padding:13px 18px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-family:var(--ff);font-weight:800;font-size:14px">Notifications</span>
+          <button onclick="clearNotifs()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--p600);font-weight:600;font-family:var(--ff)">Clear all</button>
+        </div>
+        <div id="notif-list" style="overflow-y:auto;max-height:340px;padding:8px 0"></div>
+      </div>
       <div class="uc" onclick="navigate('profile')"><div class="ua" id="tb-av">VM</div><div class="ui"><div class="un" id="tb-nm">–</div><div class="ur" id="tb-rl">–</div></div></div>
     </div>
   </div>
@@ -495,11 +506,17 @@ tr:hover td{background:var(--p50)}
       <!-- TEAM PROJECTS GANTT -->
       <div class="view" id="view-prj-team">
         <div class="ph">
-          <div><div class="pht">Team Projects — Gantt Tracker</div><div class="phs">Milestone tracker with owner, deadline & status</div></div>
+          <div><div class="pht">Team Projects — Gantt Tracker</div><div class="phs">Capex projects with team assignment, deadlines & status</div></div>
           <div style="display:flex;gap:9px">
             <button class="btn btn-o" onclick="navigate('projects')"><i class="fas fa-arrow-left"></i> Back</button>
             <button class="btn btn-o btn-sm" onclick="exportGanttCSV()"><i class="fas fa-file-csv"></i> Export</button>
             <button class="btn btn-p" onclick="openAddProject()"><i class="fas fa-plus"></i> Add Project</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:12px;border-left:4px solid #2563EB">
+          <div class="cb" style="padding:12px 16px;display:flex;align-items:center;gap:10px;background:#EFF6FF">
+            <i class="fas fa-info-circle" style="color:#2563EB"></i>
+            <span style="font-size:12.5px;color:#1D4ED8">Projects are auto-imported from Capex Allocation. You can also add manually. Assign team members using <strong>@username</strong> — they will receive a notification.</span>
           </div>
         </div>
         <div class="card">
@@ -507,6 +524,7 @@ tr:hover td{background:var(--p50)}
             <div class="fbar">
               <input type="text" class="fc" id="gfl-s" placeholder="🔍  Search projects…" oninput="renderGantt()"/>
               <select class="fc" id="gfl-st" style="width:160px" onchange="renderGantt()"><option value="">All Status</option><option>Not Started</option><option>In Progress</option><option>Done</option><option>Postponed</option></select>
+              <button class="btn btn-o btn-sm" onclick="syncCapexToProjects()"><i class="fas fa-rotate"></i> Sync from Capex</button>
             </div>
           </div>
           <div class="gantt-wrap" id="gantt-container"></div>
@@ -605,7 +623,12 @@ tr:hover td{background:var(--p50)}
     <input type="hidden" id="prj-edit-idx"/>
     <div class="fg"><label class="fl">Project Name <span class="req">*</span></label><input type="text" class="fc" id="prj-name" placeholder="e.g. New Bins Installation"/></div>
     <div class="fgrid fg3" style="margin-bottom:14px">
-      <div class="fg"><label class="fl">Owner / Employee <span class="req">*</span></label><input type="text" class="fc" id="prj-owner" placeholder="e.g. Ahmad"/></div>
+      <div class="fg"><label class="fl">Assign To <span class="req">*</span></label>
+        <div style="position:relative">
+          <input type="text" class="fc" id="prj-owner" placeholder="@username" oninput="showUserSuggestions(this)"/>
+          <div id="user-suggestions" style="position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid var(--p400);border-radius:var(--r);box-shadow:var(--s2);z-index:100;display:none;max-height:160px;overflow-y:auto"></div>
+        </div>
+      </div>
       <div class="fg"><label class="fl">Start Month</label><input type="month" class="fc" id="prj-start"/></div>
       <div class="fg"><label class="fl">Deadline <span class="req">*</span></label><input type="month" class="fc" id="prj-end"/></div>
     </div>
@@ -614,6 +637,10 @@ tr:hover td{background:var(--p50)}
       <div class="fg"><label class="fl">Status</label><select class="fc" id="prj-status"><option>Not Started</option><option>In Progress</option><option>Done</option><option>Postponed</option></select></div>
     </div>
     <div class="fg"><label class="fl">Notes</label><input type="text" class="fc" id="prj-notes" placeholder="Optional notes…"/></div>
+    <div style="background:#F5F3FF;border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--p700)">
+      <i class="fas fa-bell" style="margin-right:5px"></i>
+      The assigned user will receive a notification when you save this project.
+    </div>
   </div>
   <div class="mf"><button class="btn btn-o" onclick="closePrjModal()">Cancel</button><button class="btn btn-p" onclick="savePrj()"><i class="fas fa-floppy-disk"></i> Save Project</button></div></div>
 </div>
@@ -693,6 +720,8 @@ function applySession(){
   const saved=localStorage.getItem('abc_projects');if(saved)try{PROJECTS=JSON.parse(saved);}catch(e){}
   const sc=localStorage.getItem('abc_capex');if(sc)try{CAPEX_DATA=JSON.parse(sc);}catch(e){}
   const so=localStorage.getItem('abc_opex');if(so)try{OPEX_DATA=JSON.parse(so);}catch(e){}
+  NOTIFICATIONS=JSON.parse(localStorage.getItem('abc_notifs')||'[]');
+  setTimeout(renderNotifs,200);
 }
 async function doLogout(){
   showL('Signing out…');try{await api('GET',{action:'logout'});}catch(e){}
@@ -758,7 +787,7 @@ function setTaskStatus(key,sel){
 }
 function renderTaskTracker(hos){
   if(!hos.length)return;
-  const h=hos[0],src=`${h['Handover #']||''} · ${fd(h['Date']||'')}`;
+  const h=hos[0],src=`${h['Handover #']||''} · ${fd(h['Date']||'')} · ${h['Shift']||''}`;
   document.getElementById('dash-today-src').textContent=src;
   document.getElementById('dash-tmr-src').textContent=src;
   document.getElementById('dash-sw-src').textContent=src;
@@ -926,25 +955,135 @@ function buildHODetail(h){
 function delHOCurrent(){if(!currentHO)return;const num=currentHO['Handover #'];if(!confirm(`Delete ${num}?`))return;showL('Deleting…');api('GET',{action:'deleteHandover',handoverNumber:num}).then(res=>{hideL();if(res.success){toast('Deleted','ok');currentHO=null;navigate('ho-log');ldHO();}else toast(res.message||'Failed','err');});}
 function hoExpCSV(){if(!HOS.length){toast('No data','wrn');return;}const h=['Handover #','Date','Shift','Property','Scheduled Works','Ops Tasks','SS Tasks','Tmr Tasks','Dat Tasks','Notes','Reporter','Submitted At'];const rows=HOS.map(i=>h.map(k=>`"${(i[k]||'').toString().replace(/"/g,'""')}"`).join(','));const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h.map(k=>`"${k}"`).join(','),...rows].join('\n'));a.download=`Handovers_${td()}.csv`;a.click();toast('Exported!','ok');}
 
-// PROJECT MANAGEMENT — GANTT
+// PROJECT MANAGEMENT — GANTT + NOTIFICATIONS
 const PRJ_STATUS_COLORS={Done:'done','In Progress':'inprogress','Not Started':'pending',Postponed:'postponed'};
+let NOTIFICATIONS=JSON.parse(localStorage.getItem('abc_notifs')||'[]');
+
+// NOTIFICATIONS
+function saveNotifs(){localStorage.setItem('abc_notifs',JSON.stringify(NOTIFICATIONS));}
+function addNotif(msg,type='info'){
+  const n={id:Date.now(),msg,type,time:new Date().toLocaleString(),read:false};
+  NOTIFICATIONS.unshift(n);if(NOTIFICATIONS.length>50)NOTIFICATIONS=NOTIFICATIONS.slice(0,50);
+  saveNotifs();renderNotifs();
+}
+function renderNotifs(){
+  const unread=NOTIFICATIONS.filter(n=>!n.read).length;
+  const cnt=document.getElementById('notif-count');
+  if(cnt){cnt.textContent=unread;cnt.style.display=unread>0?'inline-flex':'none';}
+  const list=document.getElementById('notif-list');if(!list)return;
+  if(!NOTIFICATIONS.length){list.innerHTML='<div style="padding:24px;text-align:center;font-size:13px;color:var(--g400)"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block"></i>No notifications</div>';return;}
+  list.innerHTML=NOTIFICATIONS.map(n=>`
+    <div style="padding:11px 18px;border-bottom:1px solid var(--g100);background:${n.read?'white':'var(--p50)'};cursor:pointer" onclick="markNotifRead(${n.id})">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <i class="fas ${n.type==='assign'?'fa-user-check':n.type==='warning'?'fa-triangle-exclamation':'fa-bell'}" style="font-size:13px;color:${n.type==='assign'?'var(--p600)':n.type==='warning'?'var(--warn)':'var(--ok)'};margin-top:2px;flex-shrink:0"></i>
+        <div><div style="font-size:13px;color:var(--g700);line-height:1.4">${n.msg}</div><div style="font-size:10.5px;color:var(--g400);margin-top:3px">${n.time}</div></div>
+        ${!n.read?'<span style="width:7px;height:7px;background:var(--p600);border-radius:50%;flex-shrink:0;margin-top:4px"></span>':''}
+      </div>
+    </div>`).join('');
+}
+function markNotifRead(id){const n=NOTIFICATIONS.find(x=>x.id===id);if(n)n.read=true;saveNotifs();renderNotifs();}
+function clearNotifs(){NOTIFICATIONS=[];saveNotifs();renderNotifs();}
+function toggleNotifPanel(){
+  const p=document.getElementById('notif-panel');
+  p.style.display=p.style.display==='flex'?'none':'flex';
+  if(p.style.display==='flex'){NOTIFICATIONS.forEach(n=>n.read=true);saveNotifs();renderNotifs();}
+}
+document.addEventListener('click',e=>{
+  const panel=document.getElementById('notif-panel');
+  const bell=document.getElementById('bell-btn');
+  if(panel&&bell&&!panel.contains(e.target)&&!bell.contains(e.target))panel.style.display='none';
+});
+
+// USER SUGGESTIONS FOR @MENTION
+function showUserSuggestions(input){
+  const val=input.value;const sug=document.getElementById('user-suggestions');
+  const atIdx=val.lastIndexOf('@');
+  if(atIdx===-1){sug.style.display='none';return;}
+  const query=val.slice(atIdx+1).toLowerCase();
+  const matches=USRS.filter(u=>u.username.toLowerCase().includes(query)||u.fullName.toLowerCase().includes(query));
+  if(!matches.length){sug.style.display='none';return;}
+  sug.style.display='block';
+  sug.innerHTML=matches.slice(0,6).map(u=>`
+    <div onclick="selectUser('${u.username}','${u.fullName}')" style="padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:9px;font-size:13px;border-bottom:1px solid var(--g100)">
+      <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--p700),var(--acc));display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:800;font-family:var(--ff);flex-shrink:0">${u.fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+      <div><div style="font-weight:600;color:var(--g800)">${u.fullName}</div><div style="font-size:11px;color:var(--g400)">@${u.username}</div></div>
+    </div>`).join('');
+}
+function selectUser(username,fullName){
+  const input=document.getElementById('prj-owner');
+  const val=input.value;const atIdx=val.lastIndexOf('@');
+  input.value=(atIdx>=0?val.slice(0,atIdx):'')+'@'+username;
+  document.getElementById('user-suggestions').style.display='none';
+}
+
+// PROJECT CRUD
 function savePrjLocal(){localStorage.setItem('abc_projects',JSON.stringify(PROJECTS));}
-function openAddProject(){document.getElementById('prj-modal-title').textContent='Add Project';document.getElementById('prj-edit-idx').value='';['prj-name','prj-owner','prj-start','prj-end','prj-notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('prj-budget').value='';document.getElementById('prj-status').value='Not Started';document.getElementById('prj-modal').classList.remove('hid');}
-function closePrjModal(){document.getElementById('prj-modal').classList.add('hid');}
+function openAddProject(){
+  document.getElementById('prj-modal-title').textContent='Add Project';
+  document.getElementById('prj-edit-idx').value='';
+  ['prj-name','prj-owner','prj-start','prj-end','prj-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('prj-budget').value='';
+  document.getElementById('prj-status').value='Not Started';
+  document.getElementById('user-suggestions').style.display='none';
+  document.getElementById('prj-modal').classList.remove('hid');
+}
+function closePrjModal(){document.getElementById('prj-modal').classList.add('hid');document.getElementById('user-suggestions').style.display='none';}
 function savePrj(){
   const name=document.getElementById('prj-name').value.trim(),owner=document.getElementById('prj-owner').value.trim(),end=document.getElementById('prj-end').value;
-  if(!name||!owner||!end){toast('Name, Owner and Deadline required','err');return;}
-  const prj={name,owner,start:document.getElementById('prj-start').value,end,budget:document.getElementById('prj-budget').value,status:document.getElementById('prj-status').value,notes:document.getElementById('prj-notes').value};
+  if(!name||!owner||!end){toast('Name, Assignee and Deadline required','err');return;}
+  const prj={name,owner,start:document.getElementById('prj-start').value,end,budget:document.getElementById('prj-budget').value,status:document.getElementById('prj-status').value,notes:document.getElementById('prj-notes').value,assignedBy:SES?.fullName,assignedAt:new Date().toISOString()};
   const idx=document.getElementById('prj-edit-idx').value;
-  if(idx!=='')PROJECTS[parseInt(idx)]=prj;else PROJECTS.push(prj);
+  const isNew=idx==='';
+  if(!isNew)PROJECTS[parseInt(idx)]=prj;else PROJECTS.push(prj);
   savePrjLocal();closePrjModal();renderGantt();toast('Project saved!','ok');
+  // Send notification if @mention found
+  const mentionMatch=owner.match(/@(\w+)/g);
+  if(mentionMatch){
+    mentionMatch.forEach(mention=>{
+      const uname=mention.slice(1);
+      const assignedUser=USRS.find(u=>u.username.toLowerCase()===uname.toLowerCase());
+      const displayName=assignedUser?assignedUser.fullName:mention;
+      // Notify if it's the current user (for demo — in real multi-user this would be server-side)
+      if(uname.toLowerCase()===SES?.username?.toLowerCase()){
+        addNotif(`📋 You were assigned to: "${name}" by ${SES?.fullName||'Operations'}. Deadline: ${end}.`,'assign');
+      } else {
+        // Still log the assignment notification for the record
+        addNotif(`📋 "${name}" assigned to ${displayName}. Deadline: ${end}. By ${SES?.fullName||'Operations'}.`,'assign');
+      }
+    });
+  }
 }
 function editPrj(idx){
   const p=PROJECTS[idx];document.getElementById('prj-modal-title').textContent='Edit Project';document.getElementById('prj-edit-idx').value=idx;
-  document.getElementById('prj-name').value=p.name;document.getElementById('prj-owner').value=p.owner;document.getElementById('prj-start').value=p.start||'';document.getElementById('prj-end').value=p.end;document.getElementById('prj-budget').value=p.budget||'';document.getElementById('prj-status').value=p.status;document.getElementById('prj-notes').value=p.notes||'';
+  document.getElementById('prj-name').value=p.name;document.getElementById('prj-owner').value=p.owner;
+  document.getElementById('prj-start').value=p.start||'';document.getElementById('prj-end').value=p.end;
+  document.getElementById('prj-budget').value=p.budget||'';document.getElementById('prj-status').value=p.status;document.getElementById('prj-notes').value=p.notes||'';
   document.getElementById('prj-modal').classList.remove('hid');
 }
 function delPrj(idx){if(!confirm('Delete this project?'))return;PROJECTS.splice(idx,1);savePrjLocal();renderGantt();toast('Deleted','ok');}
+
+// SYNC CAPEX TO PROJECTS
+function syncCapexToProjects(){
+  if(!CAPEX_DATA||!CAPEX_DATA.rows||!CAPEX_DATA.rows.length){toast('No Capex data loaded. Import your Capex Excel first.','wrn');return;}
+  const{rows,headers,bgtKey}=CAPEX_DATA;
+  // Find project name column — first column or one named Project/Description/Initiative
+  const nameKey=headers.find(h=>h.toLowerCase().includes('project')||h.toLowerCase().includes('description')||h.toLowerCase().includes('initiative')||h.toLowerCase().includes('name'))||headers[0];
+  let added=0;
+  rows.forEach(r=>{
+    const projName=(r[nameKey]||'').toString().trim();
+    const budget=(r[bgtKey]||'').toString().replace(/[^0-9.]/g,'');
+    if(!projName)return;
+    // Check if already exists
+    const exists=PROJECTS.find(p=>p.name===projName);
+    if(!exists){
+      PROJECTS.push({name:projName,owner:'',start:'',end:'',budget,status:'Not Started',notes:'',fromCapex:true});
+      added++;
+    }
+  });
+  savePrjLocal();renderGantt();
+  if(added>0)toast(`${added} projects synced from Capex!`,'ok');
+  else toast('All Capex projects already in tracker.','wrn');
+}
 function renderGantt(){
   const s=(document.getElementById('gfl-s').value||'').toLowerCase(),st=document.getElementById('gfl-st').value;
   let fl=PROJECTS.filter((p,i)=>{p._idx=i;return(!s||p.name.toLowerCase().includes(s)||p.owner.toLowerCase().includes(s))&&(!st||p.status===st);});
@@ -962,7 +1101,9 @@ function renderGantt(){
     const endM=p.end?new Date(p.end+'-01').getMonth():-1;
     const startY=p.start?new Date(p.start+'-01').getFullYear():yr;
     const endY=p.end?new Date(p.end+'-01').getFullYear():yr;
-    html+=`<tr><td style="font-weight:600;font-size:12.5px">${p.name}</td><td style="font-size:12px;color:var(--p700)">${p.owner}</td><td style="font-size:12px">${fmtMoney(p.budget)}</td>`;
+    const ow=p.owner||(p.fromCapex?'<span style="color:var(--warn);font-size:11px;font-style:italic">⚠ Unassigned</span>':'<span style="color:var(--g300);font-size:11px">–</span>');
+    const ownerHtml=p.owner&&p.owner.includes('@')?`<span style="background:var(--p50);color:var(--p700);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--ff)">${p.owner}</span>`:ow;
+    html+=`<tr><td style="font-weight:600;font-size:12.5px">${p.name}${p.fromCapex?'<span style="margin-left:5px;background:#EFF6FF;color:#1D4ED8;padding:1px 6px;border-radius:20px;font-size:9px;font-family:var(--ff);font-weight:700">CAPEX</span>':''}</td><td>${ownerHtml}</td><td style="font-size:12px">${fmtMoney(p.budget)}</td>`;
     html+=`<td><span class="badge ${sc==='done'?'bm':sc==='inprogress'?'bo':sc==='postponed'?'bs':'bx'}">${p.status}</span></td>`;
     months.forEach(m=>{
       const inRange=(startY<yr||( startY===yr&&startM<=m.month))&&(endY>yr||(endY===yr&&endM>=m.month));
@@ -996,11 +1137,18 @@ function importExcel(input,type){
       const wb=XLSX.read(e.target.result,{type:'binary'});
       const ws=wb.Sheets[wb.SheetNames[0]];
       const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
-      // Find the Annual BGT column (last column or column named Annual BGT)
       if(!raw.length){toast('No data found in file','err');hideL();return;}
       const keys=Object.keys(raw[0]);
-      // Find annual BGT column — look for last column or one containing BGT/Budget/Annual
-      let bgtKey=keys.find(k=>k.toLowerCase().includes('annual')||k.toLowerCase().includes('bgt')||k.toLowerCase().includes('budget'));
+      // For Capex: column V = index 21. Try exact name match first, then col V, then keyword search
+      let bgtKey=null;
+      // Try exact names used in ABC budget files
+      const bgtNames=['Annual BGT 26','Annual BGT','Annual BGT 25','Annual Budget','Annual BGT26'];
+      for(const n of bgtNames){if(keys.includes(n)){bgtKey=n;break;}}
+      // If not found by name, try column V (index 21, 0-based)
+      if(!bgtKey&&keys.length>21)bgtKey=keys[21];
+      // Fallback to keyword search
+      if(!bgtKey)bgtKey=keys.find(k=>k.toLowerCase().includes('annual')||k.toLowerCase().includes('bgt')||k.toLowerCase().includes('budget'));
+      // Last resort: last column
       if(!bgtKey)bgtKey=keys[keys.length-1];
       // Filter only rows with a non-zero Annual BGT
       const filtered=raw.filter(r=>{const v=r[bgtKey];return v&&parseFloat(v.toString().replace(/[^0-9.]/g,''))>0;});
