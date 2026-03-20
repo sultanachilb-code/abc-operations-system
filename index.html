@@ -1433,8 +1433,41 @@ function renderPolicies(){
 
 function renderPolChat_context(){
   if(!POLICIES.length){polCurrentContext='No policies uploaded yet.';return;}
-  var lines=POLICIES.map(function(p){return '- '+p.title+' ['+p.category+']'+(p.desc?' - '+p.desc:'');});
-  polCurrentContext='ABC Mall Group - Policies and Procedures Index:\n\n'+lines.join('\n');
+  var lines=POLICIES.map(function(p){
+    var entry='POLICY: '+p.title+' [Category: '+p.category+']';
+    if(p.desc)entry+='\nDescription: '+p.desc;
+    if(p.extractedText)entry+='\nContent Summary: '+p.extractedText.substring(0,800);
+    if(p.fileUrl)entry+='\nDocument URL: '+p.fileUrl;
+    return entry;
+  });
+  polCurrentContext='ABC Mall Group - Policies and Procedures:\n\n'+lines.join('\n\n---\n\n');
+}
+
+// Extract text from PDF when uploaded (using PDF.js or basic extraction)
+async function extractPdfText(file){
+  try{
+    // Read as array buffer
+    var buf=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result);};r.onerror=rej;r.readAsArrayBuffer(file);});
+    // Basic text extraction - look for readable strings in PDF
+    var bytes=new Uint8Array(buf);
+    var text='';
+    var str='';
+    for(var i=0;i<bytes.length;i++){
+      var c=bytes[i];
+      if(c>=32&&c<127){str+=String.fromCharCode(c);}
+      else if(str.length>4){
+        // Filter for meaningful text (not PDF syntax)
+        if(!/^[0-9.\-\s\/]+$/.test(str)&&!/^(obj|endobj|stream|endstream|xref|trailer|startxref|BT|ET|Tf|Tm|Td|Tj|TJ|PDF|Type|Font|Page|Width|Height|Filter|Length)/.test(str)){
+          text+=str+' ';
+        }
+        str='';
+      }else{str='';}
+    }
+    // Clean up and limit
+    text=text.replace(/\s+/g,' ').trim();
+    // Return first 2000 meaningful chars
+    return text.length>100?text.substring(0,2000):'';
+  }catch(e){return '';}
 }
 function openPolicy(id){
   const p=POLICIES.find(x=>x.id===id);if(!p)return;
@@ -1493,7 +1526,7 @@ async function sendPolicyChat(){
     var res=await fetch(API+'?'+q).then(function(r){return r.json();});
 
     removeTypingIndicator(typingId);
-    var reply=(res.reply)||'I could not process your request. Please try again.';
+    var reply=res.reply||(res.success===false?'The AI service is temporarily unavailable. Please try again in a moment.':'I could not process your request. Please try again.');
     polChatHistory.push({role:'assistant',content:reply});
     addChatMsg(reply,'bot');
 
@@ -1510,7 +1543,7 @@ async function sendPolicyChat(){
     }
   }catch(e){
     removeTypingIndicator(typingId);
-    addChatMsg('Connection error. Please check your internet and try again.','bot');
+    addChatMsg('Unable to connect to AI. Please try again shortly.','bot');
   }
   btn.disabled=false;
   scrollChat();
@@ -1595,6 +1628,7 @@ async function uploadPolicy(){
     } else {
       // Fallback: store metadata locally, save file as object URL for session viewing
       const fileUrl=URL.createObjectURL(polSelectedFile);
+      const extractedText=await extractPdfText(polSelectedFile);
       const localPol={
         id:'pol_'+Date.now(),
         title,category:cat,desc,
@@ -1602,14 +1636,15 @@ async function uploadPolicy(){
         uploadedBy:SES?.fullName||'Admin',
         uploadedAt:new Date().toISOString(),
         fileUrl,
+        extractedText,
         local:true
       };
       POLICIES.unshift(localPol);
       localStorage.setItem('abc_policies_meta',JSON.stringify(POLICIES.map(function(p){
-        return {id:p.id,title:p.title,category:p.category,desc:p.desc,filename:p.filename,uploadedBy:p.uploadedBy,uploadedAt:p.uploadedAt,local:p.local};
+        return {id:p.id,title:p.title,category:p.category,desc:p.desc,filename:p.filename,uploadedBy:p.uploadedBy,uploadedAt:p.uploadedAt,local:p.local,extractedText:p.extractedText||''};
       })));
       renderPolChat_context();
-      toast('Saved for this session. Configure Apps Script for permanent storage.','wrn');
+      toast('Saved'+(extractedText?' with content extracted':'')+'! PDF viewable this session.','wrn');
       await ldPoliciesAdmin();
       addNotif('New policy added: "'+title+'"','info');
     }
@@ -1617,6 +1652,7 @@ async function uploadPolicy(){
     hideL();
     // Network error fallback — save locally
     const fileUrl=URL.createObjectURL(polSelectedFile);
+    const extractedText=await extractPdfText(polSelectedFile);
     const localPol={
       id:'pol_'+Date.now(),
       title,category:cat,desc,
@@ -1624,16 +1660,17 @@ async function uploadPolicy(){
       uploadedBy:SES?.fullName||'Admin',
       uploadedAt:new Date().toISOString(),
       fileUrl,
+      extractedText,
       local:true
     };
     POLICIES.unshift(localPol);
     localStorage.setItem('abc_policies_meta',JSON.stringify(POLICIES.map(function(p){
-      return {id:p.id,title:p.title,category:p.category,desc:p.desc,filename:p.filename,uploadedBy:p.uploadedBy,uploadedAt:p.uploadedAt,local:p.local};
+      return {id:p.id,title:p.title,category:p.category,desc:p.desc,filename:p.filename,uploadedBy:p.uploadedBy,uploadedAt:p.uploadedAt,local:p.local,extractedText:p.extractedText||''};
     })));
     renderPolChat_context();
-    toast('Stored locally for this session. PDF is viewable until you close the browser.','wrn');
+    toast('PDF stored locally'+(extractedText?' — content extracted for AI':''),'wrn');
     await ldPoliciesAdmin();
-    addNotif('New policy added locally: "'+title+'"','info');
+    addNotif('New policy added: "'+title+'"','info');
   }
   btn.disabled=false;
   btn.innerHTML='<i class="fas fa-cloud-arrow-up"></i> Upload Document';
