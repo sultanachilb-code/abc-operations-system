@@ -720,7 +720,7 @@ How can I help you today?</div>
             </div>
             <input type="file" id="pol-file" accept=".pdf" style="display:none" onchange="polFileSelected(this)"/>
             <div style="display:flex;justify-content:flex-end;margin-top:14px">
-              <button class="btn btn-p" onclick="uploadPolicy()" id="pol-upload-btn"><i class="fas fa-cloud-arrow-up"></i> Upload Document</button>
+              <button class="btn btn-p" onclick="uploadPolicy()" id="pol-upload-btn"><i class="fas fa-cloud-arrow-up"></i> Add Document</button>
             </div>
           </div>
         </div>
@@ -1378,22 +1378,27 @@ const POL_CAT_ICONS={
 
 async function ldPolicies(){
   showL('Loading policies…');
-  // Load local metadata (session-uploaded docs)
+  // Always start with locally saved metadata
   var localMeta=[];
   try{localMeta=JSON.parse(localStorage.getItem('abc_policies_meta')||'[]');}catch(e){}
+  // Try to also get any server-registered policies
   try{
-    const res=await api('GET',{action:'getPolicies'});
-    if(res.success){
+    var res=await api('GET',{action:'getPolicies'});
+    if(res.success&&res.policies&&res.policies.length){
       var remote=res.policies||[];
-      // Merge: remote first, then any local-only ones not in remote
       var remoteIds=remote.map(function(p){return p.id;});
       var localOnly=localMeta.filter(function(p){return !remoteIds.includes(p.id);});
       POLICIES=remote.concat(localOnly);
     } else {
       POLICIES=localMeta;
     }
-  }catch(e){POLICIES=localMeta;}
-  renderPolicies();renderPolChat_context();hideL();
+  }catch(e){
+    // If backend fails, use local only
+    POLICIES=localMeta;
+  }
+  renderPolicies();
+  renderPolChat_context();
+  hideL();
 }
 
 async function ldPoliciesAdmin(){
@@ -1582,64 +1587,65 @@ async function uploadPolicy(){
   var desc=document.getElementById('pol-desc').value.trim();
   if(!title||!cat){toast('Please fill Title and Category','err');return;}
   if(!polSelectedFile){toast('Please select a PDF file','err');return;}
-  if(polSelectedFile.size>10*1024*1024){toast('File too large. Max 10MB','err');return;}
 
   var btn=document.getElementById('pol-upload-btn');
   btn.disabled=true;
-  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Uploading…';
-  showL('Uploading to Google Drive…');
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Processing…';
 
   try{
-    // Convert file to base64
-    var base64=await new Promise(function(res,rej){
-      var r=new FileReader();
-      r.onload=function(){res(r.result.split(',')[1]);};
-      r.onerror=rej;
-      r.readAsDataURL(polSelectedFile);
-    });
+    showL('Extracting PDF content for AI…');
 
-    // Extract text from PDF for AI context
+    // Extract readable text from PDF bytes
     var extractedText=await extractPdfText(polSelectedFile);
 
-    // Send via POST (not GET) to handle large base64 payloads
-    var payload={
-      action:'uploadPolicy',
-      token:SES&&SES.token||'',
+    // Create a local blob URL so user can view the PDF
+    var fileUrl=URL.createObjectURL(polSelectedFile);
+
+    // Build policy record
+    var pol={
+      id:'pol_'+Date.now(),
       title:title,
       category:cat,
       desc:desc,
       filename:polSelectedFile.name,
-      fileData:base64,
-      uploadedBy:SES&&SES.fullName||'Admin',
-      uploadedAt:new Date().toISOString()
+      uploadedBy:SES?SES.fullName:'Admin',
+      uploadedAt:new Date().toISOString(),
+      fileUrl:fileUrl,
+      extractedText:extractedText,
+      local:true
     };
 
-    var res=await fetch(API,{
-      method:'POST',
-      mode:'cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
-    }).then(function(r){return r.json();});
+    // Add to in-memory list
+    POLICIES.unshift(pol);
+
+    // Save metadata to localStorage (text only, no binary)
+    var toSave=POLICIES.map(function(p){
+      return {
+        id:p.id, title:p.title, category:p.category,
+        desc:p.desc||'', filename:p.filename||'',
+        uploadedBy:p.uploadedBy||'', uploadedAt:p.uploadedAt||'',
+        extractedText:p.extractedText||'', local:true
+      };
+    });
+    try{localStorage.setItem('abc_policies_meta',JSON.stringify(toSave));}catch(e){}
+
+    // Update AI context
+    renderPolChat_context();
 
     hideL();
+    toast(extractedText?'Document loaded! AI has read the content.':'Document added. AI knows the title and category.','ok');
+    polResetForm();
+    renderPolAdminList();
+    renderPolicies();
+    addNotif('Policy added: "'+title+'"','info');
 
-    if(res.success){
-      toast('Document uploaded to Google Drive!','ok');
-      polResetForm();
-      await ldPoliciesAdmin();
-      addNotif('New policy uploaded: "'+title+'"','info');
-    } else {
-      toast('Drive upload failed: '+(res.message||'unknown error')+'. Saving locally.','wrn');
-      polSaveLocally(title,cat,desc,extractedText);
-    }
   }catch(e){
     hideL();
-    toast('Network error. Saving locally for this session.','wrn');
-    var extractedText=await extractPdfText(polSelectedFile);
-    polSaveLocally(title,cat,desc,extractedText);
+    toast('Error processing file: '+e.message,'err');
+    console.error(e);
   }
   btn.disabled=false;
-  btn.innerHTML='<i class="fas fa-cloud-arrow-up"></i> Upload Document';
+  btn.innerHTML='<i class="fas fa-cloud-arrow-up"></i> Add Document';
 }
 
 function polResetForm(){
