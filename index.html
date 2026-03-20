@@ -6,6 +6,8 @@
 <title>ABC Operations System</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
   --p900:#2D0A5A;--p800:#4A0E8F;--p700:#6B21A8;--p600:#7C3AED;--p500:#8B5CF6;--p400:#A78BFA;--p200:#DDD6FE;--p100:#EDE9FE;--p50:#F5F3FF;
@@ -18,8 +20,6 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:var(--fb);background:var(--g100);color:var(--g800)}
-
-/* LOGIN */
 #login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--p900),var(--p700) 55%,var(--acc));padding:20px;position:relative;overflow:hidden}
 #login-page::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 15% 50%,rgba(255,255,255,.05),transparent 50%),radial-gradient(circle at 85% 20%,rgba(255,255,255,.07),transparent 40%)}
 .lp{position:absolute;inset:0;opacity:.04;background:repeating-linear-gradient(45deg,white 0,white 1px,transparent 0,transparent 50%);background-size:22px 22px}
@@ -32,8 +32,6 @@ html,body{height:100%;font-family:var(--fb);background:var(--g100);color:var(--g
 .lbody{padding:28px 24px}
 .lerr{background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--err);margin-bottom:16px;display:none;align-items:center;gap:8px}
 .lerr.show{display:flex}
-
-/* COMMON FORM */
 .fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
 .fl{font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px}
 .req{color:var(--err);margin-left:2px}
@@ -42,8 +40,6 @@ html,body{height:100%;font-family:var(--fb);background:var(--g100);color:var(--g
 textarea.fc{resize:vertical;min-height:100px;line-height:1.6}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .fg3{grid-template-columns:1fr 1fr 1fr}
-
-/* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r);font-family:var(--ff);font-weight:700;font-size:13px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;justify-content:center;text-decoration:none}
 .btn-p{background:linear-gradient(135deg,var(--p700),var(--p500));color:white;box-shadow:0 2px 8px rgba(107,33,168,.3)}
 .btn-p:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 14px rgba(107,33,168,.4)}
@@ -54,12 +50,8 @@ textarea.fc{resize:vertical;min-height:100px;line-height:1.6}
 .btn-d:hover{background:#B91C1C}
 .btn-sm{padding:6px 12px;font-size:12px}
 .btn-full{width:100%}
-
-/* APP */
 #app{display:none;flex-direction:column;height:100vh}
 #app.on{display:flex}
-
-/* TOPBAR */
 .topbar{background:white;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:54px;flex-shrink:0;box-shadow:var(--s1);z-index:100}
 .tbl{display:flex;align-items:center;gap:14px}
 .hbtn{background:none;border:none;cursor:pointer;color:var(--g500);font-size:17px;padding:6px;border-radius:var(--r)}
@@ -77,18 +69,12 @@ textarea.fc{resize:vertical;min-height:100px;line-height:1.6}
 .ua{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--p700),var(--acc));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:11px;font-family:var(--ff);flex-shrink:0}
 .un{font-size:12.5px;font-weight:700;color:var(--g800);font-family:var(--ff)}
 .ur{font-size:10px;color:var(--p600);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
-
-/* HERO */
 .hero{background:linear-gradient(135deg,var(--p900),var(--p700) 65%,var(--acc));padding:24px;text-align:center;position:relative;overflow:hidden;flex-shrink:0}
 .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 50%,rgba(255,255,255,.04),transparent 50%)}
 .hp{position:absolute;inset:0;opacity:.05;background:repeating-linear-gradient(45deg,white 0,white 1px,transparent 0,transparent 50%);background-size:20px 20px}
 .hero h1{font-family:var(--ff);font-weight:900;font-size:clamp(18px,3vw,26px);color:white;position:relative}
 .hero p{color:rgba(255,255,255,.65);font-size:12px;margin-top:3px;position:relative}
-
-/* SHELL */
 .shell{display:flex;flex:1;overflow:hidden}
-
-/* SIDEBAR */
 .sidebar{width:228px;min-width:228px;background:white;border-right:1px solid var(--g200);display:flex;flex-direction:column;transition:.25s;overflow:hidden}
 .sidebar.col{width:56px;min-width:56px}
 .sidebar.col .nl,.sidebar.col .ns,.sidebar.col .nb{display:none}
@@ -102,33 +88,23 @@ textarea.fc{resize:vertical;min-height:100px;line-height:1.6}
 .sf{margin-top:auto;padding:12px;border-top:1px solid var(--g100)}
 .lb{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--r);width:100%;background:none;border:none;cursor:pointer;color:var(--err);font-size:13px;font-family:var(--fb);font-weight:500;transition:.15s}
 .lb:hover{background:#FEF2F2}
-
-/* MAIN */
 .main{flex:1;overflow:auto}
 .view{display:none;padding:22px}
 .view.on{display:block}
-
-/* PAGE HEADER */
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
 .pht{font-family:var(--ff);font-size:19px;font-weight:800;color:var(--g800)}
 .phs{font-size:12px;color:var(--g400);margin-top:2px}
-
-/* CARD */
 .card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);overflow:hidden;margin-bottom:16px}
 .ch{padding:13px 18px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between}
 .ct{font-family:var(--ff);font-weight:700;font-size:13.5px;color:var(--g800);display:flex;align-items:center;gap:7px}
 .ct i{color:var(--p600)}
 .cb{padding:18px}
-
-/* STATS */
 .sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
 .sc{background:white;border:1px solid var(--g200);border-radius:var(--rm);padding:14px;display:flex;align-items:center;gap:12px;box-shadow:var(--s1)}
 .si{width:40px;height:40px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .sip{background:var(--p100);color:var(--p700)}.sig{background:#D1FAE5;color:#065F46}.sio{background:#FEF3C7;color:#92400E}.sir{background:#FEE2E2;color:#991B1B}.sib{background:#DBEAFE;color:#1E40AF}
 .sv{font-family:var(--ff);font-size:24px;font-weight:900;color:var(--g800);line-height:1}
 .sl{font-size:11px;color:var(--g400);font-weight:500;margin-top:2px}
-
-/* TABLE */
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 thead tr{background:var(--g50)}
@@ -137,42 +113,30 @@ td{padding:11px 13px;border-bottom:1px solid var(--g100);vertical-align:middle}
 tr:hover td{background:var(--p50)}
 .tl{color:var(--p700);font-weight:700;cursor:pointer;font-size:12px}
 .tl:hover{text-decoration:underline}
-
-/* BADGES */
 .badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--ff)}
 .bs{background:#FEF2F2;color:#991B1B}.bf{background:#FFF7ED;color:#92400E}.bm{background:#F0FDF4;color:#166534}.bo{background:#EFF6FF;color:#1E40AF}.bmt{background:#F5F3FF;color:#5B21B6}.bc{background:#FFF1F2;color:#9F1239}.be{background:#ECFDF5;color:#065F46}.bx{background:var(--g100);color:var(--g600)}
 .bad{background:var(--p100);color:var(--p800)}.bsu{background:#FEF3C7;color:#92400E}.bst{background:#D1FAE5;color:#065F46}
 .slow{color:#059669;font-weight:700}.smed{color:#D97706;font-weight:700}.shi{color:#DC2626;font-weight:700}.scr{color:#7C3AED;font-weight:700}
-
-/* STEP BAR */
 .stbar{display:flex;align-items:center;margin-bottom:20px}
 .stp{display:flex;align-items:center;gap:7px}
 .stc{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:var(--ff);background:var(--g200);color:var(--g500);transition:.3s}
-.stp.on .stc{background:var(--p600);color:white}
-.stp.dn .stc{background:var(--ok);color:white}
+.stp.on .stc{background:var(--p600);color:white}.stp.dn .stc{background:var(--ok);color:white}
 .stl{font-size:11.5px;font-weight:600;color:var(--g400)}
 .stp.on .stl{color:var(--p700)}.stp.dn .stl{color:var(--ok)}
 .sln{flex:1;height:2px;background:var(--g200);margin:0 8px;transition:.3s}
 .sln.dn{background:var(--ok)}
-
-/* EMAIL PREVIEW */
 .ewrap{border:2px solid var(--p200);border-radius:var(--rm);overflow:hidden;background:white}
 .ehdr{background:linear-gradient(135deg,var(--p900),var(--p700));padding:14px 18px;color:white}
-.efrom{font-size:10.5px;opacity:.55;margin-bottom:3px}
-.esubj{font-family:var(--ff);font-weight:800;font-size:14px}
+.efrom{font-size:10.5px;opacity:.55;margin-bottom:3px}.esubj{font-family:var(--ff);font-weight:800;font-size:14px}
 .emeta{background:var(--g50);border-bottom:1px solid var(--g200);padding:10px 18px}
 .erow{display:flex;gap:8px;align-items:flex-start;margin-bottom:3px;font-size:12px}
 .ek{color:var(--g400);font-weight:700;width:80px;flex-shrink:0}.ev{color:var(--g700)}
 .ebody{padding:18px;font-size:12.5px;color:var(--g700);line-height:1.7;white-space:pre-wrap;font-family:'Courier New',monospace}
 .eftr{border-top:1px solid var(--g100);padding:10px 18px;font-size:10.5px;color:var(--g400);background:var(--g50)}
-
-/* INCIDENT # BAR */
 .nb-bar{background:linear-gradient(135deg,var(--p900),var(--p700));border-radius:var(--rm);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .nb-bar .nl2{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.55);font-weight:600}
 .nb-bar .nn{font-family:var(--ff);font-size:20px;font-weight:900;color:white;letter-spacing:1px}
 .nb-bar .ns2{font-size:11px;color:rgba(255,255,255,.45)}
-
-/* MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
 .overlay.hid{display:none}
 .modal{background:white;border-radius:var(--rl);width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:var(--s3);animation:mIn .25s ease}
@@ -181,33 +145,22 @@ tr:hover td{background:var(--p50)}
 .mt{font-family:var(--ff);font-weight:800;font-size:15px;color:var(--g800)}
 .mc{background:none;border:none;cursor:pointer;color:var(--g400);font-size:18px;padding:4px;border-radius:var(--r)}
 .mc:hover{color:var(--g700);background:var(--g100)}
-.mb{padding:20px}
-.mf{padding:13px 20px;border-top:1px solid var(--g100);display:flex;justify-content:flex-end;gap:9px}
-
-/* TOAST */
+.mb{padding:20px}.mf{padding:13px 20px;border-top:1px solid var(--g100);display:flex;justify-content:flex-end;gap:9px}
 #toasts{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:8px}
 .toast{background:var(--g800);color:white;padding:11px 16px;border-radius:var(--rm);font-size:12.5px;font-family:var(--ff);font-weight:700;box-shadow:var(--s3);display:flex;align-items:center;gap:9px;min-width:240px;animation:tIn .3s ease}
 .tok{background:var(--ok)}.terr{background:var(--err)}.twrn{background:var(--warn)}
 @keyframes tIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
-
-/* LOADER */
 .ldr{position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:800;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
 .ldr.hid{display:none}
 .spin{width:36px;height:36px;border:3px solid var(--p200);border-top-color:var(--p600);border-radius:50%;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-
-/* EMPTY */
 .empty{text-align:center;padding:40px 24px}
 .empty i{font-size:36px;color:var(--g300);margin-bottom:10px}
 .empty h3{font-family:var(--ff);font-size:15px;color:var(--g500);margin-bottom:5px}
 .empty p{font-size:12.5px;color:var(--g400)}
-
-/* FILTER BAR */
 .fbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
 .fbar .fc{flex:1;min-width:180px}
-
-/* ══ HANDOVER SPECIFIC ══ */
-/* Form section colored headers */
+/* HANDOVER */
 .ho-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-radius:var(--rl) var(--rl) 0 0}
 .ho-bar-left{display:flex;align-items:center;gap:9px;font-family:var(--ff);font-weight:800;font-size:13px;color:white}
 .ho-add-btn{background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.35);padding:5px 13px;border-radius:var(--r);font-family:var(--ff);font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px}
@@ -218,12 +171,8 @@ tr:hover td{background:var(--p50)}
 .ho-rm{background:none;border:none;cursor:pointer;color:var(--g300);font-size:15px;padding:4px 6px;border-radius:var(--r);transition:.15s;flex-shrink:0}
 .ho-rm:hover{color:var(--err);background:#FEF2F2}
 .ho-hint{font-size:11.5px;color:var(--g400);font-style:italic;margin-bottom:10px}
-
-/* Log cards */
 .ho-card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);overflow:hidden;cursor:pointer;transition:.2s}
 .ho-card:hover{box-shadow:var(--s2);transform:translateY(-2px);border-color:var(--p400)}
-
-/* Detail page sections */
 .hd-bar{padding:10px 18px;display:flex;align-items:center;gap:8px;font-family:var(--ff);font-weight:700;font-size:12.5px}
 .hd-bar.blue{background:#EFF6FF;color:#1D4ED8;border-left:4px solid #3B82F6}
 .hd-bar.green{background:#F0FDF4;color:#15803D;border-left:4px solid #22C55E}
@@ -238,36 +187,57 @@ tr:hover td{background:var(--p50)}
 .hd-meta{display:flex;align-items:center;gap:16px;padding:12px 18px;background:var(--g50);font-size:12px;color:var(--g500);flex-wrap:wrap}
 .hd-meta span{display:flex;align-items:center;gap:5px}
 .ho-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--ff);margin:2px}
-
+/* TASK STATUS PILLS */
+.ts-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--ff);cursor:pointer;border:none;transition:.2s}
+.ts-done{background:#D1FAE5;color:#065F46}
+.ts-pending{background:#FEF3C7;color:#92400E}
+.ts-inprogress{background:#DBEAFE;color:#1E40AF}
+.ts-postponed{background:#FEE2E2;color:#991B1B}
+.ts-none{background:var(--g100);color:var(--g500)}
+/* PROJECT MANAGEMENT */
+.prj-module-card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);overflow:hidden;cursor:pointer;transition:.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;min-height:180px}
+.prj-module-card:hover{box-shadow:var(--s2);transform:translateY(-3px);border-color:var(--p400)}
+.prj-icon{width:60px;height:60px;border-radius:var(--rm);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 14px}
+.prj-title{font-family:var(--ff);font-weight:800;font-size:16px;color:var(--g800);margin-bottom:5px}
+.prj-sub{font-size:12px;color:var(--g400)}
+/* GANTT */
+.gantt-wrap{overflow-x:auto}
+.gantt-table{border-collapse:collapse;font-size:12px;min-width:1200px}
+.gantt-table th,.gantt-table td{padding:8px 10px;border:1px solid var(--g200);vertical-align:middle;white-space:nowrap}
+.gantt-table thead th{background:linear-gradient(135deg,var(--p900),var(--p700));color:white;font-family:var(--ff);font-weight:700;font-size:11px;text-align:center}
+.gantt-table thead th:first-child{text-align:left;min-width:220px}
+.gantt-table tbody tr:hover td{background:var(--p50)}
+.gantt-bar{border-radius:4px;min-width:40px;padding:3px 8px;font-size:10px;font-weight:700;color:white;text-align:center;font-family:var(--ff);background:linear-gradient(135deg,var(--p700),var(--p500))}
+.gantt-bar.done{background:linear-gradient(135deg,#065F46,#059669)}
+.gantt-bar.inprogress{background:linear-gradient(135deg,#1E40AF,#3B82F6)}
+.gantt-bar.pending{background:linear-gradient(135deg,#92400E,#D97706)}
+.gantt-bar.postponed{background:linear-gradient(135deg,#991B1B,#EF4444)}
+/* BUDGET TABLE */
+.bgt-table td:last-child{font-weight:700;color:var(--p700);text-align:right}
+.bgt-total{background:linear-gradient(135deg,var(--p50),white);font-weight:800}
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--g300);border-radius:var(--rm);padding:40px;text-align:center;cursor:pointer;transition:.2s;background:var(--g50)}
+.upload-zone:hover{border-color:var(--p500);background:var(--p50)}
+.upload-zone i{font-size:32px;color:var(--g300);margin-bottom:10px}
+.upload-zone p{font-size:13px;color:var(--g500)}
+.upload-zone .hint{font-size:11px;color:var(--g400);margin-top:4px}
 @media(max-width:720px){.sidebar{display:none}.fgrid,.fg3{grid-template-columns:1fr}.sr{grid-template-columns:1fr 1fr}.ui{display:none}}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
-
 <div class="ldr" id="ldr"><div style="text-align:center"><div class="spin" style="margin:0 auto 12px"></div><div style="font-family:var(--ff);font-size:13px;color:var(--g500)" id="lmsg">Loading…</div></div></div>
 
 <!-- LOGIN -->
 <div id="login-page">
   <div class="lp"></div>
   <div class="login-box">
-    <div class="lhdr">
-      <div class="llogo">ABC</div>
-      <h2>ABC Operations System</h2>
-      <p>Sign in to your account to continue</p>
-    </div>
+    <div class="lhdr"><div class="llogo">ABC</div><h2>ABC Operations System</h2><p>Sign in to your account to continue</p></div>
     <div class="lbody">
       <div class="lerr" id="lerr"><i class="fas fa-circle-xmark"></i><span id="lerr-msg">Invalid credentials.</span></div>
-      <div class="fg">
-        <label class="fl">Username <span class="req">*</span></label>
-        <input class="fc" type="text" id="lu" placeholder="Enter your username" autocomplete="username"/>
-      </div>
-      <div class="fg">
-        <label class="fl">Password <span class="req">*</span></label>
-        <div style="position:relative">
-          <input class="fc" type="password" id="lp" placeholder="Enter your password" autocomplete="current-password" style="padding-right:38px"/>
-          <button onclick="tpwd()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--g400)" id="ptgl"><i class="fas fa-eye"></i></button>
-        </div>
+      <div class="fg"><label class="fl">Username <span class="req">*</span></label><input class="fc" type="text" id="lu" placeholder="Enter your username" autocomplete="username"/></div>
+      <div class="fg"><label class="fl">Password <span class="req">*</span></label>
+        <div style="position:relative"><input class="fc" type="password" id="lp" placeholder="Enter your password" autocomplete="current-password" style="padding-right:38px"/>
+        <button onclick="tpwd()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--g400)" id="ptgl"><i class="fas fa-eye"></i></button></div>
       </div>
       <button class="btn btn-p btn-full" id="lbtn" onclick="doLogin()" style="margin-top:6px"><i class="fas fa-arrow-right-to-bracket"></i> Sign In</button>
       <p style="font-size:11px;color:var(--g400);text-align:center;margin-top:14px">ABC Mall Group · Operations Management System</p>
@@ -280,27 +250,15 @@ tr:hover td{background:var(--p50)}
   <div class="topbar">
     <div class="tbl">
       <button class="hbtn" onclick="toggleSB()"><i class="fas fa-bars"></i></button>
-      <a class="lw" href="#">
-        <div class="li">ABC</div>
-        <div><div class="lt">ABC Operations</div><div class="ls" id="tb-prop">Verdun Mall</div></div>
-      </a>
+      <a class="lw" href="#"><div class="li">ABC</div><div><div class="lt">ABC Operations</div><div class="ls" id="tb-prop">Verdun Mall</div></div></a>
     </div>
     <div class="tbr">
       <button class="tbb"><i class="fas fa-magnifying-glass"></i></button>
       <button class="tbb"><i class="fas fa-bell"></i><span class="ndot"></span></button>
-      <div class="uc" onclick="navigate('profile')">
-        <div class="ua" id="tb-av">VM</div>
-        <div class="ui"><div class="un" id="tb-nm">–</div><div class="ur" id="tb-rl">–</div></div>
-      </div>
+      <div class="uc" onclick="navigate('profile')"><div class="ua" id="tb-av">VM</div><div class="ui"><div class="un" id="tb-nm">–</div><div class="ur" id="tb-rl">–</div></div></div>
     </div>
   </div>
-
-  <div class="hero">
-    <div class="hp"></div>
-    <h1>Welcome To ABC Operations</h1>
-    <p id="hero-sub">Verdun Mall · Operations Management System</p>
-  </div>
-
+  <div class="hero"><div class="hp"></div><h1>Welcome To ABC Operations</h1><p id="hero-sub">Verdun Mall · Operations Management System</p></div>
   <div class="shell">
     <nav class="sidebar" id="sb">
       <span class="ns">Main</span>
@@ -311,26 +269,22 @@ tr:hover td{background:var(--p50)}
       <span class="ns">Handover</span>
       <button class="ni" onclick="navigate('new-ho',this)"><i class="fas fa-rotate"></i><span class="nl">New Handover</span></button>
       <button class="ni" onclick="navigate('ho-log',this)"><i class="fas fa-book-open"></i><span class="nl">Handover Log</span><span class="nb" id="sb-ho-ct">–</span></button>
+      <span class="ns">Projects</span>
+      <button class="ni" onclick="navigate('projects',this)"><i class="fas fa-diagram-project"></i><span class="nl">Project Management</span></button>
       <span class="ns adm" style="display:none">Admin</span>
       <button class="ni adm" style="display:none" onclick="navigate('users',this)"><i class="fas fa-users-gear"></i><span class="nl">User Management</span></button>
       <span class="ns">Account</span>
       <button class="ni" onclick="navigate('profile',this)"><i class="fas fa-circle-user"></i><span class="nl">My Profile</span></button>
       <div class="sf"><button class="lb" onclick="doLogout()"><i class="fas fa-arrow-right-from-bracket"></i><span class="nl">Sign Out</span></button></div>
     </nav>
-
     <div class="main">
 
       <!-- DASHBOARD -->
       <div class="view on" id="view-dashboard">
         <div class="ph">
           <div><div class="pht">Operations Dashboard</div><div class="phs" id="dash-dt"></div></div>
-          <div style="display:flex;gap:9px">
-            <button class="btn btn-o btn-sm" onclick="ldDash()"><i class="fas fa-rotate"></i> Refresh</button>
-            <button class="btn btn-p" onclick="navigate('new-ho')"><i class="fas fa-rotate"></i> New Handover</button>
-          </div>
+          <button class="btn btn-o btn-sm" onclick="ldDash()"><i class="fas fa-rotate"></i> Refresh</button>
         </div>
-
-        <!-- KPI STATS ROW -->
         <div class="sr">
           <div class="sc"><div class="si sip"><i class="fas fa-triangle-exclamation"></i></div><div><div class="sv" id="st0">–</div><div class="sl">Total Incidents</div></div></div>
           <div class="sc"><div class="si sir"><i class="fas fa-circle-exclamation"></i></div><div><div class="sv" id="st4">–</div><div class="sl">Critical</div></div></div>
@@ -340,64 +294,39 @@ tr:hover td{background:var(--p50)}
           <div class="sc"><div class="si sir"><i class="fas fa-fire"></i></div><div><div class="sv" id="st3">–</div><div class="sl">Fire & Safety</div></div></div>
         </div>
 
-        <!-- CHARTS ROW -->
+        <!-- TODAY & TOMORROW TASKS -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-          <div class="card" style="margin-bottom:0">
-            <div class="ch"><div class="ct"><i class="fas fa-chart-pie"></i> Incidents by Category</div></div>
-            <div class="cb" style="display:flex;align-items:center;justify-content:center;min-height:220px">
-              <canvas id="chart-cat" style="max-height:200px"></canvas>
-            </div>
-          </div>
-          <div class="card" style="margin-bottom:0">
-            <div class="ch"><div class="ct"><i class="fas fa-chart-bar"></i> Incidents by Severity</div></div>
-            <div class="cb" style="display:flex;align-items:center;justify-content:center;min-height:220px">
-              <canvas id="chart-sev" style="max-height:200px"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- TODAY & TOMORROW TASKS FROM LATEST HANDOVER -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-
-          <!-- TODAY TASKS -->
           <div class="card" style="margin-bottom:0">
             <div style="background:linear-gradient(135deg,#065F46,#059669);padding:12px 18px;display:flex;align-items:center;justify-content:space-between">
               <div style="font-family:var(--ff);font-weight:800;font-size:13px;color:white;display:flex;align-items:center;gap:8px"><i class="fas fa-sun"></i> Today's Tasks</div>
-              <span style="font-size:11px;color:rgba(255,255,255,.6)" id="dash-today-src">From latest handover</span>
+              <span style="font-size:11px;color:rgba(255,255,255,.6)" id="dash-today-src">–</span>
             </div>
-            <div id="dash-today-ops" style="padding:14px 16px;border-bottom:1px solid var(--g100)">
+            <div style="padding:14px 16px;border-bottom:1px solid var(--g100)">
               <div style="font-size:10.5px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Operations</div>
-              <div id="dash-ops-items"><div class="empty" style="padding:16px 0"><i class="fas fa-sun" style="font-size:24px"></i><p>No ops tasks today</p></div></div>
+              <div id="dash-ops-items"><p style="font-size:12px;color:var(--g400)">No ops tasks</p></div>
             </div>
-            <div id="dash-today-ss" style="padding:14px 16px">
+            <div style="padding:14px 16px">
               <div style="font-size:10.5px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Soft Services</div>
-              <div id="dash-ss-items"><div class="empty" style="padding:16px 0"><i class="fas fa-broom" style="font-size:24px"></i><p>No soft services tasks</p></div></div>
+              <div id="dash-ss-items"><p style="font-size:12px;color:var(--g400)">No soft services tasks</p></div>
             </div>
           </div>
-
-          <!-- TOMORROW TASKS -->
           <div class="card" style="margin-bottom:0">
             <div style="background:linear-gradient(135deg,#4A0E8F,#7C3AED);padding:12px 18px;display:flex;align-items:center;justify-content:space-between">
               <div style="font-family:var(--ff);font-weight:800;font-size:13px;color:white;display:flex;align-items:center;gap:8px"><i class="fas fa-calendar-day"></i> Tomorrow's Tasks</div>
-              <span style="font-size:11px;color:rgba(255,255,255,.6)" id="dash-tmr-src">From latest handover</span>
+              <span style="font-size:11px;color:rgba(255,255,255,.6)" id="dash-tmr-src">–</span>
             </div>
-            <div id="dash-tmr-items" style="padding:14px 16px">
-              <div class="empty" style="padding:16px 0"><i class="fas fa-calendar-day" style="font-size:24px"></i><p>No tasks for tomorrow</p></div>
-            </div>
+            <div id="dash-tmr-items" style="padding:14px 16px"><p style="font-size:12px;color:var(--g400)">No tasks for tomorrow</p></div>
           </div>
         </div>
 
-        <!-- SCHEDULED WORKS FROM LATEST HANDOVER -->
+        <!-- SCHEDULED WORKS -->
         <div class="card">
           <div style="background:linear-gradient(135deg,#1E3A5F,#2563EB);padding:12px 18px;display:flex;align-items:center;justify-content:space-between">
             <div style="font-family:var(--ff);font-weight:800;font-size:13px;color:white;display:flex;align-items:center;gap:8px"><i class="fas fa-hard-hat"></i> Scheduled Works</div>
-            <button class="btn btn-sm" onclick="navigate('new-ho')" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> New Handover</button>
+            <span style="font-size:11px;color:rgba(255,255,255,.6)" id="dash-sw-src">From latest handover</span>
           </div>
-          <div id="dash-sw-items" style="padding:14px 16px">
-            <div class="empty" style="padding:16px 0"><i class="fas fa-hard-hat" style="font-size:24px"></i><p>No scheduled works in latest handover</p></div>
-          </div>
+          <div id="dash-sw-items" style="padding:14px 16px"><p style="font-size:12px;color:var(--g400)">No scheduled works</p></div>
         </div>
-
       </div>
 
       <!-- NEW INCIDENT -->
@@ -430,10 +359,8 @@ tr:hover td{background:var(--p50)}
             <div class="card"><div class="ch"><div class="ct"><i class="fas fa-pen-to-square"></i> Report Body</div></div>
             <div class="cb">
               <div class="fg"><label class="fl">Incident Description <span class="req">*</span></label><textarea class="fc" id="f-bd" style="min-height:150px" placeholder="Full sequence of events…"></textarea></div>
-              <div class="fgrid">
-                <div class="fg"><label class="fl">Immediate Actions Taken</label><textarea class="fc" id="f-ac" style="min-height:80px" placeholder="Steps taken right after…"></textarea></div>
-                <div class="fg"><label class="fl">Follow-up Required</label><textarea class="fc" id="f-fu" style="min-height:80px" placeholder="Pending actions…"></textarea></div>
-              </div>
+              <div class="fgrid"><div class="fg"><label class="fl">Immediate Actions Taken</label><textarea class="fc" id="f-ac" style="min-height:80px" placeholder="Steps taken right after…"></textarea></div>
+              <div class="fg"><label class="fl">Follow-up Required</label><textarea class="fc" id="f-fu" style="min-height:80px" placeholder="Pending actions…"></textarea></div></div>
             </div></div>
             <div style="display:flex;justify-content:space-between;margin-top:14px">
               <button class="btn btn-o" onclick="goStp(1)"><i class="fas fa-arrow-left"></i> Back</button>
@@ -445,10 +372,8 @@ tr:hover td{background:var(--p50)}
             <div class="cb" style="padding:0"><div class="ewrap" id="ep"></div></div></div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px">
               <button class="btn btn-o" onclick="goStp(2)"><i class="fas fa-arrow-left"></i> Back</button>
-              <div style="display:flex;gap:9px">
-                <button class="btn btn-o" onclick="cpEmail()"><i class="fas fa-copy"></i> Copy Email</button>
-                <button class="btn btn-p" id="sub-btn" onclick="subInc()"><i class="fas fa-paper-plane"></i> Submit & Save</button>
-              </div>
+              <div style="display:flex;gap:9px"><button class="btn btn-o" onclick="cpEmail()"><i class="fas fa-copy"></i> Copy Email</button>
+              <button class="btn btn-p" id="sub-btn" onclick="subInc()"><i class="fas fa-paper-plane"></i> Submit & Save</button></div>
             </div>
           </div>
         </div>
@@ -463,6 +388,14 @@ tr:hover td{background:var(--p50)}
             <button class="btn btn-p" onclick="navigate('new-inc')"><i class="fas fa-plus"></i> New Report</button>
           </div>
         </div>
+        <!-- CHARTS -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card" style="margin-bottom:0"><div class="ch"><div class="ct"><i class="fas fa-chart-pie"></i> By Category</div></div>
+            <div class="cb" style="min-height:200px;display:flex;align-items:center;justify-content:center"><canvas id="chart-cat" style="max-height:180px"></canvas></div></div>
+          <div class="card" style="margin-bottom:0"><div class="ch"><div class="ct"><i class="fas fa-chart-bar"></i> By Severity</div></div>
+            <div class="cb" style="min-height:200px;display:flex;align-items:center;justify-content:center"><canvas id="chart-sev" style="max-height:180px"></canvas></div></div>
+        </div>
+        <!-- FILTERS -->
         <div class="card"><div class="cb" style="padding:14px 16px">
           <div class="fbar">
             <input type="text" class="fc" id="fl-s" placeholder="🔍  Search…" oninput="renderLog()"/>
@@ -479,91 +412,24 @@ tr:hover td{background:var(--p50)}
       <div class="view" id="view-new-ho">
         <div style="max-width:780px">
           <div class="ph"><div><div class="pht">New Shift Handover</div><div class="phs">Structured shift summary broadcast to the team</div></div></div>
-
-          <div class="card">
-            <div class="ch"><div class="ct"><i class="fas fa-rotate" style="color:var(--ok)"></i> Handover Header</div></div>
-            <div class="cb"><div class="fgrid fg3">
-              <div class="fg"><label class="fl">Date <span class="req">*</span></label><input type="date" class="fc" id="ho-dt"/></div>
-              <div class="fg"><label class="fl">Shift <span class="req">*</span></label>
-                <select class="fc" id="ho-sh"><option value="">-- Select Shift --</option><option>Morning (06:00 – 14:00)</option><option>Afternoon (14:00 – 22:00)</option><option>Night (22:00 – 06:00)</option><option>Full Day</option></select>
-              </div>
-              <div class="fg"><label class="fl">Property</label>
-                <select class="fc" id="ho-pr"><option>ABC Verdun Mall</option><option>Ashrafieh Mall</option><option>Dbyeh Mall</option><option>Verdun Department Store</option><option>Achrafieh Department Store</option></select>
-              </div>
-            </div></div>
-          </div>
-
-          <!-- Scheduled Works -->
-          <div class="card">
-            <div class="ho-bar" style="background:linear-gradient(135deg,#1E3A5F,#2563EB)">
-              <div class="ho-bar-left"><i class="fas fa-hard-hat"></i> Scheduled Works</div>
-              <button class="ho-add-btn" onclick="hoAdd('sw')"><i class="fas fa-plus"></i> Add</button>
-            </div>
-            <div class="cb">
-              <div class="ho-hint">Fit-out / Overnight Access Works — add tenant name and access time</div>
-              <div id="ho-sw-list"></div>
-              <button class="btn btn-o btn-sm" onclick="hoAdd('sw')"><i class="fas fa-plus"></i> Add Work Item</button>
-            </div>
-          </div>
-
-          <!-- Today Operations -->
-          <div class="card">
-            <div class="ho-bar" style="background:linear-gradient(135deg,#065F46,#059669)">
-              <div class="ho-bar-left"><i class="fas fa-sun"></i> Today — Operations</div>
-              <button class="ho-add-btn" onclick="hoAdd('ops')"><i class="fas fa-plus"></i> Add</button>
-            </div>
-            <div class="cb">
-              <div class="ho-hint">Events, operational tasks, and activities happening today</div>
-              <div id="ho-ops-list"></div>
-              <button class="btn btn-o btn-sm" onclick="hoAdd('ops')"><i class="fas fa-plus"></i> Add Task</button>
-            </div>
-          </div>
-
-          <!-- Today Soft Services -->
-          <div class="card">
-            <div class="ho-bar" style="background:linear-gradient(135deg,#7C2D12,#EA580C)">
-              <div class="ho-bar-left"><i class="fas fa-broom"></i> Today — Soft Services</div>
-              <button class="ho-add-btn" onclick="hoAdd('ss')"><i class="fas fa-plus"></i> Add</button>
-            </div>
-            <div class="cb">
-              <div class="ho-hint">Cleaning, pest control, waste management, landscaping</div>
-              <div id="ho-ss-list"></div>
-              <button class="btn btn-o btn-sm" onclick="hoAdd('ss')"><i class="fas fa-plus"></i> Add Task</button>
-            </div>
-          </div>
-
-          <!-- Tomorrow -->
-          <div class="card">
-            <div class="ho-bar" style="background:linear-gradient(135deg,#4A0E8F,#7C3AED)">
-              <div class="ho-bar-left"><i class="fas fa-calendar-day"></i> Tomorrow's Tasks</div>
-              <button class="ho-add-btn" onclick="hoAdd('tmr')"><i class="fas fa-plus"></i> Add</button>
-            </div>
-            <div class="cb">
-              <div class="ho-hint">Tasks and reminders scheduled for tomorrow</div>
-              <div id="ho-tmr-list"></div>
-              <button class="btn btn-o btn-sm" onclick="hoAdd('tmr')"><i class="fas fa-plus"></i> Add Task</button>
-            </div>
-          </div>
-
-          <!-- Day After Tomorrow -->
-          <div class="card">
-            <div class="ho-bar" style="background:linear-gradient(135deg,#374151,#6B7280)">
-              <div class="ho-bar-left"><i class="fas fa-calendar-week"></i> Day After Tomorrow</div>
-              <button class="ho-add-btn" onclick="hoAdd('dat')"><i class="fas fa-plus"></i> Add</button>
-            </div>
-            <div class="cb">
-              <div class="ho-hint" id="ho-dat-label">Tasks scheduled for the day after tomorrow</div>
-              <div id="ho-dat-list"></div>
-              <button class="btn btn-o btn-sm" onclick="hoAdd('dat')"><i class="fas fa-plus"></i> Add Task</button>
-            </div>
-          </div>
-
-          <!-- Notes -->
-          <div class="card">
-            <div class="ch"><div class="ct"><i class="fas fa-note-sticky"></i> Additional Notes & Remarks</div></div>
-            <div class="cb"><textarea class="fc" id="ho-notes" placeholder="Any additional remarks, escalations, or important notes for the incoming team…" style="min-height:90px"></textarea></div>
-          </div>
-
+          <div class="card"><div class="ch"><div class="ct"><i class="fas fa-rotate" style="color:var(--ok)"></i> Handover Header</div></div>
+          <div class="cb"><div class="fgrid fg3">
+            <div class="fg"><label class="fl">Date <span class="req">*</span></label><input type="date" class="fc" id="ho-dt"/></div>
+            <div class="fg"><label class="fl">Shift <span class="req">*</span></label><select class="fc" id="ho-sh"><option value="">-- Select Shift --</option><option>Morning (06:00 – 14:00)</option><option>Afternoon (14:00 – 22:00)</option><option>Night (22:00 – 06:00)</option><option>Full Day</option></select></div>
+            <div class="fg"><label class="fl">Property</label><select class="fc" id="ho-pr"><option>ABC Verdun Mall</option><option>Ashrafieh Mall</option><option>Dbyeh Mall</option><option>Verdun Department Store</option><option>Achrafieh Department Store</option></select></div>
+          </div></div></div>
+          <div class="card"><div class="ho-bar" style="background:linear-gradient(135deg,#1E3A5F,#2563EB)"><div class="ho-bar-left"><i class="fas fa-hard-hat"></i> Scheduled Works</div><button class="ho-add-btn" onclick="hoAdd('sw')"><i class="fas fa-plus"></i> Add</button></div>
+          <div class="cb"><div class="ho-hint">Fit-out / Overnight Access Works — tenant name and access time</div><div id="ho-sw-list"></div><button class="btn btn-o btn-sm" onclick="hoAdd('sw')"><i class="fas fa-plus"></i> Add Work Item</button></div></div>
+          <div class="card"><div class="ho-bar" style="background:linear-gradient(135deg,#065F46,#059669)"><div class="ho-bar-left"><i class="fas fa-sun"></i> Today — Operations</div><button class="ho-add-btn" onclick="hoAdd('ops')"><i class="fas fa-plus"></i> Add</button></div>
+          <div class="cb"><div class="ho-hint">Events, operational tasks, and activities happening today</div><div id="ho-ops-list"></div><button class="btn btn-o btn-sm" onclick="hoAdd('ops')"><i class="fas fa-plus"></i> Add Task</button></div></div>
+          <div class="card"><div class="ho-bar" style="background:linear-gradient(135deg,#7C2D12,#EA580C)"><div class="ho-bar-left"><i class="fas fa-broom"></i> Today — Soft Services</div><button class="ho-add-btn" onclick="hoAdd('ss')"><i class="fas fa-plus"></i> Add</button></div>
+          <div class="cb"><div class="ho-hint">Cleaning, pest control, waste management, landscaping</div><div id="ho-ss-list"></div><button class="btn btn-o btn-sm" onclick="hoAdd('ss')"><i class="fas fa-plus"></i> Add Task</button></div></div>
+          <div class="card"><div class="ho-bar" style="background:linear-gradient(135deg,#4A0E8F,#7C3AED)"><div class="ho-bar-left"><i class="fas fa-calendar-day"></i> Tomorrow's Tasks</div><button class="ho-add-btn" onclick="hoAdd('tmr')"><i class="fas fa-plus"></i> Add</button></div>
+          <div class="cb"><div class="ho-hint">Tasks and reminders scheduled for tomorrow</div><div id="ho-tmr-list"></div><button class="btn btn-o btn-sm" onclick="hoAdd('tmr')"><i class="fas fa-plus"></i> Add Task</button></div></div>
+          <div class="card"><div class="ho-bar" style="background:linear-gradient(135deg,#374151,#6B7280)"><div class="ho-bar-left"><i class="fas fa-calendar-week"></i> Day After Tomorrow</div><button class="ho-add-btn" onclick="hoAdd('dat')"><i class="fas fa-plus"></i> Add</button></div>
+          <div class="cb"><div class="ho-hint" id="ho-dat-label">Tasks for the day after tomorrow</div><div id="ho-dat-list"></div><button class="btn btn-o btn-sm" onclick="hoAdd('dat')"><i class="fas fa-plus"></i> Add Task</button></div></div>
+          <div class="card"><div class="ch"><div class="ct"><i class="fas fa-note-sticky"></i> Additional Notes & Remarks</div></div>
+          <div class="cb"><textarea class="fc" id="ho-notes" placeholder="Any additional remarks for the incoming team…" style="min-height:90px"></textarea></div></div>
           <div style="display:flex;justify-content:flex-end;gap:10px">
             <button class="btn btn-o" onclick="previewHO()"><i class="fas fa-eye"></i> Preview</button>
             <button class="btn btn-p" id="ho-sub-btn" onclick="submitHO()"><i class="fas fa-paper-plane"></i> Broadcast to Team</button>
@@ -574,7 +440,7 @@ tr:hover td{background:var(--p50)}
       <!-- HANDOVER LOG -->
       <div class="view" id="view-ho-log">
         <div class="ph">
-          <div><div class="pht">Handover Log</div><div class="phs">All shift handovers — click any card to view details</div></div>
+          <div><div class="pht">Handover Log</div><div class="phs">Click any card to view full details</div></div>
           <div style="display:flex;gap:9px">
             <button class="btn btn-o btn-sm sup-only" onclick="hoExpCSV()"><i class="fas fa-file-csv"></i> Export</button>
             <button class="btn btn-p" onclick="navigate('new-ho')"><i class="fas fa-plus"></i> New Handover</button>
@@ -582,10 +448,8 @@ tr:hover td{background:var(--p50)}
         </div>
         <div class="card" style="margin-bottom:16px"><div class="cb" style="padding:14px 16px">
           <div class="fbar">
-            <input type="text" class="fc" id="hfl-s" placeholder="🔍  Search handovers…" oninput="renderHOLog()"/>
-            <select class="fc" id="hfl-sh" style="width:200px" onchange="renderHOLog()">
-              <option value="">All Shifts</option><option>Morning (06:00 – 14:00)</option><option>Afternoon (14:00 – 22:00)</option><option>Night (22:00 – 06:00)</option><option>Full Day</option>
-            </select>
+            <input type="text" class="fc" id="hfl-s" placeholder="🔍  Search…" oninput="renderHOLog()"/>
+            <select class="fc" id="hfl-sh" style="width:200px" onchange="renderHOLog()"><option value="">All Shifts</option><option>Morning (06:00 – 14:00)</option><option>Afternoon (14:00 – 22:00)</option><option>Night (22:00 – 06:00)</option><option>Full Day</option></select>
             <button class="btn btn-o btn-sm" onclick="ldHO()"><i class="fas fa-rotate"></i> Refresh</button>
           </div>
         </div></div>
@@ -598,7 +462,7 @@ tr:hover td{background:var(--p50)}
           <div class="ph">
             <div><div class="pht" id="hd-num">Handover</div><div class="phs" id="hd-sub">–</div></div>
             <div style="display:flex;gap:9px">
-              <button class="btn btn-o" onclick="navigate('ho-log')"><i class="fas fa-arrow-left"></i> Back to Log</button>
+              <button class="btn btn-o" onclick="navigate('ho-log')"><i class="fas fa-arrow-left"></i> Back</button>
               <button class="btn btn-d btn-sm" id="hd-del-btn" style="display:none" onclick="delHOCurrent()"><i class="fas fa-trash"></i> Delete</button>
             </div>
           </div>
@@ -606,9 +470,98 @@ tr:hover td{background:var(--p50)}
         </div>
       </div>
 
+      <!-- PROJECT MANAGEMENT HOME -->
+      <div class="view" id="view-projects">
+        <div class="ph"><div><div class="pht">Project Management</div><div class="phs">Click a module to open</div></div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;max-width:900px">
+          <div class="prj-module-card" onclick="navigate('prj-team')">
+            <div class="prj-icon" style="background:var(--p100);color:var(--p700)"><i class="fas fa-chart-gantt"></i></div>
+            <div class="prj-title">Team Projects</div>
+            <div class="prj-sub">Gantt milestone tracker with employee assignment, deadlines & status</div>
+          </div>
+          <div class="prj-module-card" onclick="navigate('prj-capex')">
+            <div class="prj-icon" style="background:#EFF6FF;color:#1D4ED8"><i class="fas fa-building-columns"></i></div>
+            <div class="prj-title">Capex Allocation</div>
+            <div class="prj-sub">Import Excel · Capital expenditure projects with annual budget</div>
+          </div>
+          <div class="prj-module-card" onclick="navigate('prj-opex')">
+            <div class="prj-icon" style="background:#F0FDF4;color:#15803D"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div class="prj-title">Opex Allocation</div>
+            <div class="prj-sub">Import Excel · Operating expenditure with annual budget breakdown</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEAM PROJECTS GANTT -->
+      <div class="view" id="view-prj-team">
+        <div class="ph">
+          <div><div class="pht">Team Projects — Gantt Tracker</div><div class="phs">Milestone tracker with owner, deadline & status</div></div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-o" onclick="navigate('projects')"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn btn-o btn-sm" onclick="exportGanttCSV()"><i class="fas fa-file-csv"></i> Export</button>
+            <button class="btn btn-p" onclick="openAddProject()"><i class="fas fa-plus"></i> Add Project</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cb" style="padding:14px 16px">
+            <div class="fbar">
+              <input type="text" class="fc" id="gfl-s" placeholder="🔍  Search projects…" oninput="renderGantt()"/>
+              <select class="fc" id="gfl-st" style="width:160px" onchange="renderGantt()"><option value="">All Status</option><option>Not Started</option><option>In Progress</option><option>Done</option><option>Postponed</option></select>
+            </div>
+          </div>
+          <div class="gantt-wrap" id="gantt-container"></div>
+        </div>
+      </div>
+
+      <!-- CAPEX -->
+      <div class="view" id="view-prj-capex">
+        <div class="ph">
+          <div><div class="pht">Capex Allocation</div><div class="phs">Capital expenditure — projects with annual budget</div></div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-o" onclick="navigate('projects')"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn btn-o btn-sm" onclick="exportBgtCSV('capex')"><i class="fas fa-file-csv"></i> Export</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="ch"><div class="ct"><i class="fas fa-file-excel" style="color:#16a34a"></i> Import Excel File</div></div>
+          <div class="cb">
+            <div class="upload-zone" onclick="document.getElementById('capex-file').click()" id="capex-zone">
+              <i class="fas fa-cloud-arrow-up"></i>
+              <p>Click to upload or drag & drop your Excel file</p>
+              <div class="hint">Supports .xlsx and .xls · Shows only rows with Annual BGT</div>
+            </div>
+            <input type="file" id="capex-file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this,'capex')"/>
+          </div>
+        </div>
+        <div id="capex-table-wrap"></div>
+      </div>
+
+      <!-- OPEX -->
+      <div class="view" id="view-prj-opex">
+        <div class="ph">
+          <div><div class="pht">Opex Allocation</div><div class="phs">Operating expenditure with annual budget</div></div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-o" onclick="navigate('projects')"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn btn-o btn-sm" onclick="exportBgtCSV('opex')"><i class="fas fa-file-csv"></i> Export</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="ch"><div class="ct"><i class="fas fa-file-excel" style="color:#16a34a"></i> Import Excel File</div></div>
+          <div class="cb">
+            <div class="upload-zone" onclick="document.getElementById('opex-file').click()" id="opex-zone">
+              <i class="fas fa-cloud-arrow-up"></i>
+              <p>Click to upload or drag & drop your Excel file</p>
+              <div class="hint">Supports .xlsx and .xls · Shows only rows with Annual BGT</div>
+            </div>
+            <input type="file" id="opex-file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this,'opex')"/>
+          </div>
+        </div>
+        <div id="opex-table-wrap"></div>
+      </div>
+
       <!-- USERS -->
       <div class="view" id="view-users">
-        <div class="ph"><div><div class="pht">User Management</div><div class="phs">Manage access and roles</div></div><button class="btn btn-p" onclick="openAddU()"><i class="fas fa-user-plus"></i> Add User</button></div>
+        <div class="ph"><div><div class="pht">User Management</div></div><button class="btn btn-p" onclick="openAddU()"><i class="fas fa-user-plus"></i> Add User</button></div>
         <div class="card"><div class="tw"><table><thead><tr><th>Full Name</th><th>Username</th><th>Role</th><th>Property</th><th>Status</th><th>Actions</th></tr></thead><tbody id="usr-tb"></tbody></table></div></div>
       </div>
 
@@ -622,87 +575,84 @@ tr:hover td{background:var(--p50)}
               <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--p700),var(--acc));display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:20px;font-family:var(--ff)" id="pav">VM</div>
               <div><div style="font-family:var(--ff);font-weight:800;font-size:17px" id="pnm">–</div><div style="font-size:12px;color:var(--g400)" id="pun">–</div><span class="badge" id="prl">–</span></div>
             </div>
-            <div class="fgrid">
-              <div class="fg"><label class="fl">Full Name</label><input class="fc" id="pfn" disabled/></div>
-              <div class="fg"><label class="fl">Property</label><input class="fc" id="ppr" disabled/></div>
-            </div>
+            <div class="fgrid"><div class="fg"><label class="fl">Full Name</label><input class="fc" id="pfn" disabled/></div><div class="fg"><label class="fl">Property</label><input class="fc" id="ppr" disabled/></div></div>
           </div></div>
           <div class="card"><div class="ch"><div class="ct"><i class="fas fa-lock"></i> Change Password</div></div>
           <div class="cb">
             <div class="fg"><label class="fl">Current Password <span class="req">*</span></label><input type="password" class="fc" id="pc1"/></div>
-            <div class="fgrid" style="margin-bottom:12px">
-              <div class="fg"><label class="fl">New Password <span class="req">*</span></label><input type="password" class="fc" id="pc2"/></div>
-              <div class="fg"><label class="fl">Confirm <span class="req">*</span></label><input type="password" class="fc" id="pc3"/></div>
-            </div>
+            <div class="fgrid" style="margin-bottom:12px"><div class="fg"><label class="fl">New Password <span class="req">*</span></label><input type="password" class="fc" id="pc2"/></div><div class="fg"><label class="fl">Confirm <span class="req">*</span></label><input type="password" class="fc" id="pc3"/></div></div>
             <button class="btn btn-p" onclick="chgPwd()"><i class="fas fa-floppy-disk"></i> Update Password</button>
           </div></div>
         </div>
       </div>
 
-    </div><!-- /main -->
-  </div><!-- /shell -->
-</div><!-- /app -->
-
-<!-- DETAIL MODAL (incidents) -->
-<div class="overlay hid" id="det-ov">
-  <div class="modal"><div class="mhdr"><div class="mt" id="det-t">Incident Report</div><button class="mc" onclick="closeDet()"><i class="fas fa-xmark"></i></button></div>
-  <div class="mb" id="det-b"></div>
-  <div class="mf"><button class="btn btn-o" onclick="closeDet()">Close</button><button class="btn btn-p" onclick="cpDetEmail()"><i class="fas fa-copy"></i> Copy Email</button></div></div>
-</div>
-
-<!-- HANDOVER PREVIEW MODAL -->
-<div class="overlay hid" id="ho-prev-ov">
-  <div class="modal" style="max-width:700px">
-    <div class="mhdr"><div class="mt">Handover Preview</div><button class="mc" onclick="document.getElementById('ho-prev-ov').classList.add('hid')"><i class="fas fa-xmark"></i></button></div>
-    <div class="mb" id="ho-prev-body"></div>
-    <div class="mf">
-      <button class="btn btn-o" onclick="document.getElementById('ho-prev-ov').classList.add('hid')">Edit</button>
-      <button class="btn btn-p" onclick="submitHO(true)"><i class="fas fa-paper-plane"></i> Confirm & Broadcast</button>
     </div>
   </div>
 </div>
 
-<!-- USER MODAL -->
+<!-- MODALS -->
+<div class="overlay hid" id="det-ov"><div class="modal"><div class="mhdr"><div class="mt" id="det-t">Incident</div><button class="mc" onclick="closeDet()"><i class="fas fa-xmark"></i></button></div><div class="mb" id="det-b"></div><div class="mf"><button class="btn btn-o" onclick="closeDet()">Close</button><button class="btn btn-p" onclick="cpDetEmail()"><i class="fas fa-copy"></i> Copy</button></div></div></div>
+
+<div class="overlay hid" id="ho-prev-ov">
+  <div class="modal" style="max-width:700px"><div class="mhdr"><div class="mt">Handover Preview</div><button class="mc" onclick="document.getElementById('ho-prev-ov').classList.add('hid')"><i class="fas fa-xmark"></i></button></div>
+  <div class="mb" id="ho-prev-body"></div>
+  <div class="mf"><button class="btn btn-o" onclick="document.getElementById('ho-prev-ov').classList.add('hid')">Edit</button><button class="btn btn-p" onclick="submitHO(true)"><i class="fas fa-paper-plane"></i> Confirm & Broadcast</button></div></div>
+</div>
+
+<div class="overlay hid" id="prj-modal">
+  <div class="modal" style="max-width:580px"><div class="mhdr"><div class="mt" id="prj-modal-title">Add Project</div><button class="mc" onclick="closePrjModal()"><i class="fas fa-xmark"></i></button></div>
+  <div class="mb">
+    <input type="hidden" id="prj-edit-idx"/>
+    <div class="fg"><label class="fl">Project Name <span class="req">*</span></label><input type="text" class="fc" id="prj-name" placeholder="e.g. New Bins Installation"/></div>
+    <div class="fgrid fg3" style="margin-bottom:14px">
+      <div class="fg"><label class="fl">Owner / Employee <span class="req">*</span></label><input type="text" class="fc" id="prj-owner" placeholder="e.g. Ahmad"/></div>
+      <div class="fg"><label class="fl">Start Month</label><input type="month" class="fc" id="prj-start"/></div>
+      <div class="fg"><label class="fl">Deadline <span class="req">*</span></label><input type="month" class="fc" id="prj-end"/></div>
+    </div>
+    <div class="fgrid" style="margin-bottom:14px">
+      <div class="fg"><label class="fl">Budget ($)</label><input type="number" class="fc" id="prj-budget" placeholder="0"/></div>
+      <div class="fg"><label class="fl">Status</label><select class="fc" id="prj-status"><option>Not Started</option><option>In Progress</option><option>Done</option><option>Postponed</option></select></div>
+    </div>
+    <div class="fg"><label class="fl">Notes</label><input type="text" class="fc" id="prj-notes" placeholder="Optional notes…"/></div>
+  </div>
+  <div class="mf"><button class="btn btn-o" onclick="closePrjModal()">Cancel</button><button class="btn btn-p" onclick="savePrj()"><i class="fas fa-floppy-disk"></i> Save Project</button></div></div>
+</div>
+
 <div class="overlay hid" id="usr-ov">
   <div class="modal" style="max-width:500px"><div class="mhdr"><div class="mt" id="umt">Add User</div><button class="mc" onclick="closeUM()"><i class="fas fa-xmark"></i></button></div>
   <div class="mb">
     <input type="hidden" id="um-id"/>
-    <div class="fg"><label class="fl">Full Name <span class="req">*</span></label><input type="text" class="fc" id="um-nm" placeholder="e.g. Ahmad Khalil"/></div>
-    <div class="fgrid" style="margin-bottom:14px">
-      <div class="fg"><label class="fl">Username <span class="req">*</span></label><input type="text" class="fc" id="um-un"/></div>
-      <div class="fg"><label class="fl">Password <span class="req">*</span></label><input type="password" class="fc" id="um-pw" placeholder="Min 8 characters"/></div>
-    </div>
-    <div class="fgrid" style="margin-bottom:14px">
-      <div class="fg"><label class="fl">Role <span class="req">*</span></label><select class="fc" id="um-rl"><option>Staff</option><option>Supervisor</option><option>Admin</option></select></div>
-      <div class="fg"><label class="fl">Property</label><select class="fc" id="um-pr"><option>ABC Verdun Mall</option><option>Ashrafieh Mall</option><option>Dbyeh Mall</option><option>Verdun Department Store</option><option>Achrafieh Department Store</option></select></div>
-    </div>
+    <div class="fg"><label class="fl">Full Name <span class="req">*</span></label><input type="text" class="fc" id="um-nm"/></div>
+    <div class="fgrid" style="margin-bottom:14px"><div class="fg"><label class="fl">Username <span class="req">*</span></label><input type="text" class="fc" id="um-un"/></div><div class="fg"><label class="fl">Password <span class="req">*</span></label><input type="password" class="fc" id="um-pw"/></div></div>
+    <div class="fgrid" style="margin-bottom:14px"><div class="fg"><label class="fl">Role <span class="req">*</span></label><select class="fc" id="um-rl"><option>Staff</option><option>Supervisor</option><option>Admin</option></select></div><div class="fg"><label class="fl">Property</label><select class="fc" id="um-pr"><option>ABC Verdun Mall</option><option>Ashrafieh Mall</option><option>Dbyeh Mall</option><option>Verdun Department Store</option><option>Achrafieh Department Store</option></select></div></div>
     <div class="fg"><label class="fl">Email</label><input type="email" class="fc" id="um-em" placeholder="user@abcmall.com.lb"/></div>
   </div>
-  <div class="mf"><button class="btn btn-o" onclick="closeUM()">Cancel</button><button class="btn btn-p" onclick="saveU()"><i class="fas fa-floppy-disk"></i> Save User</button></div></div>
+  <div class="mf"><button class="btn btn-o" onclick="closeUM()">Cancel</button><button class="btn btn-p" onclick="saveU()"><i class="fas fa-floppy-disk"></i> Save</button></div></div>
 </div>
 
 <div id="toasts"></div>
-
 <script>
 const API="https://script.google.com/macros/s/AKfycbzMlPGDwuxx3YS9c5pmAENsChnshxtKfhvMMA3reSD69gr30AIUmVmy927t4RkRjEORZw/exec";
-let SES=null,INCS=[],USRS=[],HOS=[],currentHO=null,detInc=null,sbCol=false;
+let SES=null,INCS=[],USRS=[],HOS=[],PROJECTS=[],CAPEX_DATA=[],OPEX_DATA=[],currentHO=null,detInc=null,sbCol=false;
+let catChart=null,sevChart=null;
 
-const TYPES={'Security':['Theft / Shoplifting','Vandalism','Trespassing','Physical Altercation','Suspicious Person / Behavior','Unauthorized Access','Robbery','Harassment','Lost & Found','Other Security'],'Fire & Safety':['Fire Alarm Activation','Smoke Detected','Fire Incident','Gas Leak','Evacuation','False Alarm','Safety Violation','Hazardous Material','Other Fire & Safety'],'Medical':['First Aid Required','Unconscious Person','Cardiac Event','Slip / Trip / Fall','Allergic Reaction','Heat Exhaustion','Injury on Site','Ambulance Called','Other Medical'],'Operations':['Power Failure','HVAC Issue','Elevator Malfunction','Water Leak','Flooding','Structural Damage','Noise Complaint','Crowd Control','Other Operations'],'Maintenance':['Mechanical Failure','Electrical Fault','Plumbing Issue','Equipment Breakdown','Signage Damage','Cleaning Issue','Pest Sighting','Other Maintenance'],'Customer Service':['Customer Complaint','Lost Child','Missing Person','Customer Injury','Refund Dispute','Accessibility Issue','Other Customer Service'],'Environmental':['Waste Management Issue','Pollution / Spill','Recycling Non-Compliance','Pest Control','Other Environmental'],'Other':['Other']};
+const TYPES={'Security':['Theft / Shoplifting','Vandalism','Trespassing','Physical Altercation','Suspicious Person','Unauthorized Access','Robbery','Harassment','Lost & Found','Other'],'Fire & Safety':['Fire Alarm Activation','Smoke Detected','Fire Incident','Gas Leak','Evacuation','False Alarm','Safety Violation','Hazardous Material','Other'],'Medical':['First Aid Required','Unconscious Person','Cardiac Event','Slip / Trip / Fall','Allergic Reaction','Heat Exhaustion','Injury on Site','Ambulance Called','Other'],'Operations':['Power Failure','HVAC Issue','Elevator Malfunction','Water Leak','Flooding','Structural Damage','Noise Complaint','Crowd Control','Other'],'Maintenance':['Mechanical Failure','Electrical Fault','Plumbing Issue','Equipment Breakdown','Signage Damage','Cleaning Issue','Pest Sighting','Other'],'Customer Service':['Customer Complaint','Lost Child','Missing Person','Customer Injury','Refund Dispute','Accessibility Issue','Other'],'Environmental':['Waste Management Issue','Pollution / Spill','Recycling Non-Compliance','Pest Control','Other'],'Other':['Other']};
 const CB={'Security':'bs','Fire & Safety':'bf','Medical':'bm','Operations':'bo','Maintenance':'bmt','Customer Service':'bc','Environmental':'be','Other':'bx'};
 const SC={Low:'slow',Medium:'smed',High:'shi',Critical:'scr'};
 const SV={Low:'#059669',Medium:'#D97706',High:'#DC2626',Critical:'#7C3AED'};
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 const fd=s=>{if(!s)return'–';const p=s.toString().split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s};
 const td=()=>new Date().toISOString().split('T')[0];
 const tn=()=>new Date().toTimeString().slice(0,5);
 const ini=n=>n?n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2):'U';
+const fmtMoney=v=>{const n=parseFloat(v)||0;return n?'$'+n.toLocaleString():'–'};
 
 async function api(method,params){
   const tok=SES?.token||'';
   const body=encodeURIComponent(JSON.stringify({...params,token:tok}));
   const q=new URLSearchParams({...params,token:tok,body});
-  const r=await fetch(`${API}?${q}`);
-  return r.json();
+  const r=await fetch(`${API}?${q}`);return r.json();
 }
 const showL=m=>{document.getElementById('ldr').classList.remove('hid');document.getElementById('lmsg').textContent=m||'Loading…'};
 const hideL=()=>document.getElementById('ldr').classList.add('hid');
@@ -724,24 +674,25 @@ async function doLogin(){
     const res=await fetch(`${API}?action=login&body=${lb}`).then(r=>r.json());
     if(res.success){SES={token:res.token,...res.user,expiresAt:res.expiresAt};sessionStorage.setItem('abc_ses',JSON.stringify(SES));startApp();}
     else{document.getElementById('lerr-msg').textContent=res.message||'Invalid credentials.';er.classList.add('show');}
-  }catch(e){document.getElementById('lerr-msg').textContent='Connection error. Check network.';er.classList.add('show');}
+  }catch(e){document.getElementById('lerr-msg').textContent='Connection error.';er.classList.add('show');}
   btn.disabled=false;btn.innerHTML='<i class="fas fa-arrow-right-to-bracket"></i> Sign In';
 }
 function startApp(){document.getElementById('login-page').style.display='none';document.getElementById('app').classList.add('on');applySession();ldDash();}
 function applySession(){
   const s=SES,av=ini(s.fullName);
   ['tb-av','pav'].forEach(id=>document.getElementById(id).textContent=av);
-  document.getElementById('tb-nm').textContent=s.fullName;
-  document.getElementById('tb-rl').textContent=s.role;
+  document.getElementById('tb-nm').textContent=s.fullName;document.getElementById('tb-rl').textContent=s.role;
   document.getElementById('tb-prop').textContent=s.property||'ABC Mall';
   document.getElementById('hero-sub').textContent=`${s.property||'ABC Mall'} · Operations Management System`;
-  document.getElementById('pnm').textContent=s.fullName;
-  document.getElementById('pun').textContent='@'+s.username;
-  document.getElementById('pfn').value=s.fullName;
-  document.getElementById('ppr').value=s.property||'';
+  document.getElementById('pnm').textContent=s.fullName;document.getElementById('pun').textContent='@'+s.username;
+  document.getElementById('pfn').value=s.fullName;document.getElementById('ppr').value=s.property||'';
   const rb=document.getElementById('prl');rb.textContent=s.role;rb.className='badge '+(s.role==='Admin'?'bad':s.role==='Supervisor'?'bsu':'bst');
   document.querySelectorAll('.adm').forEach(el=>el.style.display=s.role==='Admin'?'':'none');
   document.querySelectorAll('.sup-only').forEach(el=>el.style.display=(s.role==='Admin'||s.role==='Supervisor')?'':'none');
+  // load local project data
+  const saved=localStorage.getItem('abc_projects');if(saved)try{PROJECTS=JSON.parse(saved);}catch(e){}
+  const sc=localStorage.getItem('abc_capex');if(sc)try{CAPEX_DATA=JSON.parse(sc);}catch(e){}
+  const so=localStorage.getItem('abc_opex');if(so)try{OPEX_DATA=JSON.parse(so);}catch(e){}
 }
 async function doLogout(){
   showL('Signing out…');try{await api('GET',{action:'logout'});}catch(e){}
@@ -751,71 +702,80 @@ async function doLogout(){
 function tpwd(){const i=document.getElementById('lp'),b=document.getElementById('ptgl');if(i.type==='password'){i.type='text';b.innerHTML='<i class="fas fa-eye-slash"></i>';}else{i.type='password';b.innerHTML='<i class="fas fa-eye"></i>';}}
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('login-page').style.display!=='none')doLogin();});
 
-// NAVIGATION
+// NAV
 function navigate(v,btn){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
   const el=document.getElementById('view-'+v);if(el)el.classList.add('on');
   if(btn)btn.classList.add('on');
   if(v==='new-inc')resetF();
-  if(v==='log')ldInc();
+  if(v==='log'){ldInc();}
   if(v==='users'&&SES?.role==='Admin')ldUsers();
   if(v==='dashboard')ldDash();
   if(v==='new-ho')hoResetForm();
   if(v==='ho-log')ldHO();
+  if(v==='prj-team')renderGantt();
+  if(v==='prj-capex')renderBgtTable('capex');
+  if(v==='prj-opex')renderBgtTable('opex');
 }
 function toggleSB(){sbCol=!sbCol;document.getElementById('sb').classList.toggle('col',sbCol);}
 
 // DASHBOARD
-let catChart=null,sevChart=null;
 async function ldDash(){
   document.getElementById('dash-dt').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  showL('Loading dashboard…');
+  showL('Loading…');
   try{
     const[sr,ir,hr]=await Promise.all([api('GET',{action:'getStats'}),api('GET',{action:'getIncidents'}),api('GET',{action:'getHandovers'})]);
     if(sr.success){const s=sr.stats;document.getElementById('st0').textContent=s.total;document.getElementById('st1').textContent=s.security;document.getElementById('st2').textContent=s.medical;document.getElementById('st3').textContent=s.fire;document.getElementById('st4').textContent=s.critical;document.getElementById('st5').textContent=s.thisMonth;}
-    if(ir.success){INCS=ir.incidents;document.getElementById('sb-ct').textContent=INCS.length;renderCatChart(INCS);renderSevChart(INCS);}
+    if(ir.success){INCS=ir.incidents;document.getElementById('sb-ct').textContent=INCS.length;}
     if(hr.success){HOS=hr.handovers;document.getElementById('sb-ho-ct').textContent=HOS.length;renderTaskTracker(HOS);}
-  }catch(e){toast('Failed to load. Check connection.','err');}
+  }catch(e){toast('Failed to load','err');}
   hideL();
 }
-function renderCatChart(incs){
-  const cats=['Security','Fire & Safety','Medical','Operations','Maintenance','Customer Service','Environmental','Other'];
-  const counts=cats.map(c=>incs.filter(i=>i['Category']===c).length);
-  const colors=['#EF4444','#F97316','#22C55E','#3B82F6','#8B5CF6','#EC4899','#14B8A6','#6B7280'];
-  const al=cats.filter((_,i)=>counts[i]>0),ac=counts.filter(v=>v>0),ax=colors.filter((_,i)=>counts[i]>0);
-  const ctx=document.getElementById('chart-cat');if(!ctx)return;
-  if(catChart){catChart.destroy();catChart=null;}
-  if(!incs.length){ctx.parentElement.innerHTML='<div class="empty" style="padding:20px 0"><i class="fas fa-chart-pie" style="font-size:32px;color:var(--g300)"></i><p>No data yet</p></div>';return;}
-  catChart=new Chart(ctx,{type:'doughnut',data:{labels:al,datasets:[{data:ac,backgroundColor:ax,borderWidth:2,borderColor:'white'}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:8}}}}});
+
+function mkTR(t,c,sec,idx){
+  const statuses=['none','done','inprogress','pending','postponed'];
+  const labels={'none':'Mark','done':'✅ Done','inprogress':'🔄 In Progress','pending':'⏳ Pending','postponed':'⏸️ Postponed'};
+  const key=`ho_task_${sec}_${idx}`;
+  const cur=localStorage.getItem(key)||'none';
+  const cls='ts-'+(cur==='none'?'none':cur==='done'?'done':cur==='inprogress'?'inprogress':cur==='pending'?'pending':'postponed');
+  return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--g100)">
+    <i class="fas fa-circle-dot" style="color:${c};font-size:11px;margin-top:4px;flex-shrink:0"></i>
+    <span style="flex:1;font-size:13px;color:var(--g700)">${t}</span>
+    <select class="ts-pill ${cls}" onchange="setTaskStatus('${key}',this)" style="border:none;outline:none;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--ff)">
+      <option value="none" ${cur==='none'?'selected':''}>— Status —</option>
+      <option value="done" ${cur==='done'?'selected':''}>✅ Done</option>
+      <option value="inprogress" ${cur==='inprogress'?'selected':''}>🔄 In Progress</option>
+      <option value="pending" ${cur==='pending'?'selected':''}>⏳ Pending</option>
+      <option value="postponed" ${cur==='postponed'?'selected':''}>⏸️ Postponed</option>
+    </select>
+  </div>`;
 }
-function renderSevChart(incs){
-  const sevs=['Low','Medium','High','Critical'],counts=sevs.map(s=>incs.filter(i=>i['Severity']===s).length),colors=['#22C55E','#F59E0B','#EF4444','#7C3AED'];
-  const ctx=document.getElementById('chart-sev');if(!ctx)return;
-  if(sevChart){sevChart.destroy();sevChart=null;}
-  if(!incs.length){ctx.parentElement.innerHTML='<div class="empty" style="padding:20px 0"><i class="fas fa-chart-bar" style="font-size:32px;color:var(--g300)"></i><p>No data yet</p></div>';return;}
-  sevChart=new Chart(ctx,{type:'bar',data:{labels:sevs,datasets:[{data:counts,backgroundColor:colors,borderRadius:6,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}});
+function setTaskStatus(key,sel){
+  localStorage.setItem(key,sel.value);
+  const cls='ts-'+(sel.value==='none'?'none':sel.value);
+  sel.className=`ts-pill ${cls}`;
 }
-function mkTR(t,c){return '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px;color:var(--g700);border-bottom:1px solid var(--g100)"><i class="fas fa-circle-dot" style="color:'+c+';font-size:11px;margin-top:3px;flex-shrink:0"></i><span>'+t+'</span></div>';}
 function renderTaskTracker(hos){
   if(!hos.length)return;
-  const h=hos[0],src=h['Handover #']+' · '+fd(h['Date']||'');
+  const h=hos[0],src=`${h['Handover #']||''} · ${fd(h['Date']||'')}`;
   document.getElementById('dash-today-src').textContent=src;
   document.getElementById('dash-tmr-src').textContent=src;
+  document.getElementById('dash-sw-src').textContent=src;
   const ops=hoSplit(h['Ops Tasks']);
-  document.getElementById('dash-ops-items').innerHTML=ops.length?ops.map(t=>mkTR(t,'#059669')).join(''):'<p style="font-size:12px;color:var(--g400);padding:8px 0">No ops tasks</p>';
+  document.getElementById('dash-ops-items').innerHTML=ops.length?ops.map((t,i)=>mkTR(t,'#059669','ops',i)).join(''):'<p style="font-size:12px;color:var(--g400)">No ops tasks</p>';
   const ss=hoSplit(h['SS Tasks']);
-  document.getElementById('dash-ss-items').innerHTML=ss.length?ss.map(t=>mkTR(t,'#EA580C')).join(''):'<p style="font-size:12px;color:var(--g400);padding:8px 0">No soft services tasks</p>';
+  document.getElementById('dash-ss-items').innerHTML=ss.length?ss.map((t,i)=>mkTR(t,'#EA580C','ss',i)).join(''):'<p style="font-size:12px;color:var(--g400)">No soft services tasks</p>';
   const tmr=hoSplit(h['Tmr Tasks']);
-  document.getElementById('dash-tmr-items').innerHTML=tmr.length?tmr.map(t=>mkTR(t,'#7C3AED')).join(''):'<div class="empty" style="padding:16px 0"><i class="fas fa-calendar-day" style="font-size:24px;color:var(--g300)"></i><p>No tasks for tomorrow</p></div>';
+  document.getElementById('dash-tmr-items').innerHTML=tmr.length?tmr.map((t,i)=>mkTR(t,'#7C3AED','tmr',i)).join(''):'<p style="font-size:12px;color:var(--g400)">No tasks for tomorrow</p>';
   const sw=hoSplit(h['Scheduled Works']);
-  document.getElementById('dash-sw-items').innerHTML=sw.length?sw.map(t=>mkTR(t,'#2563EB')).join(''):'<div class="empty" style="padding:16px 0"><i class="fas fa-hard-hat" style="font-size:24px;color:var(--g300)"></i><p>No scheduled works</p></div>';
+  document.getElementById('dash-sw-items').innerHTML=sw.length?sw.map((t,i)=>mkTR(t,'#2563EB','sw',i)).join(''):'<p style="font-size:12px;color:var(--g400)">No scheduled works</p>';
 }
 
 // INCIDENTS
 async function ldInc(){
   showL('Loading…');
-  try{const res=await api('GET',{action:'getIncidents'});if(res.success){INCS=res.incidents;document.getElementById('sb-ct').textContent=INCS.length;renderLog();}else toast(res.message||'Failed','err');}
+  try{const res=await api('GET',{action:'getIncidents'});if(res.success){INCS=res.incidents;document.getElementById('sb-ct').textContent=INCS.length;renderLog();renderCatChart(INCS);renderSevChart(INCS);}else toast(res.message||'Failed','err');}
   catch(e){toast('Connection error','err');}hideL();
 }
 function renderLog(){
@@ -826,20 +786,35 @@ function renderLog(){
   const canDel=SES?.role==='Admin';
   tb.innerHTML=fl.map(i=>{const bc=CB[i['Category']]||'bx',sc=SC[i['Severity']]||'';const ij=JSON.stringify(i).replace(/'/g,"\\'");return`<tr><td><span class="tl" onclick='opDet(${ij})'>${i['Incident #']}</span></td><td>${fd(i['Date'])}<br><span style="font-size:10px;color:var(--g400)">${i['Time']||''}</span></td><td style="font-size:11.5px">${i['Location']||'–'}</td><td><span class="badge ${bc}">${i['Category']||'–'}</span></td><td style="font-size:11.5px">${i['Type']||'–'}</td><td class="${sc}" style="font-size:12px">${i['Severity']||'–'}</td><td style="font-size:11.5px">${i['Reporter']||'–'}</td><td style="display:flex;gap:5px"><button class="btn btn-o btn-sm" onclick='opDet(${ij})'><i class="fas fa-eye"></i></button>${canDel?`<button class="btn btn-d btn-sm" onclick="delInc('${i['Incident #']}')"><i class="fas fa-trash"></i></button>`:''}</td></tr>`;}).join('');
 }
+function renderCatChart(incs){
+  const cats=['Security','Fire & Safety','Medical','Operations','Maintenance','Customer Service','Environmental','Other'];
+  const counts=cats.map(c=>incs.filter(i=>i['Category']===c).length);
+  const colors=['#EF4444','#F97316','#22C55E','#3B82F6','#8B5CF6','#EC4899','#14B8A6','#6B7280'];
+  const al=cats.filter((_,i)=>counts[i]>0),ac=counts.filter(v=>v>0),ax=colors.filter((_,i)=>counts[i]>0);
+  const ctx=document.getElementById('chart-cat');if(!ctx)return;
+  if(catChart){catChart.destroy();catChart=null;}
+  if(!incs.length){ctx.parentElement.innerHTML='<div class="empty" style="padding:16px 0"><i class="fas fa-chart-pie" style="font-size:28px;color:var(--g300)"></i><p>No data</p></div>';return;}
+  catChart=new Chart(ctx,{type:'doughnut',data:{labels:al,datasets:[{data:ac,backgroundColor:ax,borderWidth:2,borderColor:'white'}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:8}}}}});
+}
+function renderSevChart(incs){
+  const sevs=['Low','Medium','High','Critical'],counts=sevs.map(s=>incs.filter(i=>i['Severity']===s).length),colors=['#22C55E','#F59E0B','#EF4444','#7C3AED'];
+  const ctx=document.getElementById('chart-sev');if(!ctx)return;
+  if(sevChart){sevChart.destroy();sevChart=null;}
+  if(!incs.length){ctx.parentElement.innerHTML='<div class="empty" style="padding:16px 0"><i class="fas fa-chart-bar" style="font-size:28px;color:var(--g300)"></i><p>No data</p></div>';return;}
+  sevChart=new Chart(ctx,{type:'bar',data:{labels:sevs,datasets:[{data:counts,backgroundColor:colors,borderRadius:6,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}});
+}
 function expCSV(){
   if(!INCS.length){toast('No data','wrn');return;}
-  const h=['Incident #','Date','Time','Location','Category','Type','Severity','Reporter','Description','Actions Taken','Follow-up','Submitted At'];
+  const h=['Incident #','Date','Time','Location','Category','Type','Severity','Reporter','Description','Actions Taken','Follow-up'];
   const rows=INCS.map(i=>h.map(k=>`"${(i[k]||'').toString().replace(/"/g,'""')}"`).join(','));
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h.map(k=>`"${k}"`).join(','),...rows].join('\n'));a.download=`ABC_Incidents_${td()}.csv`;a.click();toast('Exported!','ok');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h.map(k=>`"${k}"`).join(','),...rows].join('\n'));a.download=`Incidents_${td()}.csv`;a.click();toast('Exported!','ok');
 }
 async function delInc(num){
   if(!confirm(`Delete ${num}?`))return;showL('Deleting…');
   const res=await api('GET',{action:'deleteIncident',incidentNumber:num});hideL();
   if(res.success){toast('Deleted','ok');ldInc();}else toast(res.message||'Failed','err');
 }
-
-// INCIDENT DETAIL
-function opDet(i){if(typeof i==='string')i=JSON.parse(i);detInc=i;document.getElementById('det-t').textContent=`${i['Incident #']} – Incident Report`;document.getElementById('det-b').innerHTML=`<div class="ewrap">${mkEH(i)}</div>`;document.getElementById('det-ov').classList.remove('hid');}
+function opDet(i){if(typeof i==='string')i=JSON.parse(i);detInc=i;document.getElementById('det-t').textContent=i['Incident #'];document.getElementById('det-b').innerHTML=`<div class="ewrap">${mkEH(i)}</div>`;document.getElementById('det-ov').classList.remove('hid');}
 function closeDet(){document.getElementById('det-ov').classList.add('hid');}
 function cpDetEmail(){if(!detInc)return;navigator.clipboard.writeText(mkET(detInc));toast('Copied!','ok');}
 
@@ -850,28 +825,21 @@ function resetF(){
   document.getElementById('f-sv').value='Medium';ldTypes();goStp(1);
 }
 function ldTypes(){const c=document.getElementById('f-cat').value,s=document.getElementById('f-typ');s.innerHTML='<option value="">-- Select Type --</option>';if(c&&TYPES[c])TYPES[c].forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;s.appendChild(o);});}
-function goStp(n){
-  [1,2,3].forEach(i=>{document.getElementById('fs'+i).style.display=i===n?'block':'none';const s=document.getElementById('stp'+i);s.className='stp'+(i===n?' on':i<n?' dn':'');if(i<3)document.getElementById('sln'+i).className='sln'+(i<n?' dn':'');});
-  if(n===3)mkPrev();
-}
+function goStp(n){[1,2,3].forEach(i=>{document.getElementById('fs'+i).style.display=i===n?'block':'none';const s=document.getElementById('stp'+i);s.className='stp'+(i===n?' on':i<n?' dn':'');if(i<3)document.getElementById('sln'+i).className='sln'+(i<n?' dn':'');});if(n===3)mkPrev();}
 function getF(){return{date:document.getElementById('f-dt').value,time:document.getElementById('f-tm').value,location:document.getElementById('f-loc').value,category:document.getElementById('f-cat').value,type:document.getElementById('f-typ').value,severity:document.getElementById('f-sv').value,persons:document.getElementById('f-per').value,witnesses:document.getElementById('f-wit').value,body:document.getElementById('f-bd').value,actions:document.getElementById('f-ac').value,followup:document.getElementById('f-fu').value};}
 function mkPrev(){const d=getF(),m={...d,'Incident #':'INC-XXXX','Reporter':SES?.fullName,'Property':SES?.property};document.getElementById('ep').innerHTML=mkEH(m);}
 function cpEmail(){const d=getF(),m={...d,'Incident #':'INC-XXXX','Reporter':SES?.fullName,'Property':SES?.property};navigator.clipboard.writeText(mkET(m));toast('Copied!','ok');}
 function mkEH(d){
-  const num=d['Incident #']||d.incidentNumber||'–',cat=d['Category']||d.category||'–',typ=d['Type']||d.type||'–';
-  const sev=d['Severity']||d.severity||'–',loc=d['Location']||d.location||'–';
-  const dt=fd(d['Date']||d.date),tm=d['Time']||d.time||'–';
-  const rep=d['Reporter']||d.reporter||SES?.fullName||'–',prop=d['Property']||d.property||SES?.property||'ABC Mall';
-  const body=d['Description']||d.body||'(No description)';
-  const act=d['Actions Taken']||d.actions||'',fu=d['Follow-up']||d.followup||'';
-  const sc=SV[sev]||'#6B7280';
-  return`<div class="ehdr"><div class="efrom">From: ${prop} Operations &lt;operations@abcmall.com.lb&gt;</div><div class="esubj">🚨 Incident Report – ${num} | ${cat} – ${typ}</div></div><div class="emeta"><div class="erow"><span class="ek">To:</span><span class="ev">Operations Manager, ${prop}</span></div><div class="erow"><span class="ek">Subject:</span><span class="ev">Incident Report – ${num} | ${cat} – ${typ}</span></div><div class="erow"><span class="ek">Date:</span><span class="ev">${dt} at ${tm}</span></div><div class="erow"><span class="ek">Priority:</span><span class="ev"><strong style="color:${sc}">${sev}</strong></span></div></div><div class="ebody">Dear Operations Team,\n\nPlease be advised of the following incident at ${prop}.\n\n━━━━━━━━━━━━━━━━━━━━━━━\nINCIDENT REFERENCE: ${num}\n━━━━━━━━━━━━━━━━━━━━━━━\n\n📋 INCIDENT DETAILS\n• Date & Time  : ${dt} at ${tm}\n• Location     : ${loc}\n• Category     : ${cat}\n• Type         : ${typ}\n• Severity     : ${sev}\n• Reported By  : ${rep}\n\n📝 DESCRIPTION\n${body}\n${act?'\n✅ ACTIONS TAKEN\n'+act:''}${fu?'\n\n🔄 FOLLOW-UP\n'+fu:''}\n\n━━━━━━━━━━━━━━━━━━━━━━━\nRegards,\n${rep}\n${prop} | ABC Mall Group Lebanon</div><div class="eftr">📌 ABC Operations System · Ref: ${num} · ${new Date().toLocaleString()}</div>`;
+  const num=d['Incident #']||'–',cat=d['Category']||d.category||'–',typ=d['Type']||d.type||'–',sev=d['Severity']||d.severity||'–',loc=d['Location']||d.location||'–';
+  const dt=fd(d['Date']||d.date),tm=d['Time']||d.time||'–',rep=d['Reporter']||SES?.fullName||'–',prop=d['Property']||SES?.property||'ABC Mall';
+  const body=d['Description']||d.body||'(No description)',act=d['Actions Taken']||d.actions||'',fu=d['Follow-up']||d.followup||'',sc=SV[sev]||'#6B7280';
+  return`<div class="ehdr"><div class="efrom">From: ${prop} Operations</div><div class="esubj">🚨 ${num} | ${cat} – ${typ}</div></div><div class="emeta"><div class="erow"><span class="ek">Date:</span><span class="ev">${dt} at ${tm}</span></div><div class="erow"><span class="ek">Priority:</span><span class="ev"><strong style="color:${sc}">${sev}</strong></span></div></div><div class="ebody">Incident: ${num}\nDate & Time : ${dt} at ${tm}\nLocation   : ${loc}\nCategory   : ${cat} – ${typ}\nSeverity   : ${sev}\nReporter   : ${rep}\n\nDESCRIPTION\n${body}\n${act?'\nACTIONS TAKEN\n'+act:''}${fu?'\n\nFOLLOW-UP\n'+fu:''}\n\nRegards, ${rep}\n${prop} | ABC Mall Group</div><div class="eftr">Ref: ${num} · ${new Date().toLocaleString()}</div>`;
 }
-function mkET(d){return`Subject: Incident Report – ${d['Incident #']||'–'} | ${d['Category']||'–'}\n\nRef: ${d['Incident #']||'–'}\nDate: ${fd(d['Date'])} at ${d['Time']||'–'}\nLocation: ${d['Location']||'–'}\nCategory: ${d['Category']||'–'} – ${d['Type']||'–'}\nSeverity: ${d['Severity']||'–'}\nReporter: ${d['Reporter']||'–'}\n\nDESCRIPTION\n${d['Description']||d.body||''}\n\nACTIONS\n${d['Actions Taken']||d.actions||'N/A'}\n\nFOLLOW-UP\n${d['Follow-up']||d.followup||'N/A'}`;}
+function mkET(d){return`Incident: ${d['Incident #']||'–'}\nDate: ${fd(d['Date'])} at ${d['Time']||'–'}\nLocation: ${d['Location']||'–'}\nCategory: ${d['Category']||'–'} – ${d['Type']||'–'}\nSeverity: ${d['Severity']||'–'}\n\n${d['Description']||''}`;}
 async function subInc(){
   const d=getF();
   if(!d.date||!d.time||!d.location||!d.category||!d.type||!d.body){toast('Fill all required fields.','err');return;}
-  const btn=document.getElementById('sub-btn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Submitting…';
+  const btn=document.getElementById('sub-btn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>';
   showL('Saving…');
   try{const res=await api('GET',{action:'submitIncident',data:encodeURIComponent(JSON.stringify(d))});hideL();
     if(res.success){toast(`✅ ${res.incidentNumber} submitted!`,'ok');setTimeout(()=>{navigate('log');ldInc();},900);}
@@ -880,61 +848,43 @@ async function subInc(){
   btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> Submit & Save';
 }
 
-// ══ HANDOVER MODULE ══════════════════════════════
+// HANDOVER
+function hoSplit(val){return(val||'').split('|||').map(s=>s.trim()).filter(Boolean);}
 function hoResetForm(){
-  document.getElementById('ho-dt').value=td();
-  document.getElementById('ho-sh').value='';
-  document.getElementById('ho-pr').value=SES?.property||'ABC Verdun Mall';
-  document.getElementById('ho-notes').value='';
+  document.getElementById('ho-dt').value=td();document.getElementById('ho-sh').value='';
+  document.getElementById('ho-pr').value=SES?.property||'ABC Verdun Mall';document.getElementById('ho-notes').value='';
   ['sw','ops','ss','tmr','dat'].forEach(s=>{document.getElementById(`ho-${s}-list`).innerHTML='';hoAdd(s);});
   const dat=new Date();dat.setDate(dat.getDate()+2);
   document.getElementById('ho-dat-label').textContent='Tasks for '+dat.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
 }
 const HO_COLORS={sw:'#2563EB',ops:'#059669',ss:'#EA580C',tmr:'#7C3AED',dat:'#6B7280'};
 function hoAdd(sec){
-  const list=document.getElementById(`ho-${sec}-list`);
-  const row=document.createElement('div');row.className='ho-row';
-  const c=HO_COLORS[sec];
-  row.innerHTML=`<i class="fas fa-circle-dot" style="color:${c};font-size:12px;flex-shrink:0"></i>
-    <input type="text" class="fc" placeholder="Enter item…" style="flex:1"/>
-    ${sec==='sw'?`<input type="text" class="fc ho-time" placeholder="e.g. After 7PM"/>`:'' }
-    <button class="ho-rm" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>`;
+  const list=document.getElementById(`ho-${sec}-list`),row=document.createElement('div');row.className='ho-row';const c=HO_COLORS[sec];
+  row.innerHTML=`<i class="fas fa-circle-dot" style="color:${c};font-size:12px;flex-shrink:0"></i><input type="text" class="fc" placeholder="Enter item…" style="flex:1"/>${sec==='sw'?`<input type="text" class="fc ho-time" placeholder="e.g. After 7PM"/>`:'' }<button class="ho-rm" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>`;
   list.appendChild(row);row.querySelector('input').focus();
 }
-function hoGetSection(sec){
-  return Array.from(document.querySelectorAll(`#ho-${sec}-list .ho-row`)).map(r=>{
-    const ins=r.querySelectorAll('input');const text=(ins[0]?.value||'').trim();const time=(ins[1]?.value||'').trim();
-    if(!text)return null;return time?`${text} — ${time}`:text;
-  }).filter(Boolean);
-}
-function hoGetFormData(){
-  return{date:document.getElementById('ho-dt').value,shift:document.getElementById('ho-sh').value,property:document.getElementById('ho-pr').value,notes:document.getElementById('ho-notes').value,sw:hoGetSection('sw'),ops:hoGetSection('ops'),ss:hoGetSection('ss'),tmr:hoGetSection('tmr'),dat:hoGetSection('dat')};
-}
+function hoGetSection(sec){return Array.from(document.querySelectorAll(`#ho-${sec}-list .ho-row`)).map(r=>{const ins=r.querySelectorAll('input');const text=(ins[0]?.value||'').trim();const time=(ins[1]?.value||'').trim();if(!text)return null;return time?`${text} — ${time}`:text;}).filter(Boolean);}
+function hoGetFormData(){return{date:document.getElementById('ho-dt').value,shift:document.getElementById('ho-sh').value,property:document.getElementById('ho-pr').value,notes:document.getElementById('ho-notes').value,sw:hoGetSection('sw'),ops:hoGetSection('ops'),ss:hoGetSection('ss'),tmr:hoGetSection('tmr'),dat:hoGetSection('dat')};}
 function previewHO(){
-  const d=hoGetFormData();
-  if(!d.date||!d.shift){toast('Please fill Date and Shift','err');return;}
-  const mock={'Handover #':'HO-PREVIEW','Date':d.date,'Shift':d.shift,'Property':d.property,'Scheduled Works':d.sw.join('|||'),'Ops Tasks':d.ops.join('|||'),'SS Tasks':d.ss.join('|||'),'Tmr Tasks':d.tmr.join('|||'),'Dat Tasks':d.dat.join('|||'),'Notes':d.notes,'Reporter':SES?.fullName};
-  document.getElementById('ho-prev-body').innerHTML=buildHODetail(mock);
-  document.getElementById('ho-prev-ov').classList.remove('hid');
+  const d=hoGetFormData();if(!d.date||!d.shift){toast('Fill Date and Shift','err');return;}
+  const mock={'Handover #':'PREVIEW','Date':d.date,'Shift':d.shift,'Property':d.property,'Scheduled Works':d.sw.join('|||'),'Ops Tasks':d.ops.join('|||'),'SS Tasks':d.ss.join('|||'),'Tmr Tasks':d.tmr.join('|||'),'Dat Tasks':d.dat.join('|||'),'Notes':d.notes,'Reporter':SES?.fullName};
+  document.getElementById('ho-prev-body').innerHTML=buildHODetail(mock);document.getElementById('ho-prev-ov').classList.remove('hid');
 }
 async function submitHO(fromPreview=false){
-  const d=hoGetFormData();
-  if(!d.date||!d.shift){toast('Date and Shift are required','err');return;}
+  const d=hoGetFormData();if(!d.date||!d.shift){toast('Date and Shift required','err');return;}
   if(!d.sw.length&&!d.ops.length&&!d.ss.length&&!d.tmr.length&&!d.dat.length&&!d.notes){toast('Add at least one item','err');return;}
   if(!fromPreview){previewHO();return;}
   document.getElementById('ho-prev-ov').classList.add('hid');
-  const btn=document.getElementById('ho-sub-btn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Submitting…';
-  showL('Broadcasting handover…');
+  const btn=document.getElementById('ho-sub-btn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>';
+  showL('Broadcasting…');
   const payload={date:d.date,shift:d.shift,property:d.property,notes:d.notes,sw:d.sw.join('|||'),ops:d.ops.join('|||'),ss:d.ss.join('|||'),tmr:d.tmr.join('|||'),dat:d.dat.join('|||')};
-  try{
-    const res=await api('GET',{action:'submitHandover',data:encodeURIComponent(JSON.stringify(payload))});hideL();
+  try{const res=await api('GET',{action:'submitHandover',data:encodeURIComponent(JSON.stringify(payload))});hideL();
     if(res.success){toast(`✅ ${res.handoverNumber} broadcast!`,'ok');setTimeout(()=>{navigate('ho-log');ldHO();},900);}
-    else toast(res.message||'Failed','err');
-  }catch(e){hideL();toast('Connection error','err');}
+    else toast(res.message||'Failed','err');}catch(e){hideL();toast('Connection error','err');}
   btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> Broadcast to Team';
 }
 async function ldHO(){
-  showL('Loading handovers…');
+  showL('Loading…');
   try{const res=await api('GET',{action:'getHandovers'});if(res.success){HOS=res.handovers;document.getElementById('sb-ho-ct').textContent=HOS.length;renderHOLog();}else toast(res.message||'Failed','err');}
   catch(e){toast('Connection error','err');}hideL();
 }
@@ -942,136 +892,165 @@ function renderHOLog(){
   const s=(document.getElementById('hfl-s').value||'').toLowerCase(),sh=document.getElementById('hfl-sh').value;
   let fl=HOS.filter(h=>(!s||JSON.stringify(h).toLowerCase().includes(s))&&(!sh||h['Shift']===sh));
   const grid=document.getElementById('ho-cards-grid');
-  if(!fl.length){grid.innerHTML=`<div style="grid-column:1/-1"><div class="empty"><i class="fas fa-book-open"></i><h3>No handovers found</h3><p>Submit a new handover to get started</p></div></div>`;return;}
+  if(!fl.length){grid.innerHTML=`<div style="grid-column:1/-1"><div class="empty"><i class="fas fa-book-open"></i><h3>No handovers found</h3></div></div>`;return;}
   grid.innerHTML=fl.map(h=>buildHOCard(h)).join('');
 }
-function hoSplit(val){return(val||'').split('|||').map(s=>s.trim()).filter(Boolean);}
-
 function buildHOCard(h){
   const num=h['Handover #']||'–',date=fd(h['Date']||''),shift=h['Shift']||'–',prop=h['Property']||'–',rep=h['Reporter']||'–';
-  const sw=hoSplit(h['Scheduled Works']),ops=hoSplit(h['Ops Tasks']),ss=hoSplit(h['SS Tasks']),tmr=hoSplit(h['Tmr Tasks']),dat=hoSplit(h['Dat Tasks']);
+  const sw=hoSplit(h['Scheduled Works']),ops=hoSplit(h['Ops Tasks']),ss=hoSplit(h['SS Tasks']),tmr=hoSplit(h['Tmr Tasks']);
   const shIcon=shift.includes('Morning')?'fa-sun':shift.includes('Afternoon')?'fa-cloud-sun':shift.includes('Night')?'fa-moon':'fa-rotate';
-  const tags=[
-    sw.length?`<span class="ho-tag" style="background:#EFF6FF;color:#1D4ED8"><i class="fas fa-hard-hat"></i> ${sw.length} work${sw.length>1?'s':''}</span>`:'',
-    ops.length?`<span class="ho-tag" style="background:#F0FDF4;color:#15803D"><i class="fas fa-sun"></i> ${ops.length} ops</span>`:'',
-    ss.length?`<span class="ho-tag" style="background:#FFF7ED;color:#C2410C"><i class="fas fa-broom"></i> ${ss.length} soft svc</span>`:'',
-    tmr.length?`<span class="ho-tag" style="background:#F5F3FF;color:#6D28D9"><i class="fas fa-calendar-day"></i> ${tmr.length} tomorrow</span>`:'',
-    dat.length?`<span class="ho-tag" style="background:var(--g100);color:var(--g600)"><i class="fas fa-calendar-week"></i> ${dat.length} upcoming</span>`:'',
-  ].filter(Boolean).join('');
-  const preview=[...sw,...ops,...ss].slice(0,3).map(t=>`<div style="font-size:12px;color:var(--g500);padding:2px 0;display:flex;align-items:flex-start;gap:6px"><i class="fas fa-circle-dot" style="font-size:8px;margin-top:4px;color:var(--g300)"></i><span>${t}</span></div>`).join('');
+  const tags=[sw.length?`<span class="ho-tag" style="background:#EFF6FF;color:#1D4ED8"><i class="fas fa-hard-hat"></i> ${sw.length}</span>`:'',ops.length?`<span class="ho-tag" style="background:#F0FDF4;color:#15803D"><i class="fas fa-sun"></i> ${ops.length} ops</span>`:'',ss.length?`<span class="ho-tag" style="background:#FFF7ED;color:#C2410C"><i class="fas fa-broom"></i> ${ss.length}</span>`:'',tmr.length?`<span class="ho-tag" style="background:#F5F3FF;color:#6D28D9"><i class="fas fa-calendar-day"></i> ${tmr.length} tmr</span>`:''].filter(Boolean).join('');
+  const preview=[...sw,...ops,...ss].slice(0,2).map(t=>`<div style="font-size:12px;color:var(--g500);padding:2px 0">${t}</div>`).join('');
   const idx=HOS.indexOf(h);
-  return`<div class="ho-card" onclick="openHODetail(${idx})">
-    <div style="padding:14px 16px;border-bottom:1px solid var(--g100)">
-      <div style="font-family:var(--ff);font-weight:800;font-size:14px;color:var(--ok);display:flex;align-items:center;gap:6px"><i class="fas fa-rotate"></i>${num}</div>
-      <div style="font-size:11.5px;color:var(--g400);margin-top:3px"><i class="fas ${shIcon}" style="margin-right:4px"></i>${shift} · ${date} · ${prop}</div>
-    </div>
-    <div style="padding:12px 16px">
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${tags||'<span style="font-size:12px;color:var(--g400)">No items</span>'}</div>
-      ${preview}
-    </div>
-    <div style="padding:9px 16px;background:var(--g50);border-top:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between">
-      <span style="font-size:11.5px;color:var(--g500)"><i class="fas fa-user" style="margin-right:4px;color:var(--g300)"></i>${rep}</span>
-      <span style="font-size:11px;color:var(--p600);font-weight:700">View details →</span>
-    </div>
-  </div>`;
+  return`<div class="ho-card" onclick="openHODetail(${idx})"><div style="padding:13px 16px;border-bottom:1px solid var(--g100)"><div style="font-family:var(--ff);font-weight:800;font-size:13.5px;color:var(--ok)"><i class="fas fa-rotate"></i> ${num}</div><div style="font-size:11.5px;color:var(--g400);margin-top:3px"><i class="fas ${shIcon}" style="margin-right:4px"></i>${shift} · ${date} · ${prop}</div></div><div style="padding:12px 16px"><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${tags}</div>${preview}</div><div style="padding:9px 16px;background:var(--g50);border-top:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between"><span style="font-size:11.5px;color:var(--g500)"><i class="fas fa-user" style="margin-right:4px;color:var(--g300)"></i>${rep}</span><span style="font-size:11px;color:var(--p600);font-weight:700">View →</span></div></div>`;
 }
-
 function openHODetail(idx){
-  if(idx<0||idx>=HOS.length)return;
-  currentHO=HOS[idx];const h=currentHO;
+  if(idx<0||idx>=HOS.length)return;currentHO=HOS[idx];const h=currentHO;
   document.getElementById('hd-num').textContent=h['Handover #']||'Handover';
   const si=h['Shift']?.includes('Morning')?'☀️':h['Shift']?.includes('Afternoon')?'🌤️':h['Shift']?.includes('Night')?'🌙':'🔄';
   document.getElementById('hd-sub').textContent=`${si} ${h['Shift']||'–'} · ${fd(h['Date']||'')} · ${h['Property']||'–'} · By ${h['Reporter']||'–'}`;
   document.getElementById('hd-del-btn').style.display=SES?.role==='Admin'?'':'none';
   document.getElementById('hd-content').innerHTML=buildHODetail(h);
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
-  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
   document.getElementById('view-ho-detail').classList.add('on');
 }
-
 function buildHODetail(h){
   const sw=hoSplit(h['Scheduled Works']),ops=hoSplit(h['Ops Tasks']),ss=hoSplit(h['SS Tasks']),tmr=hoSplit(h['Tmr Tasks']),dat=hoSplit(h['Dat Tasks']),notes=h['Notes']||'';
   const base=h['Date']?new Date(h['Date']+'T00:00:00'):new Date();
-  const tmrD=new Date(base);tmrD.setDate(tmrD.getDate()+1);
-  const datD=new Date(base);datD.setDate(datD.getDate()+2);
+  const tmrD=new Date(base);tmrD.setDate(tmrD.getDate()+1);const datD=new Date(base);datD.setDate(datD.getDate()+2);
   const fmt=d=>d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
-  const mkSec=(items,label,cls,icon,dc)=>{
-    if(!items.length)return'';
-    const rows=items.map(t=>`<div class="hd-item"><i class="fas fa-circle-dot" style="color:${dc}"></i><span>${t}</span></div>`).join('');
-    return`<div><div class="hd-bar ${cls}"><i class="fas ${icon}"></i> ${label}</div><div class="hd-items">${rows}</div></div>`;
-  };
-  const secs=[
-    mkSec(sw,'Scheduled Works','blue','fa-hard-hat','#2563EB'),
-    mkSec(ops,'Today — Operations','green','fa-sun','#059669'),
-    mkSec(ss,'Today — Soft Services','orange','fa-broom','#EA580C'),
-    mkSec(tmr,'Tomorrow — '+fmt(tmrD),'purple','fa-calendar-day','#7C3AED'),
-    mkSec(dat,fmt(datD),'gray','fa-calendar-week','#6B7280'),
-    notes?`<div><div class="hd-bar yellow"><i class="fas fa-note-sticky"></i> Notes & Remarks</div><div class="hd-items" style="font-size:13px;color:var(--g600);line-height:1.7">${notes}</div></div>`:'',
-  ].filter(Boolean).join('');
-  return`<div class="card" style="overflow:hidden">
-    ${secs||'<div class="cb"><p style="color:var(--g400);font-size:13px">No items in this handover.</p></div>'}
-    <div class="hd-meta">
-      <span><i class="fas fa-hashtag"></i>${h['Handover #']||'–'}</span>
-      <span><i class="fas fa-user"></i>${h['Reporter']||'–'}</span>
-      <span><i class="fas fa-building"></i>${h['Property']||'–'}</span>
-      ${h['Submitted At']?`<span><i class="fas fa-clock"></i>${new Date(h['Submitted At']).toLocaleString()}</span>`:''}
-    </div>
-  </div>`;
+  const mkSec=(items,label,cls,icon,dc)=>{if(!items.length)return'';const rows=items.map(t=>`<div class="hd-item"><i class="fas fa-circle-dot" style="color:${dc}"></i><span>${t}</span></div>`).join('');return`<div><div class="hd-bar ${cls}"><i class="fas ${icon}"></i> ${label}</div><div class="hd-items">${rows}</div></div>`;};
+  const secs=[mkSec(sw,'Scheduled Works','blue','fa-hard-hat','#2563EB'),mkSec(ops,'Today — Operations','green','fa-sun','#059669'),mkSec(ss,'Today — Soft Services','orange','fa-broom','#EA580C'),mkSec(tmr,'Tomorrow — '+fmt(tmrD),'purple','fa-calendar-day','#7C3AED'),mkSec(dat,fmt(datD),'gray','fa-calendar-week','#6B7280'),notes?`<div><div class="hd-bar yellow"><i class="fas fa-note-sticky"></i> Notes</div><div class="hd-items" style="font-size:13px;color:var(--g600)">${notes}</div></div>`:''  ].filter(Boolean).join('');
+  return`<div class="card" style="overflow:hidden">${secs||'<div class="cb"><p style="color:var(--g400)">No items.</p></div>'}<div class="hd-meta"><span><i class="fas fa-hashtag"></i>${h['Handover #']||'–'}</span><span><i class="fas fa-user"></i>${h['Reporter']||'–'}</span><span><i class="fas fa-building"></i>${h['Property']||'–'}</span>${h['Submitted At']?`<span><i class="fas fa-clock"></i>${new Date(h['Submitted At']).toLocaleString()}</span>`:''}</div></div>`;
 }
-function delHOCurrent(){
-  if(!currentHO)return;
-  const num=currentHO['Handover #'];
-  if(!confirm(`Delete ${num}? This cannot be undone.`))return;
-  showL('Deleting…');
-  api('GET',{action:'deleteHandover',handoverNumber:num}).then(res=>{hideL();
-    if(res.success){toast('Deleted','ok');currentHO=null;navigate('ho-log');ldHO();}
-    else toast(res.message||'Failed','err');
+function delHOCurrent(){if(!currentHO)return;const num=currentHO['Handover #'];if(!confirm(`Delete ${num}?`))return;showL('Deleting…');api('GET',{action:'deleteHandover',handoverNumber:num}).then(res=>{hideL();if(res.success){toast('Deleted','ok');currentHO=null;navigate('ho-log');ldHO();}else toast(res.message||'Failed','err');});}
+function hoExpCSV(){if(!HOS.length){toast('No data','wrn');return;}const h=['Handover #','Date','Shift','Property','Scheduled Works','Ops Tasks','SS Tasks','Tmr Tasks','Dat Tasks','Notes','Reporter','Submitted At'];const rows=HOS.map(i=>h.map(k=>`"${(i[k]||'').toString().replace(/"/g,'""')}"`).join(','));const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h.map(k=>`"${k}"`).join(','),...rows].join('\n'));a.download=`Handovers_${td()}.csv`;a.click();toast('Exported!','ok');}
+
+// PROJECT MANAGEMENT — GANTT
+const PRJ_STATUS_COLORS={Done:'done','In Progress':'inprogress','Not Started':'pending',Postponed:'postponed'};
+function savePrjLocal(){localStorage.setItem('abc_projects',JSON.stringify(PROJECTS));}
+function openAddProject(){document.getElementById('prj-modal-title').textContent='Add Project';document.getElementById('prj-edit-idx').value='';['prj-name','prj-owner','prj-start','prj-end','prj-notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('prj-budget').value='';document.getElementById('prj-status').value='Not Started';document.getElementById('prj-modal').classList.remove('hid');}
+function closePrjModal(){document.getElementById('prj-modal').classList.add('hid');}
+function savePrj(){
+  const name=document.getElementById('prj-name').value.trim(),owner=document.getElementById('prj-owner').value.trim(),end=document.getElementById('prj-end').value;
+  if(!name||!owner||!end){toast('Name, Owner and Deadline required','err');return;}
+  const prj={name,owner,start:document.getElementById('prj-start').value,end,budget:document.getElementById('prj-budget').value,status:document.getElementById('prj-status').value,notes:document.getElementById('prj-notes').value};
+  const idx=document.getElementById('prj-edit-idx').value;
+  if(idx!=='')PROJECTS[parseInt(idx)]=prj;else PROJECTS.push(prj);
+  savePrjLocal();closePrjModal();renderGantt();toast('Project saved!','ok');
+}
+function editPrj(idx){
+  const p=PROJECTS[idx];document.getElementById('prj-modal-title').textContent='Edit Project';document.getElementById('prj-edit-idx').value=idx;
+  document.getElementById('prj-name').value=p.name;document.getElementById('prj-owner').value=p.owner;document.getElementById('prj-start').value=p.start||'';document.getElementById('prj-end').value=p.end;document.getElementById('prj-budget').value=p.budget||'';document.getElementById('prj-status').value=p.status;document.getElementById('prj-notes').value=p.notes||'';
+  document.getElementById('prj-modal').classList.remove('hid');
+}
+function delPrj(idx){if(!confirm('Delete this project?'))return;PROJECTS.splice(idx,1);savePrjLocal();renderGantt();toast('Deleted','ok');}
+function renderGantt(){
+  const s=(document.getElementById('gfl-s').value||'').toLowerCase(),st=document.getElementById('gfl-st').value;
+  let fl=PROJECTS.filter((p,i)=>{p._idx=i;return(!s||p.name.toLowerCase().includes(s)||p.owner.toLowerCase().includes(s))&&(!st||p.status===st);});
+  const container=document.getElementById('gantt-container');
+  if(!fl.length){container.innerHTML=`<div class="empty" style="padding:40px"><i class="fas fa-chart-gantt"></i><h3>No projects yet</h3><p>Click "Add Project" to get started</p></div>`;return;}
+  const now=new Date();const yr=now.getFullYear();
+  const months=MONTHS.map((_,i)=>({month:i,year:yr,label:MONTHS[i]+'-'+String(yr).slice(2)}));
+  let html=`<table class="gantt-table"><thead><tr><th style="text-align:left;min-width:200px">Project</th><th style="min-width:110px">Owner</th><th style="min-width:80px">Budget</th><th style="min-width:100px">Status</th>`;
+  months.forEach(m=>{html+=`<th style="min-width:65px;text-align:center">${m.label}</th>`;});
+  html+=`<th>Actions</th></tr></thead><tbody>`;
+  fl.forEach(p=>{
+    const idx=p._idx;
+    const sc=PRJ_STATUS_COLORS[p.status]||'pending';
+    const startM=p.start?new Date(p.start+'-01').getMonth():-1;
+    const endM=p.end?new Date(p.end+'-01').getMonth():-1;
+    const startY=p.start?new Date(p.start+'-01').getFullYear():yr;
+    const endY=p.end?new Date(p.end+'-01').getFullYear():yr;
+    html+=`<tr><td style="font-weight:600;font-size:12.5px">${p.name}</td><td style="font-size:12px;color:var(--p700)">${p.owner}</td><td style="font-size:12px">${fmtMoney(p.budget)}</td>`;
+    html+=`<td><span class="badge ${sc==='done'?'bm':sc==='inprogress'?'bo':sc==='postponed'?'bs':'bx'}">${p.status}</span></td>`;
+    months.forEach(m=>{
+      const inRange=(startY<yr||( startY===yr&&startM<=m.month))&&(endY>yr||(endY===yr&&endM>=m.month));
+      const isEnd=endY===yr&&endM===m.month;
+      const isStart=startY===yr&&startM===m.month;
+      if(inRange){
+        const cls='gantt-bar '+(sc);
+        const label=isEnd?fd(p.end.replace('-','/')+'/01').slice(0,5):(isStart?p.status:'');
+        html+=`<td style="padding:4px 3px"><div class="${cls}" title="${p.name} · ${p.end}">${label}</div></td>`;
+      }else{html+=`<td></td>`;}
+    });
+    html+=`<td style="white-space:nowrap"><button class="btn btn-o btn-sm" onclick="editPrj(${idx})" style="margin-right:4px"><i class="fas fa-pen"></i></button><button class="btn btn-d btn-sm" onclick="delPrj(${idx})"><i class="fas fa-trash"></i></button></td></tr>`;
   });
+  html+=`</tbody><tfoot><tr><td colspan="4" style="padding:10px 13px;font-family:var(--ff);font-weight:700;font-size:12px;color:var(--g500)">Total Budget</td><td colspan="${months.length+1}" style="padding:10px 13px;font-family:var(--ff);font-weight:800;font-size:14px;color:var(--p700)">${fmtMoney(PROJECTS.reduce((s,p)=>s+(parseFloat(p.budget)||0),0))}</td></tr></tfoot></table>`;
+  container.innerHTML=html;
 }
-function hoExpCSV(){
-  if(!HOS.length){toast('No data','wrn');return;}
-  const h=['Handover #','Date','Shift','Property','Scheduled Works','Ops Tasks','SS Tasks','Tmr Tasks','Dat Tasks','Notes','Reporter','Submitted At'];
-  const rows=HOS.map(i=>h.map(k=>`"${(i[k]||'').toString().replace(/"/g,'""')}"`).join(','));
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h.map(k=>`"${k}"`).join(','),...rows].join('\n'));a.download=`ABC_Handovers_${td()}.csv`;a.click();toast('Exported!','ok');
+function exportGanttCSV(){
+  if(!PROJECTS.length){toast('No projects','wrn');return;}
+  const h=['Project','Owner','Start','Deadline','Budget','Status','Notes'];
+  const rows=PROJECTS.map(p=>[p.name,p.owner,p.start||'',p.end,p.budget||'',p.status,p.notes||''].map(v=>`"${v.toString().replace(/"/g,'""')}"`).join(','));
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h.join(','),...rows].join('\n'));a.download=`Projects_${td()}.csv`;a.click();toast('Exported!','ok');
+}
+
+// EXCEL IMPORT
+function importExcel(input,type){
+  const file=input.files[0];if(!file)return;
+  showL('Reading Excel file…');
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
+      // Find the Annual BGT column (last column or column named Annual BGT)
+      if(!raw.length){toast('No data found in file','err');hideL();return;}
+      const keys=Object.keys(raw[0]);
+      // Find annual BGT column — look for last column or one containing BGT/Budget/Annual
+      let bgtKey=keys.find(k=>k.toLowerCase().includes('annual')||k.toLowerCase().includes('bgt')||k.toLowerCase().includes('budget'));
+      if(!bgtKey)bgtKey=keys[keys.length-1];
+      // Filter only rows with a non-zero Annual BGT
+      const filtered=raw.filter(r=>{const v=r[bgtKey];return v&&parseFloat(v.toString().replace(/[^0-9.]/g,''))>0;});
+      if(type==='capex'){CAPEX_DATA={headers:keys,rows:filtered,bgtKey};localStorage.setItem('abc_capex',JSON.stringify(CAPEX_DATA));}
+      else{OPEX_DATA={headers:keys,rows:filtered,bgtKey};localStorage.setItem('abc_opex',JSON.stringify(OPEX_DATA));}
+      hideL();renderBgtTable(type);
+      document.getElementById(`${type}-zone`).innerHTML=`<i class="fas fa-check-circle" style="color:var(--ok);font-size:28px"></i><p style="color:var(--ok);font-weight:700">${filtered.length} rows loaded with Annual BGT</p><div class="hint">Click to replace file</div>`;
+      toast(`${filtered.length} items loaded!`,'ok');
+    }catch(err){hideL();toast('Failed to read file: '+err.message,'err');}
+  };
+  reader.readAsBinaryString(file);
+}
+function renderBgtTable(type){
+  const data=type==='capex'?CAPEX_DATA:OPEX_DATA;
+  const wrap=document.getElementById(`${type}-table-wrap`);
+  if(!data||!data.rows||!data.rows.length){wrap.innerHTML='';return;}
+  const {headers,rows,bgtKey}=data;
+  const total=rows.reduce((s,r)=>{const v=r[bgtKey];return s+(parseFloat(v?.toString().replace(/[^0-9.]/g,''))||0);},0);
+  let html=`<div class="card"><div class="ch"><div class="ct"><i class="fas fa-table"></i> ${rows.length} Items with Annual Budget</div><span style="font-family:var(--ff);font-weight:800;color:var(--p700);font-size:14px">Total: ${fmtMoney(total)}</span></div><div class="tw"><table class="bgt-table"><thead><tr>`;
+  headers.forEach(h=>{html+=`<th>${h}</th>`;});
+  html+=`</tr></thead><tbody>`;
+  rows.forEach(r=>{
+    html+=`<tr>`;
+    headers.forEach(h=>{
+      const v=r[h]?.toString()||'';
+      const isAmt=h===bgtKey;
+      html+=`<td style="font-size:12px${isAmt?';font-weight:700;color:var(--p700)':''}">${isAmt&&v?fmtMoney(parseFloat(v.replace(/[^0-9.]/g,''))):v}</td>`;
+    });
+    html+=`</tr>`;
+  });
+  html+=`</tbody><tfoot><tr><td colspan="${headers.length-1}" class="bgt-total" style="padding:10px 13px;font-size:12px">Total Annual Budget</td><td class="bgt-total" style="padding:10px 13px;font-size:14px">${fmtMoney(total)}</td></tr></tfoot></table></div></div>`;
+  wrap.innerHTML=html;
+}
+function exportBgtCSV(type){
+  const data=type==='capex'?CAPEX_DATA:OPEX_DATA;
+  if(!data||!data.rows||!data.rows.length){toast('No data to export','wrn');return;}
+  const {headers,rows}=data;
+  const csv=[headers.map(h=>`"${h}"`).join(','),...rows.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`${type}_${td()}.csv`;a.click();toast('Exported!','ok');
 }
 
 // USERS
-async function ldUsers(){
-  showL('Loading users…');
-  try{const res=await api('GET',{action:'getUsers'});if(res.success){USRS=res.users;renderU();}}catch(e){toast('Failed','err');}hideL();
-}
-function renderU(){
-  const tb=document.getElementById('usr-tb');
-  if(!USRS.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty"><h3>No users</h3></div></td></tr>`;return;}
-  tb.innerHTML=USRS.map(u=>`<tr><td style="font-weight:600">${u.fullName}</td><td style="font-size:12px;color:var(--g500)">@${u.username}</td><td><span class="badge ${u.role==='Admin'?'bad':u.role==='Supervisor'?'bsu':'bst'}">${u.role}</span></td><td style="font-size:12px">${u.property||'–'}</td><td><span class="badge ${u.active?'sig':'sir'}" style="background:${u.active?'#D1FAE5':'#FEE2E2'};color:${u.active?'#065F46':'#991B1B'}">${u.active?'Active':'Disabled'}</span></td><td style="display:flex;gap:5px"><button class="btn btn-o btn-sm" onclick='opEditU(${JSON.stringify(u)})'><i class="fas fa-pen"></i></button><button class="btn btn-d btn-sm" onclick="delU('${u.id}','${u.username}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-}
-function openAddU(){document.getElementById('umt').textContent='Add New User';document.getElementById('um-id').value='';['um-nm','um-un','um-pw','um-em'].forEach(id=>document.getElementById(id).value='');document.getElementById('um-rl').value='Staff';document.getElementById('um-pr').value='ABC Verdun Mall';document.getElementById('usr-ov').classList.remove('hid');}
-function opEditU(u){document.getElementById('umt').textContent='Edit User';document.getElementById('um-id').value=u.id;document.getElementById('um-nm').value=u.fullName;document.getElementById('um-un').value=u.username;document.getElementById('um-pw').value='';document.getElementById('um-rl').value=u.role;document.getElementById('um-pr').value=u.property||'ABC Verdun Mall';document.getElementById('um-em').value=u.email||'';document.getElementById('usr-ov').classList.remove('hid');}
+async function ldUsers(){showL('Loading…');try{const res=await api('GET',{action:'getUsers'});if(res.success){USRS=res.users;renderU();}}catch(e){toast('Failed','err');}hideL();}
+function renderU(){const tb=document.getElementById('usr-tb');if(!USRS.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty"><h3>No users</h3></div></td></tr>`;return;}tb.innerHTML=USRS.map(u=>`<tr><td style="font-weight:600">${u.fullName}</td><td style="font-size:12px;color:var(--g500)">@${u.username}</td><td><span class="badge ${u.role==='Admin'?'bad':u.role==='Supervisor'?'bsu':'bst'}">${u.role}</span></td><td style="font-size:12px">${u.property||'–'}</td><td><span class="badge" style="background:${u.active?'#D1FAE5':'#FEE2E2'};color:${u.active?'#065F46':'#991B1B'}">${u.active?'Active':'Disabled'}</span></td><td style="display:flex;gap:5px"><button class="btn btn-o btn-sm" onclick='opEditU(${JSON.stringify(u)})'><i class="fas fa-pen"></i></button><button class="btn btn-d btn-sm" onclick="delU('${u.id}','${u.username}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');}
+function openAddU(){document.getElementById('umt').textContent='Add User';document.getElementById('um-id').value='';['um-nm','um-un','um-pw','um-em'].forEach(id=>document.getElementById(id).value='');document.getElementById('um-rl').value='Staff';document.getElementById('um-pr').value='ABC Verdun Mall';document.getElementById('usr-ov').classList.remove('hid');}
+function opEditU(u){document.getElementById('umt').textContent='Edit User';document.getElementById('um-id').value=u.id;document.getElementById('um-nm').value=u.fullName;document.getElementById('um-un').value=u.username;document.getElementById('um-pw').value='';document.getElementById('um-rl').value=u.role;document.getElementById('um-pr').value=u.property||'';document.getElementById('um-em').value=u.email||'';document.getElementById('usr-ov').classList.remove('hid');}
 function closeUM(){document.getElementById('usr-ov').classList.add('hid');}
-async function saveU(){
-  const id=document.getElementById('um-id').value;
-  const p={fullName:document.getElementById('um-nm').value.trim(),username:document.getElementById('um-un').value.trim(),password:document.getElementById('um-pw').value,role:document.getElementById('um-rl').value,property:document.getElementById('um-pr').value,email:document.getElementById('um-em').value.trim()};
-  if(!p.fullName||!p.username||(!id&&!p.password)){toast('Fill required fields','err');return;}
-  showL('Saving…');const action=id?'updateUser':'addUser';if(id)p.id=id;
-  const res=await api('GET',{action,...p});hideL();
-  if(res.success){toast(id?'Updated!':'Added!','ok');closeUM();ldUsers();}else toast(res.message||'Failed','err');
-}
-async function delU(id,un){
-  if(!confirm(`Remove @${un}?`))return;showL('Removing…');
-  const res=await api('GET',{action:'deleteUser',id,username:un});hideL();
-  if(res.success){toast('Removed','ok');ldUsers();}else toast(res.message||'Failed','err');
-}
-
-// PROFILE
-async function chgPwd(){
-  const o=document.getElementById('pc1').value,n=document.getElementById('pc2').value,c=document.getElementById('pc3').value;
-  if(!o||!n||!c){toast('All fields required','err');return;}
-  if(n!==c){toast('Passwords do not match','err');return;}
-  if(n.length<8){toast('Min 8 characters','err');return;}
-  showL('Updating…');const res=await api('GET',{action:'changePassword',oldPassword:o,newPassword:n});hideL();
-  if(res.success){toast('Password updated!','ok');['pc1','pc2','pc3'].forEach(id=>document.getElementById(id).value='');}
-  else toast(res.message||'Failed','err');
-}
+async function saveU(){const id=document.getElementById('um-id').value;const p={fullName:document.getElementById('um-nm').value.trim(),username:document.getElementById('um-un').value.trim(),password:document.getElementById('um-pw').value,role:document.getElementById('um-rl').value,property:document.getElementById('um-pr').value,email:document.getElementById('um-em').value.trim()};if(!p.fullName||!p.username||(!id&&!p.password)){toast('Fill required fields','err');return;}showL('Saving…');const action=id?'updateUser':'addUser';if(id)p.id=id;const res=await api('GET',{action,...p});hideL();if(res.success){toast(id?'Updated!':'Added!','ok');closeUM();ldUsers();}else toast(res.message||'Failed','err');}
+async function delU(id,un){if(!confirm(`Remove @${un}?`))return;showL('Removing…');const res=await api('GET',{action:'deleteUser',id,username:un});hideL();if(res.success){toast('Removed','ok');ldUsers();}else toast(res.message||'Failed','err');}
+async function chgPwd(){const o=document.getElementById('pc1').value,n=document.getElementById('pc2').value,c=document.getElementById('pc3').value;if(!o||!n||!c){toast('All fields required','err');return;}if(n!==c){toast('Passwords do not match','err');return;}if(n.length<8){toast('Min 8 characters','err');return;}showL('Updating…');const res=await api('GET',{action:'changePassword',oldPassword:o,newPassword:n});hideL();if(res.success){toast('Password updated!','ok');['pc1','pc2','pc3'].forEach(id=>document.getElementById(id).value='');}else toast(res.message||'Failed','err');}
 
 // INIT
 (function(){
