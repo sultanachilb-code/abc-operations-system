@@ -172,6 +172,28 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
 .fbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
 .fbar .fc{flex:1;min-width:180px}
 @media(max-width:720px){.sidebar{display:none}.fgrid,.fg3{grid-template-columns:1fr}.sr{grid-template-columns:1fr 1fr}.ui{display:none}}
+.ho-card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);overflow:hidden;transition:.2s}
+.ho-card:hover{box-shadow:var(--s2);transform:translateY(-1px)}
+.ho-card-hdr{padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--g100)}
+.ho-card-num{font-family:var(--ff);font-weight:800;font-size:13px;color:var(--p700)}
+.ho-card-shift{font-size:11px;color:var(--g400);margin-top:2px}
+.ho-card-body{padding:14px 16px}
+.ho-section{margin-bottom:12px}
+.ho-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g400);margin-bottom:6px}
+.ho-task{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:var(--g700);margin-bottom:4px;line-height:1.4}
+.ho-task i{font-size:11px;margin-top:2px;flex-shrink:0}
+.ho-task-done i{color:var(--ok)}
+.ho-task-pend i{color:var(--warn)}
+.ho-card-ftr{padding:10px 16px;border-top:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;background:var(--g50)}
+.ho-reporter{font-size:11.5px;color:var(--g500)}
+.prio-normal{color:#059669;font-weight:700;font-size:11px}
+.prio-medium{color:#D97706;font-weight:700;font-size:11px}
+.prio-high{color:#DC2626;font-weight:700;font-size:11px}
+.prio-critical{color:#7C3AED;font-weight:700;font-size:11px}
+.ho-input-row{display:flex;align-items:center;gap:8px}
+.ho-input-row .fc{flex:1}
+.ho-rm-btn{background:none;border:none;cursor:pointer;color:var(--g300);font-size:14px;padding:4px;border-radius:var(--r);transition:.15s;flex-shrink:0}
+.ho-rm-btn:hover{color:var(--err);background:#FEF2F2}
 </style>
 </head>
 <body>
@@ -242,6 +264,9 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
       <span class="ns">Incidents</span>
       <button class="ni" onclick="navigate('new-inc',this)"><i class="fas fa-file-circle-plus"></i><span class="nl">New Incident Report</span></button>
       <button class="ni" onclick="navigate('log',this)"><i class="fas fa-list-check"></i><span class="nl">Incidents Log</span><span class="nb" id="sb-ct">–</span></button>
+      <span class="ns">Handover</span>
+      <button class="ni" onclick="navigate('new-ho',this)"><i class="fas fa-rotate"></i><span class="nl">New Handover</span></button>
+      <button class="ni" onclick="navigate('ho-log',this)"><i class="fas fa-book-open"></i><span class="nl">Handover Log</span><span class="nb" id="sb-ho-ct">–</span></button>
       <span class="ns adm" style="display:none">Admin</span>
       <button class="ni adm" style="display:none" onclick="navigate('users',this)"><i class="fas fa-users-gear"></i><span class="nl">User Management</span></button>
       <span class="ns">Account</span>
@@ -398,6 +423,123 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
   <div class="mf"><button class="btn btn-o" onclick="closeDet()">Close</button><button class="btn btn-p" onclick="cpDetEmail()"><i class="fas fa-copy"></i> Copy Email</button></div></div>
 </div>
 
+      <!-- NEW HANDOVER -->
+      <div class="view" id="view-new-ho">
+        <div style="max-width:760px">
+          <div class="ph"><div><div class="pht">New Shift Handover</div><div class="phs">Submit your shift summary to the team</div></div></div>
+
+          <!-- Handover number bar -->
+          <div class="nb-bar" style="background:linear-gradient(135deg,#065F46,#059669)">
+            <div><div class="nl2">Auto-Generated Handover Number</div><div class="nn" id="ho-num-prev">HO-2026-XXXX</div></div>
+            <div class="ns2">Assigned on submit</div>
+          </div>
+
+          <!-- Form card -->
+          <div class="card">
+            <div class="ch"><div class="ct"><i class="fas fa-rotate"></i> Shift Information</div></div>
+            <div class="cb">
+              <div class="fgrid fg3" style="margin-bottom:14px">
+                <div class="fg"><label class="fl">Date <span class="req">*</span></label><input type="date" class="fc" id="ho-dt"/></div>
+                <div class="fg"><label class="fl">Shift <span class="req">*</span></label>
+                  <select class="fc" id="ho-sh">
+                    <option value="">-- Select Shift --</option>
+                    <option>Morning (06:00 – 14:00)</option>
+                    <option>Afternoon (14:00 – 22:00)</option>
+                    <option>Night (22:00 – 06:00)</option>
+                    <option>Full Day</option>
+                  </select>
+                </div>
+                <div class="fg"><label class="fl">Property <span class="req">*</span></label>
+                  <select class="fc" id="ho-pr">
+                    <option>ABC Verdun Mall</option>
+                    <option>Ashrafieh Mall</option>
+                    <option>Dbyeh Mall</option>
+                    <option>Verdun Department Store</option>
+                    <option>Achrafieh Department Store</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Completed Tasks -->
+              <div class="fg" style="margin-bottom:14px">
+                <label class="fl">✅ Completed Tasks <span class="req">*</span></label>
+                <div id="ho-done-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+                <button class="btn btn-o btn-sm" onclick="hoAddItem('done')" style="align-self:flex-start"><i class="fas fa-plus"></i> Add Task</button>
+              </div>
+
+              <!-- Pending Tasks -->
+              <div class="fg" style="margin-bottom:14px">
+                <label class="fl">⏳ Pending Tasks</label>
+                <div id="ho-pend-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+                <button class="btn btn-o btn-sm" onclick="hoAddItem('pend')" style="align-self:flex-start"><i class="fas fa-plus"></i> Add Task</button>
+              </div>
+
+              <!-- Follow-up -->
+              <div class="fg">
+                <label class="fl">🔄 Follow-up Required</label>
+                <textarea class="fc" id="ho-fu" placeholder="Any follow-up actions, escalations, or notes for the next shift…" style="min-height:90px"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Priority & notes -->
+          <div class="card">
+            <div class="ch"><div class="ct"><i class="fas fa-flag"></i> Priority & General Notes</div></div>
+            <div class="cb">
+              <div class="fgrid" style="margin-bottom:14px">
+                <div class="fg"><label class="fl">Overall Priority</label>
+                  <select class="fc" id="ho-prio">
+                    <option value="Normal">Normal</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
+                  </select>
+                </div>
+                <div class="fg"><label class="fl">General Notes</label>
+                  <input type="text" class="fc" id="ho-notes" placeholder="Any additional notes for the team…"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px">
+            <button class="btn btn-o" onclick="previewHO()"><i class="fas fa-eye"></i> Preview</button>
+            <button class="btn btn-p" id="ho-sub-btn" onclick="submitHO()"><i class="fas fa-paper-plane"></i> Broadcast to Team</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HANDOVER LOG -->
+      <div class="view" id="view-ho-log">
+        <div class="ph">
+          <div><div class="pht">Handover Log</div><div class="phs">All shift handovers</div></div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-o btn-sm sup-only" onclick="hoExpCSV()"><i class="fas fa-file-csv"></i> Export</button>
+            <button class="btn btn-p" onclick="navigate('new-ho')"><i class="fas fa-plus"></i> New Handover</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px"><div class="cb" style="padding:14px 16px">
+          <div class="fbar">
+            <input type="text" class="fc" id="hfl-s" placeholder="🔍  Search handovers…" oninput="renderHOLog()"/>
+            <select class="fc" id="hfl-sh" style="width:200px" onchange="renderHOLog()">
+              <option value="">All Shifts</option>
+              <option>Morning (06:00 – 14:00)</option>
+              <option>Afternoon (14:00 – 22:00)</option>
+              <option>Night (22:00 – 06:00)</option>
+              <option>Full Day</option>
+            </select>
+            <select class="fc" id="hfl-p" style="width:155px" onchange="renderHOLog()">
+              <option value="">All Priority</option>
+              <option>Normal</option><option>Medium</option><option>High</option><option>Critical</option>
+            </select>
+            <button class="btn btn-o btn-sm" onclick="ldHO()"><i class="fas fa-rotate"></i> Refresh</button>
+          </div>
+        </div></div>
+
+        <!-- Handover cards grid -->
+        <div id="ho-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px"></div>
+      </div>
+
 <!-- USER MODAL -->
 <div class="overlay hid" id="usr-ov">
   <div class="modal" style="max-width:500px"><div class="mhdr"><div class="mt" id="umt">Add User</div><button class="mc" onclick="closeUM()"><i class="fas fa-xmark"></i></button></div>
@@ -415,6 +557,21 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
     <div class="fg"><label class="fl">Email</label><input type="email" class="fc" id="um-em" placeholder="user@abcmall.com.lb"/></div>
   </div>
   <div class="mf"><button class="btn btn-o" onclick="closeUM()">Cancel</button><button class="btn btn-p" onclick="saveU()"><i class="fas fa-floppy-disk"></i> Save User</button></div></div>
+</div>
+
+<!-- HANDOVER PREVIEW MODAL -->
+<div class="overlay hid" id="ho-prev-ov">
+  <div class="modal" style="max-width:660px">
+    <div class="mhdr">
+      <div class="mt" id="ho-prev-title">Handover Preview</div>
+      <button class="mc" onclick="document.getElementById('ho-prev-ov').classList.add('hid')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="mb" id="ho-prev-body"></div>
+    <div class="mf">
+      <button class="btn btn-o" onclick="document.getElementById('ho-prev-ov').classList.add('hid')">Close</button>
+      <button class="btn btn-p" onclick="submitHO(true)"><i class="fas fa-paper-plane"></i> Confirm & Broadcast</button>
+    </div>
+  </div>
 </div>
 
 <div id="toasts"></div>
@@ -511,6 +668,8 @@ function navigate(v,btn){
   if(v==='log')ldInc();
   if(v==='users'&&SES.role==='Admin')ldUsers();
   if(v==='dashboard')ldDash();
+  if(v==='new-ho')hoResetForm();
+  if(v==='ho-log')ldHO();
 }
 function toggleSB(){sbCol=!sbCol;document.getElementById('sb').classList.toggle('col',sbCol);}
 
@@ -668,6 +827,200 @@ async function chgPwd(){
   showL('Updating…');const res=await api('POST',{action:'changePassword',oldPassword:o,newPassword:n});hideL();
   if(res.success){toast('Password updated!','ok');['pc1','pc2','pc3'].forEach(id=>document.getElementById(id).value='');}
   else toast(res.message||'Failed','err');
+}
+
+// ══ HANDOVER MODULE ═══════════════════════════════════════
+let HOS = [];
+
+function hoNextNum() {
+  const yr = new Date().getFullYear();
+  const existing = HOS.filter(h => (h['Handover #']||'').startsWith(`HO-${yr}-`));
+  const nums = existing.map(h => parseInt((h['Handover #']||'').split('-')[2])||0);
+  return `HO-${yr}-${String((nums.length?Math.max(...nums):0)+1).padStart(4,'0')}`;
+}
+
+function hoResetForm() {
+  document.getElementById('ho-dt').value = td();
+  document.getElementById('ho-sh').value = '';
+  document.getElementById('ho-pr').value = SES?.property || 'ABC Verdun Mall';
+  document.getElementById('ho-fu').value = '';
+  document.getElementById('ho-notes').value = '';
+  document.getElementById('ho-prio').value = 'Normal';
+  document.getElementById('ho-done-list').innerHTML = '';
+  document.getElementById('ho-pend-list').innerHTML = '';
+  hoAddItem('done'); hoAddItem('pend');
+}
+
+function hoAddItem(type) {
+  const list = document.getElementById(`ho-${type}-list`);
+  const row = document.createElement('div');
+  row.className = 'ho-input-row';
+  const icon = type === 'done' ? 'fa-check-circle' : 'fa-clock';
+  const color = type === 'done' ? 'var(--ok)' : 'var(--warn)';
+  row.innerHTML = `<i class="fas ${icon}" style="color:${color};font-size:14px;flex-shrink:0"></i>
+    <input type="text" class="fc" placeholder="${type==='done'?'Completed task…':'Pending task…'}" style="flex:1"/>
+    <button class="ho-rm-btn" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>`;
+  list.appendChild(row);
+  row.querySelector('input').focus();
+}
+
+function hoGetTasks(type) {
+  return Array.from(document.querySelectorAll(`#ho-${type}-list input`))
+    .map(i => i.value.trim()).filter(Boolean);
+}
+
+function hoGetFormData() {
+  return {
+    date:     document.getElementById('ho-dt').value,
+    shift:    document.getElementById('ho-sh').value,
+    property: document.getElementById('ho-pr').value,
+    priority: document.getElementById('ho-prio').value,
+    notes:    document.getElementById('ho-notes').value,
+    followup: document.getElementById('ho-fu').value,
+    done:     hoGetTasks('done'),
+    pending:  hoGetTasks('pend'),
+  };
+}
+
+function previewHO() {
+  const d = hoGetFormData();
+  if (!d.date || !d.shift) { toast('Please fill Date and Shift','err'); return; }
+  if (!d.done.length) { toast('Add at least one completed task','err'); return; }
+  const num = hoNextNum();
+  document.getElementById('ho-prev-title').textContent = `Handover Preview — ${num}`;
+  document.getElementById('ho-prev-body').innerHTML = buildHOCard({
+    'Handover #': num, 'Date': d.date, 'Shift': d.shift,
+    'Property': d.property, 'Priority': d.priority,
+    'Completed Tasks': d.done.join(' | '),
+    'Pending Tasks': d.pending.join(' | '),
+    'Follow-up': d.followup, 'Notes': d.notes,
+    'Reporter': SES?.fullName, '_preview': true
+  });
+  document.getElementById('ho-prev-ov').classList.remove('hid');
+}
+
+async function submitHO(fromPreview=false) {
+  const d = hoGetFormData();
+  if (!d.date || !d.shift) { toast('Date and Shift are required','err'); return; }
+  if (!d.done.length) { toast('Add at least one completed task','err'); return; }
+
+  if (!fromPreview) { previewHO(); return; }
+
+  document.getElementById('ho-prev-ov').classList.add('hid');
+  const btn = document.getElementById('ho-sub-btn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…';
+  showL('Broadcasting handover…');
+
+  const payload = {
+    date: d.date, shift: d.shift, property: d.property,
+    priority: d.priority, notes: d.notes, followup: d.followup,
+    done: d.done.join(' | '), pending: d.pending.join(' | ')
+  };
+
+  try {
+    const res = await api('GET', { action: 'submitHandover', data: encodeURIComponent(JSON.stringify(payload)) });
+    hideL();
+    if (res.success) {
+      toast(`✅ ${res.handoverNumber} broadcast to team!`, 'ok');
+      setTimeout(() => { navigate('ho-log'); ldHO(); }, 900);
+    } else toast(res.message || 'Submission failed', 'err');
+  } catch(e) { hideL(); toast('Connection error', 'err'); }
+
+  btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Broadcast to Team';
+}
+
+async function ldHO() {
+  showL('Loading handovers…');
+  try {
+    const res = await api('GET', { action: 'getHandovers' });
+    if (res.success) {
+      HOS = res.handovers;
+      document.getElementById('sb-ho-ct').textContent = HOS.length;
+      renderHOLog();
+    } else toast(res.message || 'Failed to load', 'err');
+  } catch(e) { toast('Connection error', 'err'); }
+  hideL();
+}
+
+function renderHOLog() {
+  const s = (document.getElementById('hfl-s').value || '').toLowerCase();
+  const sh = document.getElementById('hfl-sh').value;
+  const p  = document.getElementById('hfl-p').value;
+  let fl = HOS.filter(h =>
+    (!s  || JSON.stringify(h).toLowerCase().includes(s)) &&
+    (!sh || h['Shift'] === sh) &&
+    (!p  || h['Priority'] === p)
+  );
+  const grid = document.getElementById('ho-cards-grid');
+  if (!fl.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty"><i class="fas fa-book-open"></i><h3>No handovers found</h3><p>Adjust filters or submit a new handover</p></div></div>`;
+    return;
+  }
+  grid.innerHTML = fl.map(h => buildHOCard(h)).join('');
+}
+
+function buildHOCard(h) {
+  const num  = h['Handover #'] || '–';
+  const date = fd(h['Date'] || h.date || '');
+  const shift = h['Shift'] || h.shift || '–';
+  const prop  = h['Property'] || h.property || '–';
+  const prio  = h['Priority'] || h.priority || 'Normal';
+  const rep   = h['Reporter'] || h.reporter || '–';
+  const done  = (h['Completed Tasks'] || h.done || '').split(' | ').filter(Boolean);
+  const pend  = (h['Pending Tasks']   || h.pending || '').split(' | ').filter(Boolean);
+  const fu    = h['Followup'] || h['Follow-up'] || h.followup || '';
+  const notes = h['Notes'] || h.notes || '';
+  const prioClass = `prio-${prio.toLowerCase()}`;
+  const shiftIcon = shift.includes('Morning') ? 'fa-sun' : shift.includes('Afternoon') ? 'fa-cloud-sun' : shift.includes('Night') ? 'fa-moon' : 'fa-calendar-day';
+
+  const doneTasks = done.map(t => `<div class="ho-task ho-task-done"><i class="fas fa-check-circle"></i><span>${t}</span></div>`).join('');
+  const pendTasks = pend.length ? pend.map(t => `<div class="ho-task ho-task-pend"><i class="fas fa-clock"></i><span>${t}</span></div>`).join('') : '';
+  const fuHtml = fu ? `<div class="ho-section"><div class="ho-section-title">🔄 Follow-up</div><div style="font-size:12.5px;color:var(--g600);line-height:1.5">${fu}</div></div>` : '';
+  const notesHtml = notes ? `<div style="font-size:11.5px;color:var(--g400);margin-top:4px;font-style:italic">${notes}</div>` : '';
+  const canDel = !h._preview && SES?.role === 'Admin';
+
+  return `<div class="ho-card">
+    <div class="ho-card-hdr">
+      <div>
+        <div class="ho-card-num"><i class="fas fa-rotate" style="color:var(--ok);margin-right:5px"></i>${num}</div>
+        <div class="ho-card-shift"><i class="fas ${shiftIcon}" style="margin-right:4px"></i>${shift} &nbsp;·&nbsp; ${date} &nbsp;·&nbsp; ${prop}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="${prioClass}">${prio}</span>
+        ${canDel ? `<button class="btn btn-d btn-sm" onclick="delHO('${num}')"><i class="fas fa-trash"></i></button>` : ''}
+      </div>
+    </div>
+    <div class="ho-card-body">
+      ${doneTasks ? `<div class="ho-section"><div class="ho-section-title">✅ Completed</div>${doneTasks}</div>` : ''}
+      ${pendTasks ? `<div class="ho-section"><div class="ho-section-title">⏳ Pending</div>${pendTasks}</div>` : ''}
+      ${fuHtml}
+      ${notesHtml}
+    </div>
+    <div class="ho-card-ftr">
+      <span class="ho-reporter"><i class="fas fa-user" style="margin-right:4px;color:var(--g300)"></i>${rep}</span>
+      <span style="font-size:11px;color:var(--g300)">${h['Submitted At'] ? new Date(h['Submitted At']).toLocaleString() : ''}</span>
+    </div>
+  </div>`;
+}
+
+async function delHO(num) {
+  if (!confirm(`Delete handover ${num}?`)) return;
+  showL('Deleting…');
+  const res = await api('GET', { action: 'deleteHandover', handoverNumber: num });
+  hideL();
+  if (res.success) { toast('Deleted', 'ok'); ldHO(); }
+  else toast(res.message || 'Failed', 'err');
+}
+
+function hoExpCSV() {
+  if (!HOS.length) { toast('No data to export', 'wrn'); return; }
+  const h = ['Handover #','Date','Shift','Property','Priority','Completed Tasks','Pending Tasks','Follow-up','Notes','Reporter','Submitted At'];
+  const rows = HOS.map(i => h.map(k => `"${(i[k]||'').toString().replace(/"/g,'""')}"`).join(','));
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent([h.map(k=>`"${k}"`).join(','),...rows].join('\n'));
+  a.download = `ABC_Handovers_${td()}.csv`;
+  a.click();
+  toast('CSV exported!', 'ok');
 }
 
 // ══ INIT ══════════════════════════════════════════════
