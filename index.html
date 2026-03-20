@@ -173,24 +173,42 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
 .fbar .fc{flex:1;min-width:180px}
 @media(max-width:720px){.sidebar{display:none}.fgrid,.fg3{grid-template-columns:1fr}.sr{grid-template-columns:1fr 1fr}.ui{display:none}}
 .ho-sec-label{font-size:11.5px;color:var(--g400);margin-bottom:10px;font-style:italic}
-.ho-row{display:flex;align-items:center;gap:8px}
+.ho-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .ho-row .fc{flex:1}
 .ho-rm-btn{background:none;border:none;cursor:pointer;color:var(--g300);font-size:14px;padding:4px 6px;border-radius:var(--r);transition:.15s;flex-shrink:0}
 .ho-rm-btn:hover{color:var(--err);background:#FEF2F2}
-.ho-time-inp{width:100px!important;flex:none!important}
-.ho-card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);overflow:hidden;transition:.2s}
-.ho-card:hover{box-shadow:var(--s2);transform:translateY(-1px)}
-.ho-card-hdr{padding:0}
-.ho-section-bar{padding:10px 16px;font-family:var(--ff);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
-.ho-section-bar.blue{background:#EFF6FF;color:#1E40AF;border-bottom:2px solid #BFDBFE}
-.ho-section-bar.green{background:#F0FDF4;color:#166534;border-bottom:2px solid #BBF7D0}
-.ho-section-bar.orange{background:#FFF7ED;color:#9A3412;border-bottom:2px solid #FED7AA}
-.ho-section-bar.purple{background:#F5F3FF;color:#5B21B6;border-bottom:2px solid #DDD6FE}
-.ho-section-bar.gray{background:var(--g50);color:var(--g600);border-bottom:2px solid var(--g200)}
-.ho-task-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:13px;color:var(--g700);line-height:1.5}
-.ho-task-item i{font-size:12px;margin-top:2px;flex-shrink:0}
-.ho-card-body{padding:14px 16px}
-.ho-card-ftr{padding:9px 16px;border-top:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;background:var(--g50)}
+.ho-time-inp{width:120px!important;flex:none!important}
+
+/* Section bars in form */
+.ho-bar{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-radius:var(--rl) var(--rl) 0 0}
+.ho-bar-title{display:flex;align-items:center;gap:8px;font-family:var(--ff);font-weight:800;font-size:13px;color:white}
+
+/* Detail page section styling */
+.hd-section{margin-bottom:0;border-radius:0}
+.hd-section:last-child{border-radius:0 0 var(--rl) var(--rl)}
+.hd-bar{padding:10px 18px;display:flex;align-items:center;gap:8px;font-family:var(--ff);font-weight:700;font-size:12px;letter-spacing:.3px}
+.hd-bar.blue{background:#EFF6FF;color:#1D4ED8;border-left:4px solid #3B82F6}
+.hd-bar.green{background:#F0FDF4;color:#15803D;border-left:4px solid #22C55E}
+.hd-bar.orange{background:#FFF7ED;color:#C2410C;border-left:4px solid #F97316}
+.hd-bar.purple{background:#F5F3FF;color:#6D28D9;border-left:4px solid #8B5CF6}
+.hd-bar.gray{background:var(--g50);color:var(--g600);border-left:4px solid var(--g300)}
+.hd-bar.notes{background:#FEFCE8;color:#854D0E;border-left:4px solid #EAB308}
+.hd-items{padding:12px 18px 14px 28px}
+.hd-item{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--g700);margin-bottom:6px;line-height:1.5}
+.hd-item:last-child{margin-bottom:0}
+.hd-item i{font-size:11px;margin-top:3px;flex-shrink:0}
+.hd-meta{display:flex;align-items:center;gap:16px;padding:12px 18px;background:var(--g50);border-top:1px solid var(--g100);font-size:12px;color:var(--g500);flex-wrap:wrap;border-radius:0 0 var(--rl) var(--rl)}
+.hd-meta span{display:flex;align-items:center;gap:5px}
+
+/* Log cards */
+.ho-card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);overflow:hidden;cursor:pointer;transition:.2s}
+.ho-card:hover{box-shadow:var(--s2);transform:translateY(-2px);border-color:var(--p400)}
+.ho-card-hdr{padding:14px 16px;border-bottom:1px solid var(--g100)}
+.ho-card-num{font-family:var(--ff);font-weight:800;font-size:13.5px;color:var(--ok);display:flex;align-items:center;gap:6px}
+.ho-card-shift{font-size:11.5px;color:var(--g400);margin-top:3px;display:flex;align-items:center;gap:5px}
+.ho-card-preview{padding:12px 16px}
+.ho-card-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--ff);margin:2px}
+.ho-card-ftr{padding:9px 16px;background:var(--g50);border-top:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--g400)}
 .prio-normal{color:#059669;font-weight:700;font-size:11px}
 .prio-medium{color:#D97706;font-weight:700;font-size:11px}
 .prio-high{color:#DC2626;font-weight:700;font-size:11px}
@@ -461,9 +479,9 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
 
           <!-- SCHEDULED WORKS -->
           <div class="card">
-            <div class="ch" style="background:linear-gradient(135deg,#1E3A5F,#2563EB);border-radius:var(--rl) var(--rl) 0 0">
-              <div class="ct" style="color:white"><i class="fas fa-hard-hat"></i> Scheduled Works</div>
-              <button class="btn btn-sm" onclick="hoAdd('sw')" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3)"><i class="fas fa-plus"></i> Add</button>
+            <div class="ho-bar" style="background:linear-gradient(135deg,#1E3A5F,#2563EB)">
+              <div class="ho-bar-title"><i class="fas fa-hard-hat"></i> Scheduled Works</div>
+              <button class="btn btn-sm" onclick="hoAdd('sw')" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> Add</button>
             </div>
             <div class="cb">
               <div class="ho-sec-label">Fit-out / Overnight Access Works</div>
@@ -474,9 +492,9 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
 
           <!-- TODAY OPERATIONS -->
           <div class="card">
-            <div class="ch" style="background:linear-gradient(135deg,#065F46,#059669);border-radius:var(--rl) var(--rl) 0 0">
-              <div class="ct" style="color:white"><i class="fas fa-sun"></i> Today — Operations</div>
-              <button class="btn btn-sm" onclick="hoAdd('ops')" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3)"><i class="fas fa-plus"></i> Add</button>
+            <div class="ho-bar" style="background:linear-gradient(135deg,#065F46,#059669)">
+              <div class="ho-bar-title"><i class="fas fa-sun"></i> Today — Operations</div>
+              <button class="btn btn-sm" onclick="hoAdd('ops')" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> Add</button>
             </div>
             <div class="cb">
               <div class="ho-sec-label">Operational tasks, events, and activities for today</div>
@@ -487,9 +505,9 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
 
           <!-- TODAY SOFT SERVICES -->
           <div class="card">
-            <div class="ch" style="background:linear-gradient(135deg,#7C2D12,#EA580C);border-radius:var(--rl) var(--rl) 0 0">
-              <div class="ct" style="color:white"><i class="fas fa-broom"></i> Today — Soft Services</div>
-              <button class="btn btn-sm" onclick="hoAdd('ss')" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3)"><i class="fas fa-plus"></i> Add</button>
+            <div class="ho-bar" style="background:linear-gradient(135deg,#7C2D12,#EA580C)">
+              <div class="ho-bar-title"><i class="fas fa-broom"></i> Today — Soft Services</div>
+              <button class="btn btn-sm" onclick="hoAdd('ss')" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> Add</button>
             </div>
             <div class="cb">
               <div class="ho-sec-label">Cleaning, pest control, waste, landscaping tasks for today</div>
@@ -500,9 +518,9 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
 
           <!-- TOMORROW -->
           <div class="card">
-            <div class="ch" style="background:linear-gradient(135deg,#4A0E8F,#7C3AED);border-radius:var(--rl) var(--rl) 0 0">
-              <div class="ct" style="color:white"><i class="fas fa-calendar-day"></i> Tomorrow's Tasks</div>
-              <button class="btn btn-sm" onclick="hoAdd('tmr')" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3)"><i class="fas fa-plus"></i> Add</button>
+            <div class="ho-bar" style="background:linear-gradient(135deg,#4A0E8F,#7C3AED)">
+              <div class="ho-bar-title"><i class="fas fa-calendar-day"></i> Tomorrow's Tasks</div>
+              <button class="btn btn-sm" onclick="hoAdd('tmr')" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> Add</button>
             </div>
             <div class="cb">
               <div class="ho-sec-label">Tasks and reminders scheduled for tomorrow</div>
@@ -513,9 +531,9 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
 
           <!-- DAY AFTER TOMORROW -->
           <div class="card">
-            <div class="ch" style="background:linear-gradient(135deg,#374151,#6B7280);border-radius:var(--rl) var(--rl) 0 0">
-              <div class="ct" style="color:white"><i class="fas fa-calendar-week"></i> Day After Tomorrow</div>
-              <button class="btn btn-sm" onclick="hoAdd('dat')" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3)"><i class="fas fa-plus"></i> Add</button>
+            <div class="ho-bar" style="background:linear-gradient(135deg,#374151,#6B7280)">
+              <div class="ho-bar-title"><i class="fas fa-calendar-week"></i> Day After Tomorrow</div>
+              <button class="btn btn-sm" onclick="hoAdd('dat')" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> Add</button>
             </div>
             <div class="cb">
               <div class="ho-sec-label" id="ho-dat-label">Tasks for the day after tomorrow</div>
@@ -539,7 +557,7 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
         </div>
       </div>
 
-      <!-- HANDOVER LOG -->      <!-- HANDOVER LOG -->
+      <!-- HANDOVER LOG -->
       <div class="view" id="view-ho-log">
         <div class="ph">
           <div><div class="pht">Handover Log</div><div class="phs">All shift handovers</div></div>
@@ -558,38 +576,30 @@ textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
               <option>Night (22:00 – 06:00)</option>
               <option>Full Day</option>
             </select>
-            <select class="fc" id="hfl-p" style="width:155px" onchange="renderHOLog()">
-              <option value="">All Priority</option>
-              <option>Normal</option><option>Medium</option><option>High</option><option>Critical</option>
-            </select>
             <button class="btn btn-o btn-sm" onclick="ldHO()"><i class="fas fa-rotate"></i> Refresh</button>
           </div>
         </div></div>
-
-        <!-- Handover cards grid -->
-        <div id="ho-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px"></div>
+        <div id="ho-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px"></div>
       </div>
 
-<!-- USER MODAL -->
-<div class="overlay hid" id="usr-ov">
-  <div class="modal" style="max-width:500px"><div class="mhdr"><div class="mt" id="umt">Add User</div><button class="mc" onclick="closeUM()"><i class="fas fa-xmark"></i></button></div>
-  <div class="mb">
-    <input type="hidden" id="um-id"/>
-    <div class="fg"><label class="fl">Full Name <span class="req">*</span></label><input type="text" class="fc" id="um-nm" placeholder="e.g. Ahmad Khalil"/></div>
-    <div class="fgrid" style="margin-bottom:14px">
-      <div class="fg"><label class="fl">Username <span class="req">*</span></label><input type="text" class="fc" id="um-un" placeholder="e.g. ahmad.khalil"/></div>
-      <div class="fg"><label class="fl">Password <span class="req">*</span></label><input type="password" class="fc" id="um-pw" placeholder="Min 8 characters"/></div>
-    </div>
-    <div class="fgrid" style="margin-bottom:14px">
-      <div class="fg"><label class="fl">Role <span class="req">*</span></label><select class="fc" id="um-rl"><option>Staff</option><option>Supervisor</option><option>Admin</option></select></div>
-      <div class="fg"><label class="fl">Property</label><select class="fc" id="um-pr"><option>ABC Verdun Mall</option><option>Ashrafieh Mall</option><option>Dbyeh Mall</option><option>Verdun Department Store</option><option>Achrafieh Department Store</option></select></div>
-    </div>
-    <div class="fg"><label class="fl">Email</label><input type="email" class="fc" id="um-em" placeholder="user@abcmall.com.lb"/></div>
-  </div>
-  <div class="mf"><button class="btn btn-o" onclick="closeUM()">Cancel</button><button class="btn btn-p" onclick="saveU()"><i class="fas fa-floppy-disk"></i> Save User</button></div></div>
-</div>
+      <!-- HANDOVER DETAIL PAGE -->
+      <div class="view" id="view-ho-detail">
+        <div style="max-width:760px">
+          <div class="ph">
+            <div>
+              <div class="pht" id="hd-title">Handover Detail</div>
+              <div class="phs" id="hd-sub">–</div>
+            </div>
+            <div style="display:flex;gap:9px">
+              <button class="btn btn-o" onclick="navigate('ho-log')"><i class="fas fa-arrow-left"></i> Back to Log</button>
+              <button class="btn btn-p adm" id="hd-del-btn" style="display:none" onclick="delHOFromDetail()"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          </div>
+          <div id="hd-content"></div>
+        </div>
+      </div>
 
-<!-- HANDOVER PREVIEW MODAL -->
+<!-- HANDOVER PREVIEW MODAL --><!-- HANDOVER PREVIEW MODAL -->
 <div class="overlay hid" id="ho-prev-ov">
   <div class="modal" style="max-width:660px">
     <div class="mhdr">
@@ -860,15 +870,7 @@ async function chgPwd(){
 }
 
 // ══ HANDOVER MODULE ═══════════════════════════════════════
-let HOS = [];
-
-const HO_SECTIONS = {
-  sw:  { label:'Scheduled Works',        icon:'fa-hard-hat',    color:'#2563EB', bullet:'fa-wrench',       bulletColor:'#2563EB' },
-  ops: { label:'Today — Operations',     icon:'fa-sun',         color:'#059669', bullet:'fa-circle-dot',   bulletColor:'#059669' },
-  ss:  { label:'Today — Soft Services',  icon:'fa-broom',       color:'#EA580C', bullet:'fa-circle-dot',   bulletColor:'#EA580C' },
-  tmr: { label:"Tomorrow's Tasks",       icon:'fa-calendar-day',color:'#7C3AED', bullet:'fa-circle-dot',   bulletColor:'#7C3AED' },
-  dat: { label:'Day After Tomorrow',     icon:'fa-calendar-week',color:'#6B7280',bullet:'fa-circle-dot',   bulletColor:'#6B7280' },
-};
+let HOS = [], currentHO = null;
 
 function hoResetForm() {
   document.getElementById('ho-dt').value = td();
@@ -879,7 +881,6 @@ function hoResetForm() {
     document.getElementById(`ho-${s}-list`).innerHTML = '';
     hoAdd(s);
   });
-  // Set day-after label
   const dat = new Date(); dat.setDate(dat.getDate()+2);
   document.getElementById('ho-dat-label').textContent =
     'Tasks for ' + dat.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
@@ -889,9 +890,10 @@ function hoAdd(sec) {
   const list = document.getElementById(`ho-${sec}-list`);
   const row  = document.createElement('div');
   row.className = 'ho-row';
-  const cfg = HO_SECTIONS[sec];
+  const colors = {sw:'#2563EB',ops:'#059669',ss:'#EA580C',tmr:'#7C3AED',dat:'#6B7280'};
+  const c = colors[sec];
   row.innerHTML = `
-    <i class="fas ${cfg.bullet}" style="color:${cfg.bulletColor};font-size:12px;flex-shrink:0;margin-top:11px"></i>
+    <i class="fas fa-circle-dot" style="color:${c};font-size:12px;flex-shrink:0"></i>
     <input type="text" class="fc" placeholder="Enter item…" style="flex:1"/>
     ${sec==='sw'?`<input type="text" class="fc ho-time-inp" placeholder="Time e.g. After 7PM"/>`:'' }
     <button class="ho-rm-btn" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>`;
@@ -900,8 +902,7 @@ function hoAdd(sec) {
 }
 
 function hoGetSection(sec) {
-  const rows = document.querySelectorAll(`#ho-${sec}-list .ho-row`);
-  return Array.from(rows).map(r => {
+  return Array.from(document.querySelectorAll(`#ho-${sec}-list .ho-row`)).map(r => {
     const inputs = r.querySelectorAll('input');
     const text = inputs[0]?.value.trim() || '';
     const time = inputs[1]?.value.trim() || '';
@@ -912,75 +913,66 @@ function hoGetSection(sec) {
 
 function hoGetFormData() {
   return {
-    date:     document.getElementById('ho-dt').value,
-    shift:    document.getElementById('ho-sh').value,
+    date: document.getElementById('ho-dt').value,
+    shift: document.getElementById('ho-sh').value,
     property: document.getElementById('ho-pr').value,
-    notes:    document.getElementById('ho-notes').value,
-    sw:       hoGetSection('sw'),
-    ops:      hoGetSection('ops'),
-    ss:       hoGetSection('ss'),
-    tmr:      hoGetSection('tmr'),
-    dat:      hoGetSection('dat'),
+    notes: document.getElementById('ho-notes').value,
+    sw:  hoGetSection('sw'),
+    ops: hoGetSection('ops'),
+    ss:  hoGetSection('ss'),
+    tmr: hoGetSection('tmr'),
+    dat: hoGetSection('dat'),
   };
 }
 
 function previewHO() {
   const d = hoGetFormData();
   if (!d.date || !d.shift) { toast('Please fill Date and Shift','err'); return; }
-  const num = 'HO-PREVIEW';
-  document.getElementById('ho-prev-title').textContent = `Handover Preview`;
-  document.getElementById('ho-prev-body').innerHTML = buildHOCard({
-    'Handover #': num, 'Date': d.date, 'Shift': d.shift, 'Property': d.property,
-    'Scheduled Works': d.sw.join('|||'),
-    'Ops Tasks':  d.ops.join('|||'),
-    'SS Tasks':   d.ss.join('|||'),
-    'Tmr Tasks':  d.tmr.join('|||'),
-    'Dat Tasks':  d.dat.join('|||'),
-    'Notes': d.notes, 'Reporter': SES?.fullName, '_preview': true
-  });
+  const mockH = {
+    'Handover #':'HO-PREVIEW','Date':d.date,'Shift':d.shift,'Property':d.property,
+    'Scheduled Works':d.sw.join('|||'),'Ops Tasks':d.ops.join('|||'),
+    'SS Tasks':d.ss.join('|||'),'Tmr Tasks':d.tmr.join('|||'),
+    'Dat Tasks':d.dat.join('|||'),'Notes':d.notes,'Reporter':SES?.fullName,
+  };
+  document.getElementById('ho-prev-title').textContent = 'Handover Preview';
+  document.getElementById('ho-prev-body').innerHTML = buildHODetail(mockH);
   document.getElementById('ho-prev-ov').classList.remove('hid');
 }
 
 async function submitHO(fromPreview=false) {
   const d = hoGetFormData();
   if (!d.date || !d.shift) { toast('Date and Shift are required','err'); return; }
-  const hasContent = d.sw.length || d.ops.length || d.ss.length || d.tmr.length || d.dat.length || d.notes;
-  if (!hasContent) { toast('Please add at least one item to any section','err'); return; }
+  const hasContent = d.sw.length||d.ops.length||d.ss.length||d.tmr.length||d.dat.length||d.notes;
+  if (!hasContent) { toast('Please add at least one item','err'); return; }
   if (!fromPreview) { previewHO(); return; }
-
   document.getElementById('ho-prev-ov').classList.add('hid');
   const btn = document.getElementById('ho-sub-btn');
   btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Submitting…';
   showL('Broadcasting handover…');
-
   const payload = {
-    date: d.date, shift: d.shift, property: d.property, notes: d.notes,
-    sw:  d.sw.join('|||'),  ops: d.ops.join('|||'),
-    ss:  d.ss.join('|||'),  tmr: d.tmr.join('|||'),
-    dat: d.dat.join('|||'),
+    date:d.date, shift:d.shift, property:d.property, notes:d.notes,
+    sw:d.sw.join('|||'), ops:d.ops.join('|||'),
+    ss:d.ss.join('|||'), tmr:d.tmr.join('|||'), dat:d.dat.join('|||'),
   };
-
   try {
-    const res = await api('GET', { action:'submitHandover', data: encodeURIComponent(JSON.stringify(payload)) });
+    const res = await api('GET',{action:'submitHandover',data:encodeURIComponent(JSON.stringify(payload))});
     hideL();
-    if (res.success) {
-      toast(`✅ ${res.handoverNumber} broadcast to team!`,'ok');
-      setTimeout(()=>{ navigate('ho-log'); ldHO(); }, 900);
-    } else toast(res.message||'Failed','err');
-  } catch(e) { hideL(); toast('Connection error','err'); }
+    if (res.success) { toast(`✅ ${res.handoverNumber} broadcast!`,'ok'); setTimeout(()=>{navigate('ho-log');ldHO();},900); }
+    else toast(res.message||'Failed','err');
+  } catch(e){ hideL(); toast('Connection error','err'); }
   btn.disabled=false; btn.innerHTML='<i class="fas fa-paper-plane"></i> Broadcast to Team';
 }
 
 async function ldHO() {
   showL('Loading handovers…');
   try {
-    const res = await api('GET', { action:'getHandovers' });
+    const res = await api('GET',{action:'getHandovers'});
     if (res.success) {
       HOS = res.handovers;
       document.getElementById('sb-ho-ct').textContent = HOS.length;
       renderHOLog();
     } else toast(res.message||'Failed','err');
-  } catch(e) { toast('Connection error','err'); }
+  } catch(e){ toast('Connection error','err'); }
   hideL();
 }
 
@@ -996,88 +988,127 @@ function renderHOLog() {
     grid.innerHTML=`<div style="grid-column:1/-1"><div class="empty"><i class="fas fa-book-open"></i><h3>No handovers found</h3><p>Submit a new handover to get started</p></div></div>`;
     return;
   }
-  grid.innerHTML = fl.map(h => buildHOCard(h)).join('');
+  grid.innerHTML = fl.map((h,i) => buildHOCard(h,i)).join('');
 }
 
 function hoSplit(val) {
   return (val||'').split('|||').map(s=>s.trim()).filter(Boolean);
 }
 
-function buildHOCard(h) {
+// ── SUMMARY CARD (in log grid) ────────────────────────
+function buildHOCard(h, idx) {
   const num   = h['Handover #']||'–';
   const date  = fd(h['Date']||'');
   const shift = h['Shift']||'–';
   const prop  = h['Property']||'–';
   const rep   = h['Reporter']||'–';
+  const sw    = hoSplit(h['Scheduled Works']);
+  const ops   = hoSplit(h['Ops Tasks']);
+  const ss    = hoSplit(h['SS Tasks']);
+  const tmr   = hoSplit(h['Tmr Tasks']);
+  const dat   = hoSplit(h['Dat Tasks']);
   const notes = h['Notes']||'';
+  const shiftIcon = shift.includes('Morning')?'fa-sun':shift.includes('Afternoon')?'fa-cloud-sun':shift.includes('Night')?'fa-moon':'fa-rotate';
 
-  const sw  = hoSplit(h['Scheduled Works']);
-  const ops = hoSplit(h['Ops Tasks']);
-  const ss  = hoSplit(h['SS Tasks']);
-  const tmr = hoSplit(h['Tmr Tasks']);
-  const dat = hoSplit(h['Dat Tasks']);
+  const tags = [
+    sw.length  ? `<span class="ho-card-tag" style="background:#EFF6FF;color:#1D4ED8"><i class="fas fa-hard-hat"></i> ${sw.length} work${sw.length>1?'s':''}</span>` : '',
+    ops.length ? `<span class="ho-card-tag" style="background:#F0FDF4;color:#15803D"><i class="fas fa-sun"></i> ${ops.length} ops</span>` : '',
+    ss.length  ? `<span class="ho-card-tag" style="background:#FFF7ED;color:#C2410C"><i class="fas fa-broom"></i> ${ss.length} soft svc</span>` : '',
+    tmr.length ? `<span class="ho-card-tag" style="background:#F5F3FF;color:#6D28D9"><i class="fas fa-calendar-day"></i> ${tmr.length} tmr</span>` : '',
+    dat.length ? `<span class="ho-card-tag" style="background:var(--g100);color:var(--g600)"><i class="fas fa-calendar-week"></i> ${dat.length} upcoming</span>` : '',
+  ].filter(Boolean).join('');
 
-  // Tomorrow & day-after labels based on handover date
+  // First item preview from any section
+  const preview = [...sw,...ops,...ss].slice(0,2).map(t=>`<div style="font-size:12px;color:var(--g500);padding:2px 0;display:flex;align-items:flex-start;gap:6px"><i class="fas fa-circle-dot" style="font-size:9px;margin-top:4px;color:var(--g300)"></i><span>${t}</span></div>`).join('');
+
+  return `<div class="ho-card" onclick="openHODetail(${HOS.indexOf(h)})">
+    <div class="ho-card-hdr">
+      <div class="ho-card-num"><i class="fas fa-rotate"></i>${num}</div>
+      <div class="ho-card-shift">
+        <i class="fas ${shiftIcon}"></i>${shift}&nbsp;·&nbsp;${date}&nbsp;·&nbsp;${prop}
+      </div>
+    </div>
+    <div class="ho-card-preview">
+      <div style="margin-bottom:8px;flex-wrap:wrap;display:flex;gap:4px">${tags||'<span style="font-size:12px;color:var(--g400)">No items</span>'}</div>
+      ${preview}
+    </div>
+    <div class="ho-card-ftr">
+      <span><i class="fas fa-user" style="margin-right:4px"></i>${rep}</span>
+      <span style="color:var(--p600);font-weight:600;font-size:11px">View details →</span>
+    </div>
+  </div>`;
+}
+
+// ── FULL DETAIL PAGE ──────────────────────────────────
+function openHODetail(idx) {
+  currentHO = HOS[idx];
+  const h = currentHO;
+  document.getElementById('hd-title').textContent = h['Handover #']||'Handover';
+  const shiftIcon = (h['Shift']||'').includes('Morning')?'☀️':(h['Shift']||'').includes('Afternoon')?'🌤️':(h['Shift']||'').includes('Night')?'🌙':'🔄';
+  document.getElementById('hd-sub').textContent = `${shiftIcon} ${h['Shift']||'–'} · ${fd(h['Date']||'')} · ${h['Property']||'–'} · Reported by ${h['Reporter']||'–'}`;
+  const delBtn = document.getElementById('hd-del-btn');
+  if (SES?.role==='Admin') { delBtn.style.display=''; } else { delBtn.style.display='none'; }
+  document.getElementById('hd-content').innerHTML = buildHODetail(h);
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.getElementById('view-ho-detail').classList.add('on');
+}
+
+function buildHODetail(h) {
+  const sw   = hoSplit(h['Scheduled Works']);
+  const ops  = hoSplit(h['Ops Tasks']);
+  const ss   = hoSplit(h['SS Tasks']);
+  const tmr  = hoSplit(h['Tmr Tasks']);
+  const dat  = hoSplit(h['Dat Tasks']);
+  const notes= h['Notes']||'';
+
   const baseDate = h['Date'] ? new Date(h['Date']+'T00:00:00') : new Date();
   const tmrDate  = new Date(baseDate); tmrDate.setDate(tmrDate.getDate()+1);
   const datDate  = new Date(baseDate); datDate.setDate(datDate.getDate()+2);
   const fmtD = d => d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
 
-  const mkSection = (items, label, iconColor, barClass, icon) => {
+  const mkSec = (items, label, barClass, icon, dotColor) => {
     if (!items.length) return '';
-    const rows = items.map(t=>`<div class="ho-task-item"><i class="fas fa-circle-dot" style="color:${iconColor}"></i><span>${t}</span></div>`).join('');
-    return `<div style="margin-bottom:12px">
-      <div class="ho-section-bar ${barClass}"><i class="fas ${icon}"></i> ${label}</div>
-      <div style="padding:10px 16px 4px">${rows}</div>
+    const rows = items.map(t=>`<div class="hd-item"><i class="fas fa-circle-dot" style="color:${dotColor}"></i><span>${t}</span></div>`).join('');
+    return `<div style="border-bottom:1px solid var(--g100)">
+      <div class="hd-bar ${barClass}"><i class="fas ${icon}"></i> ${label}</div>
+      <div class="hd-items">${rows}</div>
     </div>`;
   };
 
-  const canDel = !h._preview && SES?.role==='Admin';
-  const shiftIcon = shift.includes('Morning')?'fa-sun':shift.includes('Afternoon')?'fa-cloud-sun':shift.includes('Night')?'fa-moon':'fa-rotate';
+  const sections = [
+    mkSec(sw,  'Scheduled Works',           'blue',  'fa-hard-hat',    '#2563EB'),
+    mkSec(ops, 'Today — Operations',         'green', 'fa-sun',         '#059669'),
+    mkSec(ss,  'Today — Soft Services',      'orange','fa-broom',       '#EA580C'),
+    mkSec(tmr, 'Tomorrow — '+fmtD(tmrDate), 'purple','fa-calendar-day','#7C3AED'),
+    mkSec(dat, fmtD(datDate),               'gray',  'fa-calendar-week','#6B7280'),
+    notes ? `<div><div class="hd-bar notes"><i class="fas fa-note-sticky"></i> Additional Notes & Remarks</div><div class="hd-items" style="font-size:13px;color:var(--g600);line-height:1.7">${notes}</div></div>` : '',
+  ].filter(Boolean).join('');
 
-  return `<div class="ho-card">
-    <!-- Card Header -->
-    <div style="padding:14px 16px;border-bottom:1px solid var(--g100);display:flex;align-items:flex-start;justify-content:space-between">
-      <div>
-        <div style="font-family:var(--ff);font-weight:800;font-size:14px;color:var(--ok);display:flex;align-items:center;gap:6px">
-          <i class="fas fa-rotate"></i> ${num}
-        </div>
-        <div style="font-size:12px;color:var(--g400);margin-top:3px">
-          <i class="fas ${shiftIcon}" style="margin-right:4px"></i>${shift}
-          &nbsp;·&nbsp; ${date} &nbsp;·&nbsp; ${prop}
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:11px;color:var(--g500);font-weight:600">${rep}</span>
-        ${canDel?`<button class="btn btn-d btn-sm" onclick="delHO('${num}')"><i class="fas fa-trash"></i></button>`:''}
-      </div>
-    </div>
+  const hasContent = sections.trim();
 
-    <!-- Sections -->
-    <div style="padding-top:4px">
-      ${mkSection(sw,  'Scheduled Works',       '#2563EB','blue',  'fa-hard-hat')}
-      ${mkSection(ops, 'Today — Operations',    '#059669','green', 'fa-sun')}
-      ${mkSection(ss,  'Today — Soft Services', '#EA580C','orange','fa-broom')}
-      ${mkSection(tmr, 'Tomorrow — '+fmtD(tmrDate), '#7C3AED','purple','fa-calendar-day')}
-      ${mkSection(dat, fmtD(datDate),            '#6B7280','gray',  'fa-calendar-week')}
-      ${notes?`<div style="margin-bottom:12px"><div class="ho-section-bar gray"><i class="fas fa-note-sticky"></i> Notes & Remarks</div><div style="padding:10px 16px;font-size:12.5px;color:var(--g600);line-height:1.6">${notes}</div></div>`:''}
-    </div>
-
-    <div class="ho-card-ftr">
-      <span style="font-size:11px;color:var(--g400)">
-        <i class="fas fa-clock" style="margin-right:4px"></i>
-        ${h['Submitted At']?new Date(h['Submitted At']).toLocaleString():'Preview'}
-      </span>
+  return `<div class="card" style="overflow:hidden;border-radius:var(--rl)">
+    ${hasContent || '<div class="cb"><p style="color:var(--g400);font-size:13px">No items recorded in this handover.</p></div>'}
+    <div class="hd-meta">
+      <span><i class="fas fa-hashtag"></i> ${h['Handover #']||'–'}</span>
+      <span><i class="fas fa-user"></i> ${h['Reporter']||'–'}</span>
+      <span><i class="fas fa-building"></i> ${h['Property']||'–'}</span>
+      ${h['Submitted At']?`<span><i class="fas fa-clock"></i> ${new Date(h['Submitted At']).toLocaleString()}</span>`:''}
     </div>
   </div>`;
 }
 
+function delHOFromDetail() {
+  if (!currentHO) return;
+  delHO(currentHO['Handover #']);
+}
+
 async function delHO(num) {
-  if (!confirm(`Delete handover ${num}?`)) return;
+  if (!confirm(`Delete handover ${num}? This cannot be undone.`)) return;
   showL('Deleting…');
   const res = await api('GET',{action:'deleteHandover',handoverNumber:num});
   hideL();
-  if (res.success){toast('Deleted','ok');ldHO();}
+  if (res.success){ toast('Deleted','ok'); navigate('ho-log'); ldHO(); }
   else toast(res.message||'Failed','err');
 }
 
