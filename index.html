@@ -1378,12 +1378,22 @@ const POL_CAT_ICONS={
 
 async function ldPolicies(){
   showL('Loading policies…');
+  // Load local metadata (session-uploaded docs)
+  var localMeta=[];
+  try{localMeta=JSON.parse(localStorage.getItem('abc_policies_meta')||'[]');}catch(e){}
   try{
     const res=await api('GET',{action:'getPolicies'});
-    if(res.success){POLICIES=res.policies||[];renderPolicies();renderPolChat_context();}
-    else POLICIES=JSON.parse(localStorage.getItem('abc_policies')||'[]');
-  }catch(e){POLICIES=JSON.parse(localStorage.getItem('abc_policies')||'[]');}
-  renderPolicies();hideL();
+    if(res.success){
+      var remote=res.policies||[];
+      // Merge: remote first, then any local-only ones not in remote
+      var remoteIds=remote.map(function(p){return p.id;});
+      var localOnly=localMeta.filter(function(p){return !remoteIds.includes(p.id);});
+      POLICIES=remote.concat(localOnly);
+    } else {
+      POLICIES=localMeta;
+    }
+  }catch(e){POLICIES=localMeta;}
+  renderPolicies();renderPolChat_context();hideL();
 }
 
 async function ldPoliciesAdmin(){
@@ -1552,21 +1562,26 @@ async function uploadPolicy(){
   if(!polSelectedFile){toast('Please select a PDF file','err');return;}
   if(polSelectedFile.size>10*1024*1024){toast('File too large. Max 10MB','err');return;}
 
-  const btn=document.getElementById('pol-upload-btn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Uploading…';
+  const btn=document.getElementById('pol-upload-btn');
+  btn.disabled=true;
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Uploading…';
   showL('Uploading document…');
 
   try{
-    // Convert PDF to base64
-    const base64=await new Promise((res,rej)=>{
-      const r=new FileReader();
-      r.onload=()=>res(r.result.split(',')[1]);
-      r.onerror=rej;
-      r.readAsDataURL(polSelectedFile);
-    });
+    // Step 1: Upload PDF to Google Drive via Apps Script using multipart POST
+    const formData=new FormData();
+    formData.append('action','uploadPolicyFile');
+    formData.append('token',SES?.token||'');
+    formData.append('title',title);
+    formData.append('category',cat);
+    formData.append('desc',desc);
+    formData.append('uploadedBy',SES?.fullName||'');
+    formData.append('uploadedAt',new Date().toISOString());
+    formData.append('file',polSelectedFile,polSelectedFile.name);
 
-    const payload={title,category:cat,desc,filename:polSelectedFile.name,fileData:base64,uploadedBy:SES?.fullName,uploadedAt:new Date().toISOString()};
-    const res=await api('GET',{action:'uploadPolicy',data:encodeURIComponent(JSON.stringify(payload))});
+    const res=await fetch(API,{method:'POST',body:formData}).then(r=>r.json());
     hideL();
+
     if(res.success){
       toast('Document uploaded successfully!','ok');
       ['pol-title','pol-desc'].forEach(id=>document.getElementById(id).value='');
@@ -1575,17 +1590,52 @@ async function uploadPolicy(){
       document.getElementById('pol-drop').style.borderColor='var(--g300)';
       polSelectedFile=null;
       await ldPoliciesAdmin();
-      addNotif(`📄 New policy uploaded: "${title}" by ${SES?.fullName}`,'info');
-    }else{
-      // Fallback: save locally if backend not ready
-      const localPol={id:'pol_'+Date.now(),title,category:cat,desc,filename:polSelectedFile.name,uploadedBy:SES?.fullName,uploadedAt:new Date().toISOString(),fileUrl:null};
-      POLICIES.push(localPol);
-      localStorage.setItem('abc_policies',JSON.stringify(POLICIES));
-      toast('Saved locally (backend not configured for file storage)','wrn');
-      renderPolAdminList();
+      addNotif('New policy uploaded: "'+title+'" by '+(SES?.fullName||'Admin'),'info');
+    } else {
+      // Fallback: store metadata locally, save file as object URL for session viewing
+      const fileUrl=URL.createObjectURL(polSelectedFile);
+      const localPol={
+        id:'pol_'+Date.now(),
+        title,category:cat,desc,
+        filename:polSelectedFile.name,
+        uploadedBy:SES?.fullName||'Admin',
+        uploadedAt:new Date().toISOString(),
+        fileUrl,
+        local:true
+      };
+      POLICIES.unshift(localPol);
+      localStorage.setItem('abc_policies_meta',JSON.stringify(POLICIES.map(function(p){
+        return {id:p.id,title:p.title,category:p.category,desc:p.desc,filename:p.filename,uploadedBy:p.uploadedBy,uploadedAt:p.uploadedAt,local:p.local};
+      })));
+      renderPolChat_context();
+      toast('Saved for this session. Configure Apps Script for permanent storage.','wrn');
+      await ldPoliciesAdmin();
+      addNotif('New policy added: "'+title+'"','info');
     }
-  }catch(e){hideL();toast('Upload failed: '+e.message,'err');}
-  btn.disabled=false;btn.innerHTML='<i class="fas fa-cloud-arrow-up"></i> Upload Document';
+  }catch(e){
+    hideL();
+    // Network error fallback — save locally
+    const fileUrl=URL.createObjectURL(polSelectedFile);
+    const localPol={
+      id:'pol_'+Date.now(),
+      title,category:cat,desc,
+      filename:polSelectedFile.name,
+      uploadedBy:SES?.fullName||'Admin',
+      uploadedAt:new Date().toISOString(),
+      fileUrl,
+      local:true
+    };
+    POLICIES.unshift(localPol);
+    localStorage.setItem('abc_policies_meta',JSON.stringify(POLICIES.map(function(p){
+      return {id:p.id,title:p.title,category:p.category,desc:p.desc,filename:p.filename,uploadedBy:p.uploadedBy,uploadedAt:p.uploadedAt,local:p.local};
+    })));
+    renderPolChat_context();
+    toast('Stored locally for this session. PDF is viewable until you close the browser.','wrn');
+    await ldPoliciesAdmin();
+    addNotif('New policy added locally: "'+title+'"','info');
+  }
+  btn.disabled=false;
+  btn.innerHTML='<i class="fas fa-cloud-arrow-up"></i> Upload Document';
 }
 
 function renderPolAdminList(){
