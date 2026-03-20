@@ -873,8 +873,7 @@ function applySession(){
   const rb=document.getElementById('prl');rb.textContent=s.role;rb.className='badge '+(s.role==='Admin'?'bad':s.role==='Supervisor'?'bsu':'bst');
   document.querySelectorAll('.adm').forEach(el=>el.style.display=s.role==='Admin'?'':'none');
   // Show policies admin button for Admin only
-  const polAdmBtn=document.querySelector('button[onclick="navigate('policies-admin')"]');
-  if(polAdmBtn)polAdmBtn.style.display=s.role==='Admin'?'':'none';
+  // Show policies admin button - handled by .adm class above
   document.querySelectorAll('.sup-only').forEach(el=>el.style.display=(s.role==='Admin'||s.role==='Supervisor')?'':'none');
   // load local project data
   const saved=localStorage.getItem('abc_projects');if(saved)try{PROJECTS=JSON.parse(saved);}catch(e){}
@@ -1392,46 +1391,41 @@ async function ldPoliciesAdmin(){
 }
 
 function renderPolicies(){
-  const s=(document.getElementById('pol-search')?.value||'').toLowerCase();
-  const cat=document.getElementById('pol-cat-filter')?.value||'';
-  let fl=POLICIES.filter(p=>(!s||p.title.toLowerCase().includes(s)||p.category.toLowerCase().includes(s)||(p.desc||'').toLowerCase().includes(s))&&(!cat||p.category===cat));
-  const cntEl=document.getElementById('pol-count');if(cntEl)cntEl.textContent=fl.length;
-  const list=document.getElementById('pol-list');if(!list)return;
-  if(!fl.length){
-    list.innerHTML='<div class="empty"><i class="fas fa-file-shield"></i><h3>'+(POLICIES.length?'No matching documents':'No documents yet')+'</h3><p>'+(POLICIES.length?'Try a different search':'Admin can upload policy documents')+'</p></div>';
-    return;
-  }
-  list.innerHTML=fl.map(function(p){
+  var s=(document.getElementById('pol-search')&&document.getElementById('pol-search').value||'').toLowerCase();
+  var cat=document.getElementById('pol-cat-filter')&&document.getElementById('pol-cat-filter').value||'';
+  var fl=POLICIES.filter(function(p){return(!s||p.title.toLowerCase().includes(s)||p.category.toLowerCase().includes(s)||(p.desc||'').toLowerCase().includes(s))&&(!cat||p.category===cat);});
+  var cntEl=document.getElementById('pol-count');if(cntEl)cntEl.textContent=fl.length;
+  var list=document.getElementById('pol-list');if(!list)return;
+  if(!fl.length){list.innerHTML='<div class="empty"><i class="fas fa-file-shield"></i><h3>'+(POLICIES.length?'No matching documents':'No documents yet')+'</h3><p>'+(POLICIES.length?'Try a different search':'Admin can upload policy documents')+'</p></div>';return;}
+  var html='';
+  fl.forEach(function(p){
     var colors=(POL_CAT_COLORS[p.category]||'var(--g100)|var(--g600)').split('|');
-    var bg=colors[0],tc=colors[1];
-    var icon=POL_CAT_ICONS[p.category]||'fa-file';
+    var bg=colors[0],tc=colors[1],icon=POL_CAT_ICONS[p.category]||'fa-file';
     var dateStr=p.uploadedAt?new Date(p.uploadedAt).toLocaleDateString('en-GB'):'';
     var viewBtn=p.fileUrl?('<a href="'+p.fileUrl+'" target="_blank" class="btn btn-sm" style="background:#FEF2F2;color:#991B1B;border:none" onclick="event.stopPropagation()"><i class="fas fa-file-pdf"></i> View</a>'):'';
-    return '<div class="pol-card" onclick="openPolicy(''+p.id+'')" style="margin-bottom:10px">'
+    html+='<div class="pol-card" data-polid="'+p.id+'" style="margin-bottom:10px">'
       +'<div class="pol-icon" style="background:'+bg+';color:'+tc+'"><i class="fas '+icon+'"></i></div>'
-      +'<div style="flex:1;min-width:0">'
-      +'<div class="pol-name">'+p.title+'</div>'
+      +'<div style="flex:1;min-width:0"><div class="pol-name">'+p.title+'</div>'
       +'<div class="pol-meta">'+(p.desc||'')+'</div>'
       +'<div style="margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
       +'<span class="pol-cat-badge" style="background:'+bg+';color:'+tc+'">'+p.category+'</span>'
       +'<span style="font-size:10.5px;color:var(--g400)">'+dateStr+'</span>'
       +'</div></div>'
       +'<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">'
-      +'<button class="btn btn-o btn-sm" onclick="event.stopPropagation();askAboutPolicy(''+p.id+'')" style="white-space:nowrap"><i class="fas fa-robot"></i> Ask AI</button>'
-      +viewBtn
-      +'</div></div>';
-  }).join('');
+      +'<button class="btn btn-o btn-sm pol-ask-btn" data-polid="'+p.id+'" style="white-space:nowrap"><i class="fas fa-robot"></i> Ask AI</button>'
+      +viewBtn+'</div></div>';
+  });
+  list.innerHTML=html;
+  // Attach events
+  list.querySelectorAll('.pol-card').forEach(function(el){el.addEventListener('click',function(e){if(!e.target.closest('a'))openPolicy(el.dataset.polid);});});
+  list.querySelectorAll('.pol-ask-btn').forEach(function(el){el.addEventListener('click',function(e){e.stopPropagation();askAboutPolicy(el.dataset.polid);});});
 }
 
 function renderPolChat_context(){
-  // Build context string from all policies for Claude
   if(!POLICIES.length){polCurrentContext='No policies uploaded yet.';return;}
-  polCurrentContext='ABC Mall Group — Policies & Procedures Index:
-
-'+POLICIES.map(p=>`• ${p.title} [${p.category}]${p.desc?' — '+p.desc:''}`).join('
-');
+  var lines=POLICIES.map(function(p){return '- '+p.title+' ['+p.category+']'+(p.desc?' - '+p.desc:'');});
+  polCurrentContext='ABC Mall Group - Policies and Procedures Index:\n\n'+lines.join('\n');
 }
-
 function openPolicy(id){
   const p=POLICIES.find(x=>x.id===id);if(!p)return;
   askAboutPolicy(id);
@@ -1536,7 +1530,6 @@ function clearPolicyChat(){
 }
 
 // ADMIN — UPLOAD
-let polSelectedFile=null;
 function polFileSelected(input){
   if(!input.files[0])return;
   polSelectedFile=input.files[0];
@@ -1596,26 +1589,27 @@ async function uploadPolicy(){
 }
 
 function renderPolAdminList(){
-  const list=document.getElementById('pol-admin-list');if(!list)return;
-  const cnt=document.getElementById('pol-admin-count');if(cnt)cnt.textContent=POLICIES.length+' documents';
+  var list=document.getElementById('pol-admin-list');if(!list)return;
+  var cnt=document.getElementById('pol-admin-count');if(cnt)cnt.textContent=POLICIES.length+' documents';
   if(!POLICIES.length){list.innerHTML='<div class="empty"><i class="fas fa-folder-open"></i><h3>No documents uploaded yet</h3></div>';return;}
-  list.innerHTML=POLICIES.map(function(p,i){
+  var html='';
+  POLICIES.forEach(function(p,i){
     var colors=(POL_CAT_COLORS[p.category]||'var(--g100)|var(--g600)').split('|');
-    var bg=colors[0],tc=colors[1];
-    var icon=POL_CAT_ICONS[p.category]||'fa-file';
+    var bg=colors[0],tc=colors[1],icon=POL_CAT_ICONS[p.category]||'fa-file';
     var dateStr=p.uploadedAt?new Date(p.uploadedAt).toLocaleDateString('en-GB'):'';
     var viewBtn=p.fileUrl?('<a href="'+p.fileUrl+'" target="_blank" class="btn btn-sm" style="background:#FEF2F2;color:#991B1B;border:none"><i class="fas fa-eye"></i></a>'):'';
-    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--g100)">'
+    html+='<div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--g100)">'
       +'<div style="width:36px;height:36px;border-radius:var(--r);background:'+bg+';color:'+tc+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas '+icon+'"></i></div>'
-      +'<div style="flex:1;min-width:0">'
-      +'<div style="font-family:var(--ff);font-weight:700;font-size:13px">'+p.title+'</div>'
-      +'<div style="font-size:11.5px;color:var(--g400)">'+p.category+' · Uploaded by '+(p.uploadedBy||'–')+' · '+dateStr+'</div>'
-      +'</div>'
+      +'<div style="flex:1;min-width:0"><div style="font-family:var(--ff);font-weight:700;font-size:13px">'+p.title+'</div>'
+      +'<div style="font-size:11.5px;color:var(--g400)">'+p.category+' · '+(p.uploadedBy||'–')+' · '+dateStr+'</div></div>'
       +viewBtn
-      +'<button class="btn btn-d btn-sm" onclick="delPolicy('+i+')"><i class="fas fa-trash"></i></button>'
+      +'<button class="btn btn-d btn-sm pol-del-btn" data-idx="'+i+'"><i class="fas fa-trash"></i></button>'
       +'</div>';
-  }).join('');
+  });
+  list.innerHTML=html;
+  list.querySelectorAll('.pol-del-btn').forEach(function(el){el.addEventListener('click',function(){delPolicy(parseInt(el.dataset.idx));});});
 }
+
 async function delPolicy(idx){
   if(!confirm('Delete this document?'))return;
   const p=POLICIES[idx];
