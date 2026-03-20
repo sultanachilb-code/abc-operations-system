@@ -1589,88 +1589,100 @@ function handlePolDrop(e){
 }
 
 async function uploadPolicy(){
-  const title=document.getElementById('pol-title').value.trim();
-  const cat=document.getElementById('pol-cat').value;
-  const desc=document.getElementById('pol-desc').value.trim();
+  var title=document.getElementById('pol-title').value.trim();
+  var cat=document.getElementById('pol-cat').value;
+  var desc=document.getElementById('pol-desc').value.trim();
   if(!title||!cat){toast('Please fill Title and Category','err');return;}
   if(!polSelectedFile){toast('Please select a PDF file','err');return;}
   if(polSelectedFile.size>10*1024*1024){toast('File too large. Max 10MB','err');return;}
 
-  const btn=document.getElementById('pol-upload-btn');
+  var btn=document.getElementById('pol-upload-btn');
   btn.disabled=true;
   btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Uploading…';
-  showL('Uploading document…');
+  showL('Uploading to Google Drive…');
 
   try{
-    // Step 1: Upload PDF to Google Drive via Apps Script using multipart POST
-    const formData=new FormData();
-    formData.append('action','uploadPolicyFile');
-    formData.append('token',SES?.token||'');
-    formData.append('title',title);
-    formData.append('category',cat);
-    formData.append('desc',desc);
-    formData.append('uploadedBy',SES?.fullName||'');
-    formData.append('uploadedAt',new Date().toISOString());
-    formData.append('file',polSelectedFile,polSelectedFile.name);
+    // Convert file to base64
+    var base64=await new Promise(function(res,rej){
+      var r=new FileReader();
+      r.onload=function(){res(r.result.split(',')[1]);};
+      r.onerror=rej;
+      r.readAsDataURL(polSelectedFile);
+    });
 
-    const res=await fetch(API,{method:'POST',body:formData}).then(r=>r.json());
+    // Extract text from PDF for AI context
+    var extractedText=await extractPdfText(polSelectedFile);
+
+    // Send to Apps Script via GET with body parameter
+    var payload={
+      title:title,
+      category:cat,
+      desc:desc,
+      filename:polSelectedFile.name,
+      fileData:base64,
+      uploadedBy:SES&&SES.fullName||'Admin',
+      uploadedAt:new Date().toISOString()
+    };
+
+    var q=new URLSearchParams({
+      action:'uploadPolicy',
+      token:SES&&SES.token||'',
+      body:encodeURIComponent(JSON.stringify(payload))
+    });
+
+    var res=await fetch(API+'?'+q).then(function(r){return r.json();});
     hideL();
 
     if(res.success){
-      toast('Document uploaded successfully!','ok');
-      ['pol-title','pol-desc'].forEach(id=>document.getElementById(id).value='');
+      toast('Document uploaded to Google Drive!','ok');
+      document.getElementById('pol-title').value='';
+      document.getElementById('pol-desc').value='';
       document.getElementById('pol-cat').value='';
       document.getElementById('pol-file-name').textContent='';
       document.getElementById('pol-drop').style.borderColor='var(--g300)';
       polSelectedFile=null;
       await ldPoliciesAdmin();
-      addNotif('New policy uploaded: "'+title+'" by '+(SES?.fullName||'Admin'),'info');
+      addNotif('New policy uploaded: "'+title+'"','info');
     } else {
-      // Fallback: store metadata locally, save file as object URL for session viewing
-      const fileUrl=URL.createObjectURL(polSelectedFile);
-      const extractedText=await extractPdfText(polSelectedFile);
-      const localPol={
+      // Fallback: save locally with object URL for this session
+      hideL();
+      var fileUrl=URL.createObjectURL(polSelectedFile);
+      var localPol={
         id:'pol_'+Date.now(),
-        title,category:cat,desc,
+        title:title,category:cat,desc:desc,
         filename:polSelectedFile.name,
-        uploadedBy:SES?.fullName||'Admin',
+        uploadedBy:SES&&SES.fullName||'Admin',
         uploadedAt:new Date().toISOString(),
-        fileUrl,
-        extractedText,
+        fileUrl:fileUrl,
+        extractedText:extractedText,
         local:true
       };
       POLICIES.unshift(localPol);
-      localStorage.setItem('abc_policies_meta',JSON.stringify(POLICIES.map(function(p){
-        return {id:p.id,title:p.title,category:p.category,desc:p.desc,filename:p.filename,uploadedBy:p.uploadedBy,uploadedAt:p.uploadedAt,local:p.local,extractedText:p.extractedText||''};
-      })));
+      // Save metadata (not the file itself) to localStorage
+      var meta=POLICIES.map(function(p){
+        return {id:p.id,title:p.title,category:p.category,desc:p.desc||'',
+          filename:p.filename||'',uploadedBy:p.uploadedBy||'',
+          uploadedAt:p.uploadedAt||'',local:p.local||false,
+          extractedText:p.extractedText||''};
+      });
+      localStorage.setItem('abc_policies_meta',JSON.stringify(meta));
       renderPolChat_context();
-      toast('Saved'+(extractedText?' with content extracted':'')+'! PDF viewable this session.','wrn');
-      await ldPoliciesAdmin();
-      addNotif('New policy added: "'+title+'"','info');
+      renderPolicies();
+      document.getElementById('pol-title').value='';
+      document.getElementById('pol-desc').value='';
+      document.getElementById('pol-cat').value='';
+      document.getElementById('pol-file-name').textContent='';
+      document.getElementById('pol-drop').style.borderColor='var(--g300)';
+      polSelectedFile=null;
+      toast('⚠️ Saved locally — will not persist after closing browser. Redeploy Apps Script to enable permanent storage.','wrn');
+      addNotif('Policy added locally: "'+title+'"','info');
+      var cntEl=document.getElementById('pol-admin-count');
+      if(cntEl)cntEl.textContent=POLICIES.length+' documents';
+      renderPolAdminList();
     }
   }catch(e){
     hideL();
-    // Network error fallback — save locally
-    const fileUrl=URL.createObjectURL(polSelectedFile);
-    const extractedText=await extractPdfText(polSelectedFile);
-    const localPol={
-      id:'pol_'+Date.now(),
-      title,category:cat,desc,
-      filename:polSelectedFile.name,
-      uploadedBy:SES?.fullName||'Admin',
-      uploadedAt:new Date().toISOString(),
-      fileUrl,
-      extractedText,
-      local:true
-    };
-    POLICIES.unshift(localPol);
-    localStorage.setItem('abc_policies_meta',JSON.stringify(POLICIES.map(function(p){
-      return {id:p.id,title:p.title,category:p.category,desc:p.desc,filename:p.filename,uploadedBy:p.uploadedBy,uploadedAt:p.uploadedAt,local:p.local,extractedText:p.extractedText||''};
-    })));
-    renderPolChat_context();
-    toast('PDF stored locally'+(extractedText?' — content extracted for AI':''),'wrn');
-    await ldPoliciesAdmin();
-    addNotif('New policy added: "'+title+'"','info');
+    toast('Upload error: '+e.message,'err');
   }
   btn.disabled=false;
   btn.innerHTML='<i class="fas fa-cloud-arrow-up"></i> Upload Document';
