@@ -440,9 +440,12 @@ const ini=n=>n?n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2):'U';
 
 // ══ API ══════════════════════════════════════════════
 async function api(method,params){
+  // All requests use GET to avoid CORS preflight issues with Google Apps Script
   const tok=SES?.token||'';
-  if(method==='GET'){const q=new URLSearchParams({...params,token:tok});const r=await fetch(`${API}?${q}`);return r.json();}
-  else{const r=await fetch(API,{method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({...params,token:tok})});return r.json();}
+  const body=encodeURIComponent(JSON.stringify({...params,token:tok}));
+  const q=new URLSearchParams({...params,token:tok,body:body});
+  const r=await fetch(`${API}?${q}`);
+  return r.json();
 }
 const showL=m=>{document.getElementById('ldr').classList.remove('hid');document.getElementById('lmsg').textContent=m||'Loading…'};
 const hideL=()=>document.getElementById('ldr').classList.add('hid');
@@ -460,7 +463,8 @@ async function doLogin(){
   if(!u||!p){document.getElementById('lerr-msg').textContent='Please enter username and password.';er.classList.add('show');return;}
   const btn=document.getElementById('lbtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Signing in…';
   try{
-    const res=await fetch(API,{method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',username:u,password:p})}).then(r=>r.json());
+    const loginBody=encodeURIComponent(JSON.stringify({username:u,password:p}));
+    const res=await fetch(`${API}?action=login&body=${loginBody}`).then(r=>r.json());
     if(res.success){SES={token:res.token,...res.user,expiresAt:res.expiresAt};sessionStorage.setItem('abc_ses',JSON.stringify(SES));startApp();}
     else{document.getElementById('lerr-msg').textContent=res.message||'Invalid credentials.';er.classList.add('show');}
   }catch(e){document.getElementById('lerr-msg').textContent='Connection error. Verify the API URL is correctly set.';er.classList.add('show');}
