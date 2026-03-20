@@ -222,6 +222,31 @@ tr:hover td{background:var(--p50)}
 .upload-zone p{font-size:13px;color:var(--g500)}
 .upload-zone .hint{font-size:11px;color:var(--g400);margin-top:4px}
 @media(max-width:720px){.sidebar{display:none}.fgrid,.fg3{grid-template-columns:1fr}.sr{grid-template-columns:1fr 1fr}.ui{display:none}}
+/* POLICIES */
+.pol-card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s}
+.pol-card:hover{box-shadow:var(--s2);transform:translateY(-1px);border-color:var(--p400)}
+.pol-icon{width:42px;height:42px;border-radius:var(--r);background:#FEE2E2;color:#991B1B;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.pol-name{font-family:var(--ff);font-weight:700;font-size:13.5px;color:var(--g800)}
+.pol-meta{font-size:11.5px;color:var(--g400);margin-top:2px}
+.pol-cat-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--ff);background:var(--p100);color:var(--p800)}
+/* AI CHAT */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 340px);min-height:400px}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--g50);border-radius:var(--rm) var(--rm) 0 0}
+.chat-msg{max-width:85%;display:flex;gap:9px;align-items:flex-start}
+.chat-msg.user{align-self:flex-end;flex-direction:row-reverse}
+.chat-bubble{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;white-space:pre-wrap}
+.chat-msg.bot .chat-bubble{background:white;border:1px solid var(--g200);color:var(--g800);border-radius:0 12px 12px 12px}
+.chat-msg.user .chat-bubble{background:linear-gradient(135deg,var(--p700),var(--p500));color:white;border-radius:12px 0 12px 12px}
+.chat-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:var(--ff)}
+.chat-avatar.bot{background:linear-gradient(135deg,var(--p900),var(--p700));color:white}
+.chat-avatar.user{background:linear-gradient(135deg,var(--acc),var(--p600));color:white}
+.chat-input-wrap{display:flex;gap:9px;padding:12px 16px;background:white;border:1px solid var(--g200);border-top:none;border-radius:0 0 var(--rm) var(--rm)}
+.chat-typing{display:flex;align-items:center;gap:5px;padding:8px 14px;background:white;border:1px solid var(--g200);border-radius:0 12px 12px 12px;width:fit-content}
+.chat-typing span{width:6px;height:6px;border-radius:50%;background:var(--g400);animation:bounce .8s infinite}
+.chat-typing span:nth-child(2){animation-delay:.15s}.chat-typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.pol-drop-zone{border:2px dashed var(--g300);border-radius:var(--rm);padding:32px;text-align:center;cursor:pointer;transition:.2s;background:var(--g50)}
+.pol-drop-zone:hover{border-color:var(--p500);background:var(--p50)}
 </style>
 </head>
 <body>
@@ -282,6 +307,8 @@ tr:hover td{background:var(--p50)}
       <button class="ni" onclick="navigate('ho-log',this)"><i class="fas fa-book-open"></i><span class="nl">Handover Log</span><span class="nb" id="sb-ho-ct">–</span></button>
       <span class="ns">Projects</span>
       <button class="ni" onclick="navigate('projects',this)"><i class="fas fa-diagram-project"></i><span class="nl">Project Management</span></button>
+      <span class="ns">Knowledge</span>
+      <button class="ni" onclick="navigate('policies',this)"><i class="fas fa-shield-halved"></i><span class="nl">Policies & Procedures</span></button>
       <span class="ns adm" style="display:none">Admin</span>
       <button class="ni adm" style="display:none" onclick="navigate('users',this)"><i class="fas fa-users-gear"></i><span class="nl">User Management</span></button>
       <span class="ns">Account</span>
@@ -577,6 +604,136 @@ tr:hover td{background:var(--p50)}
         <div id="opex-table-wrap"></div>
       </div>
 
+      <!-- POLICIES & PROCEDURES -->
+      <div class="view" id="view-policies">
+        <div class="ph">
+          <div><div class="pht">Policies & Procedures</div><div class="phs">Search, browse and ask AI about ABC policies</div></div>
+          <button class="btn btn-p adm" onclick="navigate('policies-admin')" style="display:none"><i class="fas fa-upload"></i> Manage Documents</button>
+        </div>
+
+        <!-- SEARCH BAR -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="cb" style="padding:14px 18px">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <div style="flex:1;min-width:200px;position:relative">
+                <i class="fas fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--g400);font-size:14px"></i>
+                <input type="text" class="fc" id="pol-search" placeholder="Search policies by name, category or keyword…" style="padding-left:36px" oninput="renderPolicies()"/>
+              </div>
+              <select class="fc" id="pol-cat-filter" style="width:180px" onchange="renderPolicies()">
+                <option value="">All Categories</option>
+                <option>Operations</option>
+                <option>Security</option>
+                <option>Health & Safety</option>
+                <option>HR & Conduct</option>
+                <option>Finance</option>
+                <option>Soft Services</option>
+                <option>Tenant Relations</option>
+                <option>Emergency</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAIN LAYOUT: Document list + AI Chat -->
+        <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px;align-items:start">
+
+          <!-- LEFT: DOCUMENTS LIST -->
+          <div>
+            <div style="font-family:var(--ff);font-weight:700;font-size:13px;color:var(--g600);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">
+              <i class="fas fa-folder-open" style="margin-right:5px;color:var(--p600)"></i>
+              Documents (<span id="pol-count">0</span>)
+            </div>
+            <div id="pol-list">
+              <div class="empty"><i class="fas fa-file-shield"></i><h3>No documents yet</h3><p>Admin can upload policy documents</p></div>
+            </div>
+          </div>
+
+          <!-- RIGHT: AI CHAT -->
+          <div class="card" style="margin-bottom:0;position:sticky;top:16px">
+            <div style="background:linear-gradient(135deg,var(--p900),var(--p700));padding:14px 18px;display:flex;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,.3)">
+                <i class="fas fa-robot" style="color:white;font-size:14px"></i>
+              </div>
+              <div>
+                <div style="font-family:var(--ff);font-weight:800;font-size:14px;color:white">ABC Policy Assistant</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.6)">Powered by Claude AI · Ask anything about our policies</div>
+              </div>
+              <button onclick="clearPolicyChat()" style="margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:var(--r);padding:4px 10px;font-size:11px;cursor:pointer;font-family:var(--ff);font-weight:600">Clear</button>
+            </div>
+            <div class="chat-wrap">
+              <div class="chat-messages" id="pol-chat-msgs">
+                <div class="chat-msg bot">
+                  <div class="chat-avatar bot"><i class="fas fa-robot"></i></div>
+                  <div>
+                    <div class="chat-bubble">Hello! I'm your ABC Policy Assistant. I can help you find and understand any policy or procedure.
+
+You can:
+• Ask me about a specific policy
+• Search for procedures by topic
+• Request a document to be shared with you
+
+How can I help you today?</div>
+                  </div>
+                </div>
+              </div>
+              <div class="chat-input-wrap">
+                <input type="text" class="fc" id="pol-chat-input" placeholder="Ask about any policy or procedure…" style="flex:1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPolicyChat();}"/>
+                <button class="btn btn-p btn-sm" onclick="sendPolicyChat()" id="pol-send-btn"><i class="fas fa-paper-plane"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POLICIES ADMIN (Admin only) -->
+      <div class="view" id="view-policies-admin">
+        <div class="ph">
+          <div><div class="pht">Manage Policy Documents</div><div class="phs">Upload and organize policy PDFs</div></div>
+          <button class="btn btn-o" onclick="navigate('policies')"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+
+        <!-- UPLOAD ZONE -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="ch"><div class="ct"><i class="fas fa-upload" style="color:#16a34a"></i> Upload New Policy Document</div></div>
+          <div class="cb">
+            <div class="fgrid" style="margin-bottom:14px">
+              <div class="fg"><label class="fl">Document Title <span class="req">*</span></label><input type="text" class="fc" id="pol-title" placeholder="e.g. Fire Safety Evacuation Procedure"/></div>
+              <div class="fg"><label class="fl">Category <span class="req">*</span></label>
+                <select class="fc" id="pol-cat">
+                  <option value="">-- Select Category --</option>
+                  <option>Operations</option><option>Security</option><option>Health & Safety</option>
+                  <option>HR & Conduct</option><option>Finance</option><option>Soft Services</option>
+                  <option>Tenant Relations</option><option>Emergency</option><option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="fg" style="margin-bottom:14px">
+              <label class="fl">Description</label>
+              <input type="text" class="fc" id="pol-desc" placeholder="Brief description of this document…"/>
+            </div>
+            <div class="pol-drop-zone" id="pol-drop" onclick="document.getElementById('pol-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--p500)'" ondragleave="this.style.borderColor='var(--g300)'" ondrop="handlePolDrop(event)">
+              <i class="fas fa-file-pdf" style="font-size:32px;color:#EF4444;margin-bottom:10px;display:block"></i>
+              <p style="font-size:13px;color:var(--g600);font-weight:600">Click to select or drag & drop PDF</p>
+              <p style="font-size:11.5px;color:var(--g400);margin-top:4px">Max 10MB · PDF only</p>
+              <div id="pol-file-name" style="margin-top:10px;font-size:12px;color:var(--p700);font-weight:700"></div>
+            </div>
+            <input type="file" id="pol-file" accept=".pdf" style="display:none" onchange="polFileSelected(this)"/>
+            <div style="display:flex;justify-content:flex-end;margin-top:14px">
+              <button class="btn btn-p" onclick="uploadPolicy()" id="pol-upload-btn"><i class="fas fa-cloud-arrow-up"></i> Upload Document</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MANAGE EXISTING -->
+        <div class="card">
+          <div class="ch"><div class="ct"><i class="fas fa-list"></i> All Documents</div><span id="pol-admin-count" style="font-size:12px;color:var(--g400)">0 documents</span></div>
+          <div id="pol-admin-list" style="padding:8px 0">
+            <div class="empty"><i class="fas fa-folder-open"></i><h3>No documents uploaded yet</h3></div>
+          </div>
+        </div>
+      </div>
+
       <!-- USERS -->
       <div class="view" id="view-users">
         <div class="ph"><div><div class="pht">User Management</div></div><button class="btn btn-p" onclick="openAddU()"><i class="fas fa-user-plus"></i> Add User</button></div>
@@ -715,6 +872,9 @@ function applySession(){
   document.getElementById('pfn').value=s.fullName;document.getElementById('ppr').value=s.property||'';
   const rb=document.getElementById('prl');rb.textContent=s.role;rb.className='badge '+(s.role==='Admin'?'bad':s.role==='Supervisor'?'bsu':'bst');
   document.querySelectorAll('.adm').forEach(el=>el.style.display=s.role==='Admin'?'':'none');
+  // Show policies admin button for Admin only
+  const polAdmBtn=document.querySelector('button[onclick="navigate('policies-admin')"]');
+  if(polAdmBtn)polAdmBtn.style.display=s.role==='Admin'?'':'none';
   document.querySelectorAll('.sup-only').forEach(el=>el.style.display=(s.role==='Admin'||s.role==='Supervisor')?'':'none');
   // load local project data
   const saved=localStorage.getItem('abc_projects');if(saved)try{PROJECTS=JSON.parse(saved);}catch(e){}
@@ -746,6 +906,8 @@ function navigate(v,btn){
   if(v==='prj-team')renderGantt();
   if(v==='prj-capex')renderBgtTable('capex');
   if(v==='prj-opex')renderBgtTable('opex');
+  if(v==='policies'){ldPolicies();}
+  if(v==='policies-admin'){ldPoliciesAdmin();}
 }
 function toggleSB(){sbCol=!sbCol;document.getElementById('sb').classList.toggle('col',sbCol);}
 
@@ -1199,6 +1361,271 @@ function closeUM(){document.getElementById('usr-ov').classList.add('hid');}
 async function saveU(){const id=document.getElementById('um-id').value;const p={fullName:document.getElementById('um-nm').value.trim(),username:document.getElementById('um-un').value.trim(),password:document.getElementById('um-pw').value,role:document.getElementById('um-rl').value,property:document.getElementById('um-pr').value,email:document.getElementById('um-em').value.trim()};if(!p.fullName||!p.username||(!id&&!p.password)){toast('Fill required fields','err');return;}showL('Saving…');const action=id?'updateUser':'addUser';if(id)p.id=id;const res=await api('GET',{action,...p});hideL();if(res.success){toast(id?'Updated!':'Added!','ok');closeUM();ldUsers();}else toast(res.message||'Failed','err');}
 async function delU(id,un){if(!confirm(`Remove @${un}?`))return;showL('Removing…');const res=await api('GET',{action:'deleteUser',id,username:un});hideL();if(res.success){toast('Removed','ok');ldUsers();}else toast(res.message||'Failed','err');}
 async function chgPwd(){const o=document.getElementById('pc1').value,n=document.getElementById('pc2').value,c=document.getElementById('pc3').value;if(!o||!n||!c){toast('All fields required','err');return;}if(n!==c){toast('Passwords do not match','err');return;}if(n.length<8){toast('Min 8 characters','err');return;}showL('Updating…');const res=await api('GET',{action:'changePassword',oldPassword:o,newPassword:n});hideL();if(res.success){toast('Password updated!','ok');['pc1','pc2','pc3'].forEach(id=>document.getElementById(id).value='');}else toast(res.message||'Failed','err');}
+
+// ══ POLICIES & PROCEDURES MODULE ══════════════════════════
+let POLICIES=[], polChatHistory=[], polSelectedFile=null, polCurrentContext='';
+
+const POL_CAT_COLORS={
+  'Operations':'#EFF6FF|#1D4ED8','Security':'#FEF2F2|#991B1B',
+  'Health & Safety':'#F0FDF4|#166534','HR & Conduct':'#F5F3FF|#5B21B6',
+  'Finance':'#FEFCE8|#854D0E','Soft Services':'#FFF7ED|#C2410C',
+  'Tenant Relations':'#EFF6FF|#1E40AF','Emergency':'#FEF2F2|#DC2626','Other':'var(--g100)|var(--g600)'
+};
+const POL_CAT_ICONS={
+  'Operations':'fa-gears','Security':'fa-shield-halved','Health & Safety':'fa-heart-pulse',
+  'HR & Conduct':'fa-users','Finance':'fa-file-invoice-dollar','Soft Services':'fa-broom',
+  'Tenant Relations':'fa-handshake','Emergency':'fa-triangle-exclamation','Other':'fa-file'
+};
+
+async function ldPolicies(){
+  showL('Loading policies…');
+  try{
+    const res=await api('GET',{action:'getPolicies'});
+    if(res.success){POLICIES=res.policies||[];renderPolicies();renderPolChat_context();}
+    else POLICIES=JSON.parse(localStorage.getItem('abc_policies')||'[]');
+  }catch(e){POLICIES=JSON.parse(localStorage.getItem('abc_policies')||'[]');}
+  renderPolicies();hideL();
+}
+
+async function ldPoliciesAdmin(){
+  await ldPolicies();renderPolAdminList();
+}
+
+function renderPolicies(){
+  const s=(document.getElementById('pol-search')?.value||'').toLowerCase();
+  const cat=document.getElementById('pol-cat-filter')?.value||'';
+  let fl=POLICIES.filter(p=>(!s||p.title.toLowerCase().includes(s)||p.category.toLowerCase().includes(s)||(p.desc||'').toLowerCase().includes(s))&&(!cat||p.category===cat));
+  const cntEl=document.getElementById('pol-count');if(cntEl)cntEl.textContent=fl.length;
+  const list=document.getElementById('pol-list');if(!list)return;
+  if(!fl.length){
+    list.innerHTML='<div class="empty"><i class="fas fa-file-shield"></i><h3>'+(POLICIES.length?'No matching documents':'No documents yet')+'</h3><p>'+(POLICIES.length?'Try a different search':'Admin can upload policy documents')+'</p></div>';
+    return;
+  }
+  list.innerHTML=fl.map(function(p){
+    var colors=(POL_CAT_COLORS[p.category]||'var(--g100)|var(--g600)').split('|');
+    var bg=colors[0],tc=colors[1];
+    var icon=POL_CAT_ICONS[p.category]||'fa-file';
+    var dateStr=p.uploadedAt?new Date(p.uploadedAt).toLocaleDateString('en-GB'):'';
+    var viewBtn=p.fileUrl?('<a href="'+p.fileUrl+'" target="_blank" class="btn btn-sm" style="background:#FEF2F2;color:#991B1B;border:none" onclick="event.stopPropagation()"><i class="fas fa-file-pdf"></i> View</a>'):'';
+    return '<div class="pol-card" onclick="openPolicy(''+p.id+'')" style="margin-bottom:10px">'
+      +'<div class="pol-icon" style="background:'+bg+';color:'+tc+'"><i class="fas '+icon+'"></i></div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="pol-name">'+p.title+'</div>'
+      +'<div class="pol-meta">'+(p.desc||'')+'</div>'
+      +'<div style="margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+      +'<span class="pol-cat-badge" style="background:'+bg+';color:'+tc+'">'+p.category+'</span>'
+      +'<span style="font-size:10.5px;color:var(--g400)">'+dateStr+'</span>'
+      +'</div></div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">'
+      +'<button class="btn btn-o btn-sm" onclick="event.stopPropagation();askAboutPolicy(''+p.id+'')" style="white-space:nowrap"><i class="fas fa-robot"></i> Ask AI</button>'
+      +viewBtn
+      +'</div></div>';
+  }).join('');
+}
+
+function renderPolChat_context(){
+  // Build context string from all policies for Claude
+  if(!POLICIES.length){polCurrentContext='No policies uploaded yet.';return;}
+  polCurrentContext='ABC Mall Group — Policies & Procedures Index:
+
+'+POLICIES.map(p=>`• ${p.title} [${p.category}]${p.desc?' — '+p.desc:''}`).join('
+');
+}
+
+function openPolicy(id){
+  const p=POLICIES.find(x=>x.id===id);if(!p)return;
+  askAboutPolicy(id);
+  // scroll to chat
+  document.getElementById('pol-chat-msgs').scrollTop=9999;
+}
+
+function askAboutPolicy(id){
+  const p=POLICIES.find(x=>x.id===id);if(!p)return;
+  const q=`Tell me about the "${p.title}" policy. What does it cover and what are the key points?`;
+  document.getElementById('pol-chat-input').value=q;
+  sendPolicyChat();
+}
+
+async function sendPolicyChat(){
+  const input=document.getElementById('pol-chat-input');
+  const msg=input.value.trim();if(!msg)return;
+  input.value='';
+  const btn=document.getElementById('pol-send-btn');btn.disabled=true;
+
+  // Add user message
+  addChatMsg(msg,'user');
+  // Add typing indicator
+  const typingId='typing_'+Date.now();
+  addTypingIndicator(typingId);
+
+  // Build messages array
+  polChatHistory.push({role:'user',content:msg});
+  if(polChatHistory.length>20)polChatHistory=polChatHistory.slice(-20);
+
+  // Build system prompt with policy context
+  const systemPrompt=`You are the ABC Operations System Policy Assistant for ABC Mall Group in Lebanon. You help staff find, understand and apply company policies and procedures.
+
+AVAILABLE POLICIES:
+${polCurrentContext||'No policies uploaded yet. Inform the user that documents need to be uploaded by an Admin first.'}
+
+INSTRUCTIONS:
+- Answer questions about policies clearly and professionally
+- If asked about a specific policy, explain its key points
+- If the policy document is available, mention that the user can click "View PDF" to access it
+- If a policy doesn't exist in the system, say so clearly and suggest contacting the operations manager
+- Keep answers concise but complete
+- Use bullet points for key information
+- Always maintain a professional corporate tone
+- You work for ABC Verdun Mall operations team`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:systemPrompt,
+        messages:polChatHistory.slice(0,-1).concat([{role:'user',content:msg}])
+      })
+    }).then(r=>r.json());
+
+    removeTypingIndicator(typingId);
+    const reply=res.content?.[0]?.text||'I could not process your request. Please try again.';
+    polChatHistory.push({role:'assistant',content:reply});
+    addChatMsg(reply,'bot');
+
+    // Check if user is asking for a document
+    const lowerMsg=msg.toLowerCase();
+    if(lowerMsg.includes('download')||lowerMsg.includes('get the')||lowerMsg.includes('send me')||lowerMsg.includes('share')){
+      const matchedPol=POLICIES.find(p=>lowerMsg.includes(p.title.toLowerCase().split(' ').slice(0,3).join(' ').toLowerCase()));
+      if(matchedPol&&matchedPol.fileUrl){
+        addChatMsg(`📎 Here is the document: <a href="${matchedPol.fileUrl}" target="_blank" style="color:var(--p600);font-weight:700;text-decoration:underline">${matchedPol.title} (PDF)</a>`,'bot',true);
+      }
+    }
+  }catch(e){
+    removeTypingIndicator(typingId);
+    addChatMsg('Connection error. Please check your internet and try again.','bot');
+  }
+  btn.disabled=false;
+  scrollChat();
+}
+
+function addChatMsg(text,role,isHtml=false){
+  const msgs=document.getElementById('pol-chat-msgs');if(!msgs)return;
+  const div=document.createElement('div');div.className=`chat-msg ${role}`;
+  const av=role==='bot'?'<div class="chat-avatar bot"><i class="fas fa-robot"></i></div>':`<div class="chat-avatar user">${ini(SES?.fullName||'U')}</div>`;
+  const escaped=isHtml?text:text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  const bubble=`<div class="chat-bubble">${escaped}</div>`;
+  div.innerHTML=role==='bot'?`${av}<div>${bubble}</div>`:`${av}<div>${bubble}</div>`;
+  msgs.appendChild(div);scrollChat();
+}
+
+function addTypingIndicator(id){
+  const msgs=document.getElementById('pol-chat-msgs');if(!msgs)return;
+  const div=document.createElement('div');div.className='chat-msg bot';div.id=id;
+  div.innerHTML=`<div class="chat-avatar bot"><i class="fas fa-robot"></i></div><div class="chat-typing"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(div);scrollChat();
+}
+function removeTypingIndicator(id){const el=document.getElementById(id);if(el)el.remove();}
+function scrollChat(){const m=document.getElementById('pol-chat-msgs');if(m)m.scrollTop=m.scrollHeight;}
+function clearPolicyChat(){
+  polChatHistory=[];
+  const msgs=document.getElementById('pol-chat-msgs');
+  if(msgs)msgs.innerHTML=`<div class="chat-msg bot"><div class="chat-avatar bot"><i class="fas fa-robot"></i></div><div><div class="chat-bubble">Chat cleared. How can I help you with ABC policies today?</div></div></div>`;
+}
+
+// ADMIN — UPLOAD
+let polSelectedFile=null;
+function polFileSelected(input){
+  if(!input.files[0])return;
+  polSelectedFile=input.files[0];
+  document.getElementById('pol-file-name').textContent='📄 '+polSelectedFile.name;
+  document.getElementById('pol-drop').style.borderColor='var(--ok)';
+}
+function handlePolDrop(e){
+  e.preventDefault();document.getElementById('pol-drop').style.borderColor='var(--g300)';
+  const f=e.dataTransfer.files[0];
+  if(!f||!f.name.toLowerCase().endsWith('.pdf')){toast('Please drop a PDF file only','err');return;}
+  polSelectedFile=f;document.getElementById('pol-file-name').textContent='📄 '+f.name;
+  document.getElementById('pol-drop').style.borderColor='var(--ok)';
+}
+
+async function uploadPolicy(){
+  const title=document.getElementById('pol-title').value.trim();
+  const cat=document.getElementById('pol-cat').value;
+  const desc=document.getElementById('pol-desc').value.trim();
+  if(!title||!cat){toast('Please fill Title and Category','err');return;}
+  if(!polSelectedFile){toast('Please select a PDF file','err');return;}
+  if(polSelectedFile.size>10*1024*1024){toast('File too large. Max 10MB','err');return;}
+
+  const btn=document.getElementById('pol-upload-btn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Uploading…';
+  showL('Uploading document…');
+
+  try{
+    // Convert PDF to base64
+    const base64=await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>res(r.result.split(',')[1]);
+      r.onerror=rej;
+      r.readAsDataURL(polSelectedFile);
+    });
+
+    const payload={title,category:cat,desc,filename:polSelectedFile.name,fileData:base64,uploadedBy:SES?.fullName,uploadedAt:new Date().toISOString()};
+    const res=await api('GET',{action:'uploadPolicy',data:encodeURIComponent(JSON.stringify(payload))});
+    hideL();
+    if(res.success){
+      toast('Document uploaded successfully!','ok');
+      ['pol-title','pol-desc'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('pol-cat').value='';
+      document.getElementById('pol-file-name').textContent='';
+      document.getElementById('pol-drop').style.borderColor='var(--g300)';
+      polSelectedFile=null;
+      await ldPoliciesAdmin();
+      addNotif(`📄 New policy uploaded: "${title}" by ${SES?.fullName}`,'info');
+    }else{
+      // Fallback: save locally if backend not ready
+      const localPol={id:'pol_'+Date.now(),title,category:cat,desc,filename:polSelectedFile.name,uploadedBy:SES?.fullName,uploadedAt:new Date().toISOString(),fileUrl:null};
+      POLICIES.push(localPol);
+      localStorage.setItem('abc_policies',JSON.stringify(POLICIES));
+      toast('Saved locally (backend not configured for file storage)','wrn');
+      renderPolAdminList();
+    }
+  }catch(e){hideL();toast('Upload failed: '+e.message,'err');}
+  btn.disabled=false;btn.innerHTML='<i class="fas fa-cloud-arrow-up"></i> Upload Document';
+}
+
+function renderPolAdminList(){
+  const list=document.getElementById('pol-admin-list');if(!list)return;
+  const cnt=document.getElementById('pol-admin-count');if(cnt)cnt.textContent=POLICIES.length+' documents';
+  if(!POLICIES.length){list.innerHTML='<div class="empty"><i class="fas fa-folder-open"></i><h3>No documents uploaded yet</h3></div>';return;}
+  list.innerHTML=POLICIES.map(function(p,i){
+    var colors=(POL_CAT_COLORS[p.category]||'var(--g100)|var(--g600)').split('|');
+    var bg=colors[0],tc=colors[1];
+    var icon=POL_CAT_ICONS[p.category]||'fa-file';
+    var dateStr=p.uploadedAt?new Date(p.uploadedAt).toLocaleDateString('en-GB'):'';
+    var viewBtn=p.fileUrl?('<a href="'+p.fileUrl+'" target="_blank" class="btn btn-sm" style="background:#FEF2F2;color:#991B1B;border:none"><i class="fas fa-eye"></i></a>'):'';
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--g100)">'
+      +'<div style="width:36px;height:36px;border-radius:var(--r);background:'+bg+';color:'+tc+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas '+icon+'"></i></div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-family:var(--ff);font-weight:700;font-size:13px">'+p.title+'</div>'
+      +'<div style="font-size:11.5px;color:var(--g400)">'+p.category+' · Uploaded by '+(p.uploadedBy||'–')+' · '+dateStr+'</div>'
+      +'</div>'
+      +viewBtn
+      +'<button class="btn btn-d btn-sm" onclick="delPolicy('+i+')"><i class="fas fa-trash"></i></button>'
+      +'</div>';
+  }).join('');
+}
+async function delPolicy(idx){
+  if(!confirm('Delete this document?'))return;
+  const p=POLICIES[idx];
+  showL('Deleting…');
+  try{await api('GET',{action:'deletePolicy',policyId:p.id});}catch(e){}
+  POLICIES.splice(idx,1);
+  localStorage.setItem('abc_policies',JSON.stringify(POLICIES));
+  hideL();renderPolAdminList();renderPolicies();renderPolChat_context();
+  toast('Document deleted','ok');
+}
 
 // INIT
 (function(){
