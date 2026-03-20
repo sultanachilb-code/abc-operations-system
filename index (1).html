@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ABC Operations System</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+:root {
+  --p900:#2D0A5A;--p800:#4A0E8F;--p700:#6B21A8;--p600:#7C3AED;--p500:#8B5CF6;
+  --p400:#A78BFA;--p200:#DDD6FE;--p100:#EDE9FE;--p50:#F5F3FF;
+  --acc:#C026D3;--white:#fff;
+  --g50:#F9FAFB;--g100:#F3F4F6;--g200:#E5E7EB;--g300:#D1D5DB;
+  --g400:#9CA3AF;--g500:#6B7280;--g600:#4B5563;--g700:#374151;--g800:#1F2937;
+  --ok:#059669;--err:#DC2626;--warn:#D97706;--info:#0284C7;
+  --r:6px;--rm:10px;--rl:16px;
+  --s1:0 1px 3px rgba(0,0,0,.08);--s2:0 4px 16px rgba(0,0,0,.10);--s3:0 8px 32px rgba(0,0,0,.15);
+  --ff:'Nunito',sans-serif;--fb:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--fb);background:var(--g100);color:var(--g800)}
+#login-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--p900) 0%,var(--p700) 55%,var(--acc) 100%);padding:20px;position:relative;overflow:hidden}
+#login-page::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 15% 50%,rgba(255,255,255,.05) 0%,transparent 50%),radial-gradient(circle at 85% 20%,rgba(255,255,255,.07) 0%,transparent 40%)}
+.lp{position:absolute;inset:0;opacity:.04;background-image:repeating-linear-gradient(45deg,white 0,white 1px,transparent 0,transparent 50%);background-size:22px 22px}
+.login-box{background:white;border-radius:var(--rl);width:100%;max-width:420px;box-shadow:var(--s3);overflow:hidden;position:relative;z-index:1;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.login-hdr{background:linear-gradient(135deg,var(--p900),var(--p700));padding:28px 24px;text-align:center}
+.login-logo{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff);font-weight:900;color:white;font-size:16px;margin:0 auto 12px;border:2px solid rgba(255,255,255,.25)}
+.login-hdr h2{font-family:var(--ff);font-weight:800;color:white;font-size:20px}
+.login-hdr p{color:rgba(255,255,255,.6);font-size:12px;margin-top:3px}
+.login-body{padding:28px 24px}
+.lerr{background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--err);margin-bottom:16px;display:none;align-items:center;gap:8px}
+.lerr.show{display:flex}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fl{font-size:11.5px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px}
+.req{color:var(--err);margin-left:3px}
+.fc{padding:10px 12px;border:1.5px solid var(--g200);border-radius:var(--r);font-family:var(--fb);font-size:13.5px;color:var(--g800);background:white;transition:.2s;width:100%}
+.fc:focus{outline:none;border-color:var(--p500);box-shadow:0 0 0 3px rgba(139,92,246,.12)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:var(--r);font-family:var(--ff);font-weight:700;font-size:13.5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;justify-content:center}
+.btn-p{background:linear-gradient(135deg,var(--p700),var(--p500));color:white;box-shadow:0 2px 8px rgba(107,33,168,.3)}
+.btn-p:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 14px rgba(107,33,168,.4)}
+.btn-p:disabled{opacity:.6;cursor:not-allowed}
+.btn-o{background:white;border:1.5px solid var(--g200);color:var(--g600)}
+.btn-o:hover{border-color:var(--p400);color:var(--p700)}
+.btn-d{background:var(--err);color:white}
+.btn-d:hover{background:#B91C1C}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-full{width:100%}
+#app{display:none;flex-direction:column;height:100vh}
+#app.on{display:flex}
+.topbar{background:white;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:54px;flex-shrink:0;box-shadow:var(--s1);z-index:100}
+.tbl{display:flex;align-items:center;gap:14px}
+.hbtn{background:none;border:none;cursor:pointer;color:var(--g500);font-size:17px;padding:6px;border-radius:var(--r)}
+.hbtn:hover{background:var(--g100);color:var(--p600)}
+.lw{display:flex;align-items:center;gap:9px;text-decoration:none}
+.li{width:36px;height:36px;background:linear-gradient(135deg,var(--p800),var(--p500));border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff);font-weight:900;color:white;font-size:12px;flex-shrink:0}
+.lt{font-family:var(--ff);font-weight:800;font-size:15px;color:var(--p800)}
+.ls{font-size:10px;color:var(--g400);letter-spacing:.5px;text-transform:uppercase}
+.tbr{display:flex;align-items:center;gap:6px}
+.tbb{width:34px;height:34px;border-radius:50%;background:none;border:none;cursor:pointer;color:var(--g500);font-size:14px;display:flex;align-items:center;justify-content:center;transition:.2s;position:relative}
+.tbb:hover{background:var(--g100);color:var(--p600)}
+.ndot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:var(--acc);border-radius:50%;border:2px solid white}
+.uc{display:flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:20px;background:var(--p50);border:1px solid var(--p200);cursor:pointer;transition:.2s}
+.uc:hover{background:var(--p100)}
+.ua{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--p700),var(--acc));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:11px;font-family:var(--ff);flex-shrink:0}
+.un{font-size:12.5px;font-weight:700;color:var(--g800);font-family:var(--ff)}
+.ur{font-size:10px;color:var(--p600);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.hero{background:linear-gradient(135deg,var(--p900) 0%,var(--p700) 65%,var(--acc) 100%);padding:26px 24px 22px;text-align:center;position:relative;overflow:hidden;flex-shrink:0}
+.hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 20% 50%,rgba(255,255,255,.04) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(255,255,255,.06) 0%,transparent 40%)}
+.hp{position:absolute;inset:0;opacity:.05;background-image:repeating-linear-gradient(45deg,white 0,white 1px,transparent 0,transparent 50%);background-size:20px 20px}
+.hero h1{font-family:var(--ff);font-weight:900;font-size:clamp(18px,3.5vw,26px);color:white;position:relative}
+.hero p{color:rgba(255,255,255,.65);font-size:12.5px;margin-top:3px;position:relative}
+.shell{display:flex;flex:1;overflow:hidden}
+.sidebar{width:230px;min-width:230px;background:white;border-right:1px solid var(--g200);display:flex;flex-direction:column;transition:.28s;overflow:hidden}
+.sidebar.col{width:56px;min-width:56px}
+.sidebar.col .nl,.sidebar.col .ns,.sidebar.col .nb{display:none}
+.sidebar.col .ni{justify-content:center;padding:10px}
+.sidebar.col .ni i{margin:0}
+.ns{font-size:10px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:1px;padding:10px 18px 3px;margin-top:6px}
+.ni{display:flex;align-items:center;gap:11px;padding:9px 18px;cursor:pointer;border:none;background:none;width:100%;text-align:left;color:var(--g600);font-size:13px;font-family:var(--fb);font-weight:500;transition:.15s}
+.ni:hover{background:var(--p50);color:var(--p700)}
+.ni.on{background:var(--p50);color:var(--p700);font-weight:700;border-left:3px solid var(--p600)}
+.ni i{font-size:14px;width:16px;text-align:center;flex-shrink:0}
+.nb{margin-left:auto;background:var(--p600);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;font-family:var(--ff)}
+.sf{margin-top:auto;padding:12px;border-top:1px solid var(--g100)}
+.lb{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--r);width:100%;background:none;border:none;cursor:pointer;color:var(--err);font-size:13px;font-family:var(--fb);font-weight:500;transition:.15s}
+.lb:hover{background:#FEF2F2}
+.main{flex:1;overflow:auto}
+.view{display:none;padding:22px}
+.view.on{display:block}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.pht{font-family:var(--ff);font-size:19px;font-weight:800;color:var(--g800)}
+.phs{font-size:12px;color:var(--g400);margin-top:2px}
+.card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);overflow:hidden;margin-bottom:16px}
+.ch{padding:14px 18px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between}
+.ct{font-family:var(--ff);font-weight:700;font-size:13.5px;color:var(--g800);display:flex;align-items:center;gap:7px}
+.ct i{color:var(--p600)}
+.cb{padding:18px}
+.sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.sc{background:white;border:1px solid var(--g200);border-radius:var(--rm);padding:14px;display:flex;align-items:center;gap:12px;box-shadow:var(--s1)}
+.si{width:40px;height:40px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.sip{background:var(--p100);color:var(--p700)}.sig{background:#D1FAE5;color:#065F46}.sio{background:#FEF3C7;color:#92400E}.sir{background:#FEE2E2;color:#991B1B}.sib{background:#DBEAFE;color:#1E40AF}
+.sv{font-family:var(--ff);font-size:24px;font-weight:900;color:var(--g800);line-height:1}
+.sl{font-size:11px;color:var(--g400);font-weight:500;margin-top:2px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead tr{background:var(--g50)}
+th{padding:10px 13px;text-align:left;font-size:10.5px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--g200);white-space:nowrap}
+td{padding:11px 13px;border-bottom:1px solid var(--g100);vertical-align:middle}
+tr:hover td{background:var(--p50)}
+.tl{color:var(--p700);font-weight:700;text-decoration:none;cursor:pointer;font-size:12px}
+.tl:hover{text-decoration:underline}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--ff)}
+.bs{background:#FEF2F2;color:#991B1B}.bf{background:#FFF7ED;color:#92400E}.bm{background:#F0FDF4;color:#166534}.bo{background:#EFF6FF;color:#1E40AF}.bmt{background:#F5F3FF;color:#5B21B6}.bc{background:#FFF1F2;color:#9F1239}.be{background:#ECFDF5;color:#065F46}.bx{background:var(--g100);color:var(--g600)}
+.bad{background:var(--p100);color:var(--p800)}.bsu{background:#FEF3C7;color:#92400E}.bst{background:#D1FAE5;color:#065F46}
+.bac{background:#D1FAE5;color:#065F46}.bin{background:#FEE2E2;color:#991B1B}
+.slow{color:#059669;font-weight:700}.smed{color:#D97706;font-weight:700}.shi{color:#DC2626;font-weight:700}.scr{color:#7C3AED;font-weight:700}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fl{font-size:11.5px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg3{grid-template-columns:1fr 1fr 1fr}
+.full{grid-column:1/-1}
+textarea.fc{resize:vertical;min-height:110px;line-height:1.6}
+.nb-bar{background:linear-gradient(135deg,var(--p900),var(--p700));border-radius:var(--rm);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.nb-bar .nl2{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.55);font-weight:600}
+.nb-bar .nn{font-family:var(--ff);font-size:20px;font-weight:900;color:white;letter-spacing:1px}
+.nb-bar .ns2{font-size:11px;color:rgba(255,255,255,.45)}
+.stbar{display:flex;align-items:center;margin-bottom:20px}
+.stp{display:flex;align-items:center;gap:7px}
+.stc{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:var(--ff);background:var(--g200);color:var(--g500);transition:.3s}
+.stp.on .stc{background:var(--p600);color:white}
+.stp.dn .stc{background:var(--ok);color:white}
+.stl{font-size:11.5px;font-weight:600;color:var(--g400)}
+.stp.on .stl{color:var(--p700)}
+.stp.dn .stl{color:var(--ok)}
+.sln{flex:1;height:2px;background:var(--g200);margin:0 8px;transition:.3s}
+.sln.dn{background:var(--ok)}
+.ewrap{border:2px solid var(--p200);border-radius:var(--rm);overflow:hidden;background:white}
+.ehdr{background:linear-gradient(135deg,var(--p900),var(--p700));padding:14px 18px;color:white}
+.efrom{font-size:10.5px;opacity:.55;margin-bottom:3px}
+.esubj{font-family:var(--ff);font-weight:800;font-size:14px}
+.emeta{background:var(--g50);border-bottom:1px solid var(--g200);padding:10px 18px}
+.erow{display:flex;gap:8px;align-items:flex-start;margin-bottom:3px;font-size:12px}
+.erow:last-child{margin-bottom:0}
+.ek{color:var(--g400);font-weight:700;width:80px;flex-shrink:0}
+.ev{color:var(--g700)}
+.ebody{padding:18px;font-size:12.5px;color:var(--g700);line-height:1.7;white-space:pre-wrap;font-family:'Courier New',monospace}
+.eftr{border-top:1px solid var(--g100);padding:10px 18px;font-size:10.5px;color:var(--g400);background:var(--g50)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
+.overlay.hid{display:none}
+.modal{background:white;border-radius:var(--rl);width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:var(--s3);animation:mIn .25s ease}
+@keyframes mIn{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.mhdr{padding:16px 20px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:white;z-index:1}
+.mt{font-family:var(--ff);font-weight:800;font-size:15px;color:var(--g800)}
+.mc{background:none;border:none;cursor:pointer;color:var(--g400);font-size:18px;padding:4px;border-radius:var(--r)}
+.mc:hover{color:var(--g700);background:var(--g100)}
+.mb{padding:20px}
+.mf{padding:13px 20px;border-top:1px solid var(--g100);display:flex;justify-content:flex-end;gap:9px}
+#toasts{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--g800);color:white;padding:11px 16px;border-radius:var(--rm);font-size:12.5px;font-family:var(--ff);font-weight:700;box-shadow:var(--s3);display:flex;align-items:center;gap:9px;min-width:240px;animation:tIn .3s ease}
+.tok{background:var(--ok)}.terr{background:var(--err)}.twrn{background:var(--warn)}
+@keyframes tIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+.ldr{position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:800;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.ldr.hid{display:none}
+.spin{width:36px;height:36px;border:3px solid var(--p200);border-top-color:var(--p600);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:40px 24px}
+.empty i{font-size:36px;color:var(--g300);margin-bottom:10px}
+.empty h3{font-family:var(--ff);font-size:15px;color:var(--g500);margin-bottom:5px}
+.empty p{font-size:12.5px;color:var(--g400)}
+.fbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.fbar .fc{flex:1;min-width:180px}
+@media(max-width:720px){.sidebar{display:none}.fgrid,.fg3{grid-template-columns:1fr}.sr{grid-template-columns:1fr 1fr}.ui{display:none}}
+.ho-sec-label{font-size:11.5px;color:var(--g400);margin-bottom:10px;font-style:italic}
+.ho-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ho-row .fc{flex:1}
+.ho-rm-btn{background:none;border:none;cursor:pointer;color:var(--g300);font-size:14px;padding:4px 6px;border-radius:var(--r);transition:.15s;flex-shrink:0}
+.ho-rm-btn:hover{color:var(--err);background:#FEF2F2}
+.ho-time-inp{width:120px!important;flex:none!important}
+
+/* Section bars in form */
+.ho-bar{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-radius:var(--rl) var(--rl) 0 0}
+.ho-bar-title{display:flex;align-items:center;gap:8px;font-family:var(--ff);font-weight:800;font-size:13px;color:white}
+
+/* Detail page section styling */
+.hd-section{margin-bottom:0;border-radius:0}
+.hd-section:last-child{border-radius:0 0 var(--rl) var(--rl)}
+.hd-bar{padding:10px 18px;display:flex;align-items:center;gap:8px;font-family:var(--ff);font-weight:700;font-size:12px;letter-spacing:.3px}
+.hd-bar.blue{background:#EFF6FF;color:#1D4ED8;border-left:4px solid #3B82F6}
+.hd-bar.green{background:#F0FDF4;color:#15803D;border-left:4px solid #22C55E}
+.hd-bar.orange{background:#FFF7ED;color:#C2410C;border-left:4px solid #F97316}
+.hd-bar.purple{background:#F5F3FF;color:#6D28D9;border-left:4px solid #8B5CF6}
+.hd-bar.gray{background:var(--g50);color:var(--g600);border-left:4px solid var(--g300)}
+.hd-bar.notes{background:#FEFCE8;color:#854D0E;border-left:4px solid #EAB308}
+.hd-items{padding:12px 18px 14px 28px}
+.hd-item{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--g700);margin-bottom:6px;line-height:1.5}
+.hd-item:last-child{margin-bottom:0}
+.hd-item i{font-size:11px;margin-top:3px;flex-shrink:0}
+.hd-meta{display:flex;align-items:center;gap:16px;padding:12px 18px;background:var(--g50);border-top:1px solid var(--g100);font-size:12px;color:var(--g500);flex-wrap:wrap;border-radius:0 0 var(--rl) var(--rl)}
+.hd-meta span{display:flex;align-items:center;gap:5px}
+
+/* Log cards */
+.ho-card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);overflow:hidden;cursor:pointer;transition:.2s}
+.ho-card:hover{box-shadow:var(--s2);transform:translateY(-2px);border-color:var(--p400)}
+.ho-card-hdr{padding:14px 16px;border-bottom:1px solid var(--g100)}
+.ho-card-num{font-family:var(--ff);font-weight:800;font-size:13.5px;color:var(--ok);display:flex;align-items:center;gap:6px}
+.ho-card-shift{font-size:11.5px;color:var(--g400);margin-top:3px;display:flex;align-items:center;gap:5px}
+.ho-card-preview{padding:12px 16px}
+.ho-card-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--ff);margin:2px}
+.ho-card-ftr{padding:9px 16px;background:var(--g50);border-top:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--g400)}
+.prio-normal{color:#059669;font-weight:700;font-size:11px}
+.prio-medium{color:#D97706;font-weight:700;font-size:11px}
+.prio-high{color:#DC2626;font-weight:700;font-size:11px}
+.prio-critical{color:#7C3AED;font-weight:700;font-size:11px}
+</style>
+</head>
+<body>
+
+<div class="ldr" id="ldr"><div style="text-align:center"><div class="spin" style="margin:0 auto 12px"></div><div style="font-family:var(--ff);font-size:13px;color:var(--g500)" id="lmsg">Loading…</div></div></div>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="lp"></div>
+  <div class="login-box">
+    <div class="login-hdr">
+      <div class="login-logo">ABC</div>
+      <h2>ABC Operations System</h2>
+      <p>Sign in to your account to continue</p>
+    </div>
+    <div class="login-body">
+      <div class="lerr" id="lerr"><i class="fas fa-circle-xmark"></i><span id="lerr-msg">Invalid credentials.</span></div>
+      <div class="fg">
+        <label class="fl">Username <span class="req">*</span></label>
+        <input class="fc" type="text" id="lu" placeholder="Enter your username" autocomplete="username"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Password <span class="req">*</span></label>
+        <div style="position:relative">
+          <input class="fc" type="password" id="lp" placeholder="Enter your password" autocomplete="current-password" style="padding-right:38px"/>
+          <button onclick="tpwd()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--g400)" id="ptgl"><i class="fas fa-eye"></i></button>
+        </div>
+      </div>
+      <button class="btn btn-p btn-full" id="lbtn" onclick="doLogin()" style="margin-top:6px"><i class="fas fa-arrow-right-to-bracket"></i> Sign In</button>
+      <p style="font-size:11px;color:var(--g400);text-align:center;margin-top:14px">ABC Mall Group · Operations Management System<br><span style="color:var(--g300)">Unauthorized access is prohibited.</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="tbl">
+      <button class="hbtn" onclick="toggleSB()"><i class="fas fa-bars"></i></button>
+      <a class="lw" href="#">
+        <div class="li">ABC</div>
+        <div><div class="lt">ABC Operations</div><div class="ls" id="tb-prop">Verdun Mall</div></div>
+      </a>
+    </div>
+    <div class="tbr">
+      <button class="tbb"><i class="fas fa-magnifying-glass"></i></button>
+      <button class="tbb"><i class="fas fa-bell"></i><span class="ndot"></span></button>
+      <div class="uc" onclick="navigate('profile')">
+        <div class="ua" id="tb-av">VM</div>
+        <div class="ui">
+          <div class="un" id="tb-nm">–</div>
+          <div class="ur" id="tb-rl">–</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hp"></div>
+    <h1>Welcome To ABC Operations</h1>
+    <p id="hero-sub">Verdun Mall · Operations Management System</p>
+  </div>
+
+  <div class="shell">
+    <nav class="sidebar" id="sb">
+      <span class="ns">Main</span>
+      <button class="ni on" onclick="navigate('dashboard',this)"><i class="fas fa-gauge-high"></i><span class="nl">Dashboard</span></button>
+      <span class="ns">Incidents</span>
+      <button class="ni" onclick="navigate('new-inc',this)"><i class="fas fa-file-circle-plus"></i><span class="nl">New Incident Report</span></button>
+      <button class="ni" onclick="navigate('log',this)"><i class="fas fa-list-check"></i><span class="nl">Incidents Log</span><span class="nb" id="sb-ct">–</span></button>
+      <span class="ns">Handover</span>
+      <button class="ni" onclick="navigate('new-ho',this)"><i class="fas fa-rotate"></i><span class="nl">New Handover</span></button>
+      <button class="ni" onclick="navigate('ho-log',this)"><i class="fas fa-book-open"></i><span class="nl">Handover Log</span><span class="nb" id="sb-ho-ct">–</span></button>
+      <span class="ns adm" style="display:none">Admin</span>
+      <button class="ni adm" style="display:none" onclick="navigate('users',this)"><i class="fas fa-users-gear"></i><span class="nl">User Management</span></button>
+      <span class="ns">Account</span>
+      <button class="ni" onclick="navigate('profile',this)"><i class="fas fa-circle-user"></i><span class="nl">My Profile</span></button>
+      <div class="sf"><button class="lb" onclick="doLogout()"><i class="fas fa-arrow-right-from-bracket"></i><span class="nl">Sign Out</span></button></div>
+    </nav>
+
+    <div class="main">
+      <!-- DASHBOARD -->
+      <div class="view on" id="view-dashboard">
+        <div class="ph">
+          <div><div class="pht">Dashboard</div><div class="phs" id="dash-dt"></div></div>
+          <button class="btn btn-p" onclick="navigate('new-inc')"><i class="fas fa-plus"></i> New Incident Report</button>
+        </div>
+        <div class="sr">
+          <div class="sc"><div class="si sip"><i class="fas fa-triangle-exclamation"></i></div><div><div class="sv" id="st0">–</div><div class="sl">Total Incidents</div></div></div>
+          <div class="sc"><div class="si sio"><i class="fas fa-shield-halved"></i></div><div><div class="sv" id="st1">–</div><div class="sl">Security</div></div></div>
+          <div class="sc"><div class="si sig"><i class="fas fa-heart-pulse"></i></div><div><div class="sv" id="st2">–</div><div class="sl">Medical</div></div></div>
+          <div class="sc"><div class="si sir"><i class="fas fa-fire"></i></div><div><div class="sv" id="st3">–</div><div class="sl">Fire & Safety</div></div></div>
+          <div class="sc"><div class="si sip"><i class="fas fa-circle-exclamation"></i></div><div><div class="sv" id="st4">–</div><div class="sl">Critical</div></div></div>
+          <div class="sc"><div class="si sib"><i class="fas fa-calendar-day"></i></div><div><div class="sv" id="st5">–</div><div class="sl">This Month</div></div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct"><i class="fas fa-clock-rotate-left"></i> Recent Incidents</div><button class="btn btn-o btn-sm" onclick="navigate('log')">View All</button></div>
+          <div class="tw"><table><thead><tr><th>Incident #</th><th>Date & Time</th><th>Location</th><th>Category</th><th>Severity</th><th>Reporter</th><th></th></tr></thead>
+          <tbody id="dash-tb"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- NEW INCIDENT -->
+      <div class="view" id="view-new-inc">
+        <div style="max-width:860px">
+          <div class="ph"><div><div class="pht">New Incident Report</div><div class="phs">Complete all required fields</div></div></div>
+          <div class="stbar">
+            <div class="stp on" id="stp1"><div class="stc">1</div><span class="stl">Details</span></div>
+            <div class="sln" id="sln1"></div>
+            <div class="stp" id="stp2"><div class="stc">2</div><span class="stl">Description</span></div>
+            <div class="sln" id="sln2"></div>
+            <div class="stp" id="stp3"><div class="stc">3</div><span class="stl">Preview & Submit</span></div>
+          </div>
+          <!-- Step 1 -->
+          <div id="fs1">
+            <div class="nb-bar"><div><div class="nl2">Auto-Generated Incident Number</div><div class="nn">INC-XXXX (assigned on submit)</div></div><div class="ns2">Assigned on submit</div></div>
+            <div class="card"><div class="ch"><div class="ct"><i class="fas fa-circle-info"></i> Incident Information</div></div>
+            <div class="cb"><div class="fgrid fg3">
+              <div class="fg"><label class="fl">Date <span class="req">*</span></label><input type="date" class="fc" id="f-dt"/></div>
+              <div class="fg"><label class="fl">Time <span class="req">*</span></label><input type="time" class="fc" id="f-tm"/></div>
+              <div class="fg"><label class="fl">Severity</label><select class="fc" id="f-sv"><option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option></select></div>
+              <div class="fg"><label class="fl">Location <span class="req">*</span></label>
+                <select class="fc" id="f-loc"><option value="">-- Select Location --</option>
+                  <option>Verdun Mall – Main Entrance</option><option>Verdun Mall – Ground Floor</option><option>Verdun Mall – First Floor</option><option>Verdun Mall – Second Floor</option><option>Verdun Mall – Food Court</option><option>Verdun Mall – Basement Parking</option><option>Verdun Mall – Back of House</option><option>Verdun Mall – Rooftop</option><option>Ashrafieh Mall</option><option>Dbyeh Mall</option><option>Verdun Department Store</option><option>Achrafieh Department Store</option><option>Other / Common Area</option>
+                </select></div>
+              <div class="fg"><label class="fl">Category <span class="req">*</span></label>
+                <select class="fc" id="f-cat" onchange="ldTypes()"><option value="">-- Select Category --</option>
+                  <option>Security</option><option>Fire &amp; Safety</option><option>Medical</option><option>Operations</option><option>Maintenance</option><option>Customer Service</option><option>Environmental</option><option>Other</option>
+                </select></div>
+              <div class="fg"><label class="fl">Type <span class="req">*</span></label><select class="fc" id="f-typ"><option value="">-- Select Category First --</option></select></div>
+              <div class="fg"><label class="fl">Persons Involved</label><input type="text" class="fc" id="f-per" placeholder="Names, staff, tenants…"/></div>
+              <div class="fg"><label class="fl">Witnesses</label><input type="text" class="fc" id="f-wit" placeholder="If any"/></div>
+            </div></div></div>
+            <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn btn-p" onclick="goStp(2)">Next <i class="fas fa-arrow-right"></i></button></div>
+          </div>
+          <!-- Step 2 -->
+          <div id="fs2" style="display:none">
+            <div class="card"><div class="ch"><div class="ct"><i class="fas fa-pen-to-square"></i> Report Body</div></div>
+            <div class="cb">
+              <div class="fg"><label class="fl">Incident Description <span class="req">*</span></label><textarea class="fc" id="f-bd" style="min-height:150px" placeholder="Full sequence of events, persons involved, and outcome…"></textarea></div>
+              <div class="fgrid">
+                <div class="fg"><label class="fl">Immediate Actions Taken</label><textarea class="fc" id="f-ac" placeholder="Steps taken right after…" style="min-height:80px"></textarea></div>
+                <div class="fg"><label class="fl">Follow-up Required</label><textarea class="fc" id="f-fu" placeholder="Pending actions or escalations…" style="min-height:80px"></textarea></div>
+              </div>
+            </div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:14px">
+              <button class="btn btn-o" onclick="goStp(1)"><i class="fas fa-arrow-left"></i> Back</button>
+              <button class="btn btn-p" onclick="goStp(3)">Preview <i class="fas fa-arrow-right"></i></button>
+            </div>
+          </div>
+          <!-- Step 3 -->
+          <div id="fs3" style="display:none">
+            <div class="card"><div class="ch"><div class="ct"><i class="fas fa-envelope-open-text"></i> Email Report Preview</div><span style="font-size:11px;color:var(--g400)">Review before submitting</span></div>
+            <div class="cb" style="padding:0"><div class="ewrap" id="ep"></div></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px">
+              <button class="btn btn-o" onclick="goStp(2)"><i class="fas fa-arrow-left"></i> Back</button>
+              <div style="display:flex;gap:9px;flex-wrap:wrap">
+                <button class="btn btn-o" onclick="cpEmail()"><i class="fas fa-copy"></i> Copy Email</button>
+                <button class="btn btn-p" id="sub-btn" onclick="subInc()"><i class="fas fa-paper-plane"></i> Submit & Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOG -->
+      <div class="view" id="view-log">
+        <div class="ph">
+          <div><div class="pht">Incidents Log</div><div class="phs">All submitted incident reports</div></div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-o btn-sm sup-only" onclick="expCSV()"><i class="fas fa-file-csv"></i> Export</button>
+            <button class="btn btn-p" onclick="navigate('new-inc')"><i class="fas fa-plus"></i> New Report</button>
+          </div>
+        </div>
+        <div class="card"><div class="cb" style="padding:14px 16px">
+          <div class="fbar">
+            <input type="text" class="fc" id="fl-s" placeholder="🔍  Search…" oninput="renderLog()"/>
+            <select class="fc" id="fl-c" style="width:155px" onchange="renderLog()"><option value="">All Categories</option><option>Security</option><option>Fire &amp; Safety</option><option>Medical</option><option>Operations</option><option>Maintenance</option><option>Customer Service</option><option>Environmental</option><option>Other</option></select>
+            <select class="fc" id="fl-v" style="width:130px" onchange="renderLog()"><option value="">All Severity</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
+            <button class="btn btn-o btn-sm" onclick="ldInc()"><i class="fas fa-rotate"></i> Refresh</button>
+          </div>
+        </div>
+        <div class="tw"><table><thead><tr><th>Incident #</th><th>Date & Time</th><th>Location</th><th>Category</th><th>Type</th><th>Severity</th><th>Reporter</th><th>Actions</th></tr></thead>
+        <tbody id="log-tb"></tbody></table></div></div>
+      </div>
+
+      <!-- USERS -->
+      <div class="view" id="view-users">
+        <div class="ph"><div><div class="pht">User Management</div><div class="phs">Manage access and roles</div></div><button class="btn btn-p" onclick="openAddU()"><i class="fas fa-user-plus"></i> Add User</button></div>
+        <div class="card"><div class="tw"><table><thead><tr><th>Full Name</th><th>Username</th><th>Role</th><th>Property</th><th>Status</th><th>Actions</th></tr></thead><tbody id="usr-tb"></tbody></table></div></div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="view" id="view-profile">
+        <div class="ph"><div class="pht">My Profile</div></div>
+        <div style="max-width:520px">
+          <div class="card"><div class="ch"><div class="ct"><i class="fas fa-circle-user"></i> Account Information</div></div>
+          <div class="cb">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+              <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--p700),var(--acc));display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:20px;font-family:var(--ff)" id="pav">VM</div>
+              <div><div style="font-family:var(--ff);font-weight:800;font-size:17px" id="pnm">–</div><div style="font-size:12px;color:var(--g400)" id="pun">–</div><span class="badge" id="prl">–</span></div>
+            </div>
+            <div class="fgrid">
+              <div class="fg"><label class="fl">Full Name</label><input class="fc" id="pfn" disabled/></div>
+              <div class="fg"><label class="fl">Property</label><input class="fc" id="ppr" disabled/></div>
+            </div>
+          </div></div>
+          <div class="card"><div class="ch"><div class="ct"><i class="fas fa-lock"></i> Change Password</div></div>
+          <div class="cb">
+            <div class="fg"><label class="fl">Current Password <span class="req">*</span></label><input type="password" class="fc" id="pc1"/></div>
+            <div class="fgrid" style="margin-bottom:12px">
+              <div class="fg"><label class="fl">New Password <span class="req">*</span></label><input type="password" class="fc" id="pc2"/></div>
+              <div class="fg"><label class="fl">Confirm <span class="req">*</span></label><input type="password" class="fc" id="pc3"/></div>
+            </div>
+            <button class="btn btn-p" onclick="chgPwd()"><i class="fas fa-floppy-disk"></i> Update Password</button>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay hid" id="det-ov">
+  <div class="modal"><div class="mhdr"><div class="mt" id="det-t">Incident Report</div><button class="mc" onclick="closeDet()"><i class="fas fa-xmark"></i></button></div>
+  <div class="mb" id="det-b"></div>
+  <div class="mf"><button class="btn btn-o" onclick="closeDet()">Close</button><button class="btn btn-p" onclick="cpDetEmail()"><i class="fas fa-copy"></i> Copy Email</button></div></div>
+</div>
+
+      <!-- NEW HANDOVER -->
+      <div class="view" id="view-new-ho">
+        <div style="max-width:820px">
+          <div class="ph">
+            <div><div class="pht">New Shift Handover</div><div class="phs">Structured shift summary broadcast to the team</div></div>
+          </div>
+
+          <!-- Header info -->
+          <div class="card">
+            <div class="ch"><div class="ct"><i class="fas fa-rotate" style="color:var(--ok)"></i> Handover Header</div></div>
+            <div class="cb">
+              <div class="fgrid fg3">
+                <div class="fg"><label class="fl">Date <span class="req">*</span></label><input type="date" class="fc" id="ho-dt"/></div>
+                <div class="fg"><label class="fl">Shift <span class="req">*</span></label>
+                  <select class="fc" id="ho-sh">
+                    <option value="">-- Select Shift --</option>
+                    <option>Morning (06:00 – 14:00)</option>
+                    <option>Afternoon (14:00 – 22:00)</option>
+                    <option>Night (22:00 – 06:00)</option>
+                    <option>Full Day</option>
+                  </select>
+                </div>
+                <div class="fg"><label class="fl">Property</label>
+                  <select class="fc" id="ho-pr">
+                    <option>ABC Verdun Mall</option>
+                    <option>Ashrafieh Mall</option>
+                    <option>Dbyeh Mall</option>
+                    <option>Verdun Department Store</option>
+                    <option>Achrafieh Department Store</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SCHEDULED WORKS -->
+          <div class="card">
+            <div class="ho-bar" style="background:linear-gradient(135deg,#1E3A5F,#2563EB)">
+              <div class="ho-bar-title"><i class="fas fa-hard-hat"></i> Scheduled Works</div>
+              <button class="btn btn-sm" onclick="hoAdd('sw')" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> Add</button>
+            </div>
+            <div class="cb">
+              <div class="ho-sec-label">Fit-out / Overnight Access Works</div>
+              <div id="ho-sw-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px"></div>
+              <button class="btn btn-o btn-sm" onclick="hoAdd('sw')"><i class="fas fa-plus"></i> Add Work Item</button>
+            </div>
+          </div>
+
+          <!-- TODAY OPERATIONS -->
+          <div class="card">
+            <div class="ho-bar" style="background:linear-gradient(135deg,#065F46,#059669)">
+              <div class="ho-bar-title"><i class="fas fa-sun"></i> Today — Operations</div>
+              <button class="btn btn-sm" onclick="hoAdd('ops')" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> Add</button>
+            </div>
+            <div class="cb">
+              <div class="ho-sec-label">Operational tasks, events, and activities for today</div>
+              <div id="ho-ops-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px"></div>
+              <button class="btn btn-o btn-sm" onclick="hoAdd('ops')"><i class="fas fa-plus"></i> Add Task</button>
+            </div>
+          </div>
+
+          <!-- TODAY SOFT SERVICES -->
+          <div class="card">
+            <div class="ho-bar" style="background:linear-gradient(135deg,#7C2D12,#EA580C)">
+              <div class="ho-bar-title"><i class="fas fa-broom"></i> Today — Soft Services</div>
+              <button class="btn btn-sm" onclick="hoAdd('ss')" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> Add</button>
+            </div>
+            <div class="cb">
+              <div class="ho-sec-label">Cleaning, pest control, waste, landscaping tasks for today</div>
+              <div id="ho-ss-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px"></div>
+              <button class="btn btn-o btn-sm" onclick="hoAdd('ss')"><i class="fas fa-plus"></i> Add Task</button>
+            </div>
+          </div>
+
+          <!-- TOMORROW -->
+          <div class="card">
+            <div class="ho-bar" style="background:linear-gradient(135deg,#4A0E8F,#7C3AED)">
+              <div class="ho-bar-title"><i class="fas fa-calendar-day"></i> Tomorrow's Tasks</div>
+              <button class="btn btn-sm" onclick="hoAdd('tmr')" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> Add</button>
+            </div>
+            <div class="cb">
+              <div class="ho-sec-label">Tasks and reminders scheduled for tomorrow</div>
+              <div id="ho-tmr-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px"></div>
+              <button class="btn btn-o btn-sm" onclick="hoAdd('tmr')"><i class="fas fa-plus"></i> Add Task</button>
+            </div>
+          </div>
+
+          <!-- DAY AFTER TOMORROW -->
+          <div class="card">
+            <div class="ho-bar" style="background:linear-gradient(135deg,#374151,#6B7280)">
+              <div class="ho-bar-title"><i class="fas fa-calendar-week"></i> Day After Tomorrow</div>
+              <button class="btn btn-sm" onclick="hoAdd('dat')" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 12px;font-size:12px"><i class="fas fa-plus"></i> Add</button>
+            </div>
+            <div class="cb">
+              <div class="ho-sec-label" id="ho-dat-label">Tasks for the day after tomorrow</div>
+              <div id="ho-dat-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px"></div>
+              <button class="btn btn-o btn-sm" onclick="hoAdd('dat')"><i class="fas fa-plus"></i> Add Task</button>
+            </div>
+          </div>
+
+          <!-- NOTES -->
+          <div class="card">
+            <div class="ch"><div class="ct"><i class="fas fa-note-sticky"></i> Additional Notes & Remarks</div></div>
+            <div class="cb">
+              <textarea class="fc" id="ho-notes" placeholder="Any additional remarks, escalations, or important notes for the incoming team…" style="min-height:90px"></textarea>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px">
+            <button class="btn btn-o" onclick="previewHO()"><i class="fas fa-eye"></i> Preview</button>
+            <button class="btn btn-p" id="ho-sub-btn" onclick="submitHO()"><i class="fas fa-paper-plane"></i> Broadcast to Team</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HANDOVER LOG -->
+      <div class="view" id="view-ho-log">
+        <div class="ph">
+          <div><div class="pht">Handover Log</div><div class="phs">All shift handovers</div></div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-o btn-sm sup-only" onclick="hoExpCSV()"><i class="fas fa-file-csv"></i> Export</button>
+            <button class="btn btn-p" onclick="navigate('new-ho')"><i class="fas fa-plus"></i> New Handover</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px"><div class="cb" style="padding:14px 16px">
+          <div class="fbar">
+            <input type="text" class="fc" id="hfl-s" placeholder="🔍  Search handovers…" oninput="renderHOLog()"/>
+            <select class="fc" id="hfl-sh" style="width:200px" onchange="renderHOLog()">
+              <option value="">All Shifts</option>
+              <option>Morning (06:00 – 14:00)</option>
+              <option>Afternoon (14:00 – 22:00)</option>
+              <option>Night (22:00 – 06:00)</option>
+              <option>Full Day</option>
+            </select>
+            <button class="btn btn-o btn-sm" onclick="ldHO()"><i class="fas fa-rotate"></i> Refresh</button>
+          </div>
+        </div></div>
+        <div id="ho-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px"></div>
+      </div>
+
+      <!-- HANDOVER DETAIL PAGE -->
+      <div class="view" id="view-ho-detail">
+        <div style="max-width:760px">
+          <div class="ph">
+            <div>
+              <div class="pht" id="hd-title">Handover Detail</div>
+              <div class="phs" id="hd-sub">–</div>
+            </div>
+            <div style="display:flex;gap:9px">
+              <button class="btn btn-o" onclick="navigate('ho-log')"><i class="fas fa-arrow-left"></i> Back to Log</button>
+              <button class="btn btn-p adm" id="hd-del-btn" style="display:none" onclick="delHOFromDetail()"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          </div>
+          <div id="hd-content"></div>
+        </div>
+      </div>
+
+<!-- HANDOVER PREVIEW MODAL --><!-- HANDOVER PREVIEW MODAL -->
+<div class="overlay hid" id="ho-prev-ov">
+  <div class="modal" style="max-width:660px">
+    <div class="mhdr">
+      <div class="mt" id="ho-prev-title">Handover Preview</div>
+      <button class="mc" onclick="document.getElementById('ho-prev-ov').classList.add('hid')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="mb" id="ho-prev-body"></div>
+    <div class="mf">
+      <button class="btn btn-o" onclick="document.getElementById('ho-prev-ov').classList.add('hid')">Close</button>
+      <button class="btn btn-p" onclick="submitHO(true)"><i class="fas fa-paper-plane"></i> Confirm & Broadcast</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+// ══ CONFIG ══════════════════════════════════════════
+const API = "https://script.google.com/macros/s/AKfycbzMlPGDwuxx3YS9c5pmAENsChnshxtKfhvMMA3reSD69gr30AIUmVmy927t4RkRjEORZw/exec";
+
+// ══ STATE ════════════════════════════════════════════
+let SES=null,INCS=[],USRS=[],detInc=null,sbCol=false;
+
+// ══ TYPES ════════════════════════════════════════════
+const TYPES={'Security':['Theft / Shoplifting','Vandalism','Trespassing','Physical Altercation','Suspicious Person / Behavior','Unauthorized Access','Robbery','Harassment','Lost & Found','Other Security'],'Fire & Safety':['Fire Alarm Activation','Smoke Detected','Fire Incident','Gas Leak','Evacuation','False Alarm','Safety Violation','Hazardous Material','Other Fire & Safety'],'Medical':['First Aid Required','Unconscious Person','Cardiac Event','Slip / Trip / Fall','Allergic Reaction','Heat Exhaustion','Injury on Site','Ambulance Called','Other Medical'],'Operations':['Power Failure','HVAC Issue','Elevator Malfunction','Water Leak','Flooding','Structural Damage','Noise Complaint','Crowd Control','Other Operations'],'Maintenance':['Mechanical Failure','Electrical Fault','Plumbing Issue','Equipment Breakdown','Signage Damage','Cleaning Issue','Pest Sighting','Other Maintenance'],'Customer Service':['Customer Complaint','Lost Child','Missing Person','Customer Injury','Refund Dispute','Accessibility Issue','Other Customer Service'],'Environmental':['Waste Management Issue','Pollution / Spill','Recycling Non-Compliance','Pest Control','Other Environmental'],'Other':['Other']};
+const CB={'Security':'bs','Fire & Safety':'bf','Medical':'bm','Operations':'bo','Maintenance':'bmt','Customer Service':'bc','Environmental':'be','Other':'bx'};
+const SC={Low:'slow',Medium:'smed',High:'shi',Critical:'scr'};
+const SV={Low:'#059669',Medium:'#D97706',High:'#DC2626',Critical:'#7C3AED'};
+
+// ══ UTILS ════════════════════════════════════════════
+const fd=s=>{if(!s)return'–';const p=s.toString().split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s};
+const td=()=>new Date().toISOString().split('T')[0];
+const tn=()=>new Date().toTimeString().slice(0,5);
+const ini=n=>n?n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2):'U';
+
+// ══ API ══════════════════════════════════════════════
+async function api(method,params){
+  // All requests use GET to avoid CORS preflight issues with Google Apps Script
+  const tok=SES?.token||'';
+  const body=encodeURIComponent(JSON.stringify({...params,token:tok}));
+  const q=new URLSearchParams({...params,token:tok,body:body});
+  const r=await fetch(`${API}?${q}`);
+  return r.json();
+}
+const showL=m=>{document.getElementById('ldr').classList.remove('hid');document.getElementById('lmsg').textContent=m||'Loading…'};
+const hideL=()=>document.getElementById('ldr').classList.add('hid');
+function toast(msg,t=''){
+  const ic={ok:'fa-circle-check',err:'fa-circle-xmark',wrn:'fa-triangle-exclamation'};
+  const el=document.createElement('div');el.className='toast '+(t==='ok'?'tok':t==='err'?'terr':t==='wrn'?'twrn':'');
+  el.innerHTML=`<i class="fas ${ic[t]||'fa-info-circle'}"></i> ${msg}`;
+  document.getElementById('toasts').appendChild(el);setTimeout(()=>el.remove(),3600);
+}
+
+// ══ AUTH ═════════════════════════════════════════════
+async function doLogin(){
+  const u=document.getElementById('lu').value.trim(),p=document.getElementById('lp').value;
+  const er=document.getElementById('lerr');er.classList.remove('show');
+  if(!u||!p){document.getElementById('lerr-msg').textContent='Please enter username and password.';er.classList.add('show');return;}
+  const btn=document.getElementById('lbtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Signing in…';
+  try{
+    const loginBody=encodeURIComponent(JSON.stringify({username:u,password:p}));
+    const res=await fetch(`${API}?action=login&body=${loginBody}`).then(r=>r.json());
+    if(res.success){SES={token:res.token,...res.user,expiresAt:res.expiresAt};sessionStorage.setItem('abc_ses',JSON.stringify(SES));startApp();}
+    else{document.getElementById('lerr-msg').textContent=res.message||'Invalid credentials.';er.classList.add('show');}
+  }catch(e){document.getElementById('lerr-msg').textContent='Connection error. Verify the API URL is correctly set.';er.classList.add('show');}
+  btn.disabled=false;btn.innerHTML='<i class="fas fa-arrow-right-to-bracket"></i> Sign In';
+}
+function startApp(){
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app').classList.add('on');
+  applySession();ldDash();
+}
+function applySession(){
+  const s=SES,av=ini(s.fullName);
+  document.getElementById('tb-av').textContent=av;
+  document.getElementById('tb-nm').textContent=s.fullName;
+  document.getElementById('tb-rl').textContent=s.role;
+  document.getElementById('tb-prop').textContent=s.property||'ABC Mall';
+  document.getElementById('hero-sub').textContent=`${s.property||'ABC Mall'} · Operations Management System`;
+  document.getElementById('pav').textContent=av;
+  document.getElementById('pnm').textContent=s.fullName;
+  document.getElementById('pun').textContent='@'+s.username;
+  document.getElementById('pfn').value=s.fullName;
+  document.getElementById('ppr').value=s.property||'';
+  const rb=document.getElementById('prl');rb.textContent=s.role;rb.className='badge '+(s.role==='Admin'?'bad':s.role==='Supervisor'?'bsu':'bst');
+  document.querySelectorAll('.adm').forEach(el=>el.style.display=s.role==='Admin'?'':'none');
+  document.querySelectorAll('.sup-only').forEach(el=>el.style.display=(s.role==='Admin'||s.role==='Supervisor')?'':'none');
+}
+async function doLogout(){
+  showL('Signing out…');try{await api('POST',{action:'logout'});}catch(e){}
+  SES=null;sessionStorage.removeItem('abc_ses');INCS=[];USRS=[];hideL();
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('login-page').style.display='';
+  document.getElementById('lp').value='';
+}
+function tpwd(){const i=document.getElementById('lp'),b=document.getElementById('ptgl');if(i.type==='password'){i.type='text';b.innerHTML='<i class="fas fa-eye-slash"></i>';}else{i.type='password';b.innerHTML='<i class="fas fa-eye"></i>';}}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('login-page').style.display!=='none')doLogin();});
+
+// ══ NAVIGATION ════════════════════════════════════════
+function navigate(v,btn){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
+  const el=document.getElementById('view-'+v);if(el)el.classList.add('on');
+  if(btn)btn.classList.add('on');
+  if(v==='new-inc')resetF();
+  if(v==='log')ldInc();
+  if(v==='users'&&SES.role==='Admin')ldUsers();
+  if(v==='dashboard')ldDash();
+  if(v==='new-ho')hoResetForm();
+  if(v==='ho-log')ldHO();
+}
+function toggleSB(){sbCol=!sbCol;document.getElementById('sb').classList.toggle('col',sbCol);}
+
+// ══ DASHBOARD ═════════════════════════════════════════
+async function ldDash(){
+  document.getElementById('dash-dt').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  showL('Loading dashboard…');
+  try{
+    const [sr,ir]=await Promise.all([api('GET',{action:'getStats'}),api('GET',{action:'getIncidents'})]);
+    if(sr.success){const s=sr.stats;['0','1','2','3','4','5'].forEach((i,x)=>{const vals=[s.total,s.security,s.medical,s.fire,s.critical,s.thisMonth];document.getElementById('st'+i).textContent=vals[x];});}
+    if(ir.success){INCS=ir.incidents;document.getElementById('sb-ct').textContent=INCS.length;renderDTbl(INCS.slice(0,8));}
+  }catch(e){toast('Failed to load. Check API URL.','err');}
+  hideL();
+}
+function renderDTbl(rows){
+  const tb=document.getElementById('dash-tb');
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty"><i class="fas fa-folder-open"></i><h3>No incidents yet</h3></div></td></tr>`;return;}
+  tb.innerHTML=rows.map(i=>{const bc=CB[i['Category']]||'bx',sc=SC[i['Severity']]||'';const ij=JSON.stringify(i).replace(/'/g,"\\'");return`<tr><td><span class="tl" onclick='opDet(${ij})'>${i['Incident #']}</span></td><td>${fd(i['Date'])}<br><span style="font-size:10.5px;color:var(--g400)">${i['Time']||''}</span></td><td style="font-size:12px">${i['Location']||'–'}</td><td><span class="badge ${bc}">${i['Category']||'–'}</span></td><td class="${sc}" style="font-size:12px">${i['Severity']||'–'}</td><td style="font-size:12px">${i['Reporter']||'–'}</td><td><button class="btn btn-o btn-sm" onclick='opDet(${ij})'><i class="fas fa-eye"></i></button></td></tr>`;}).join('');
+}
+
+// ══ LOG ═══════════════════════════════════════════════
+async function ldInc(){
+  showL('Loading incidents…');
+  try{const res=await api('GET',{action:'getIncidents'});if(res.success){INCS=res.incidents;document.getElementById('sb-ct').textContent=INCS.length;renderLog();}else toast(res.message||'Failed','err');}
+  catch(e){toast('Connection error','err');}hideL();
+}
+function renderLog(){
+  const s=(document.getElementById('fl-s').value||'').toLowerCase(),c=document.getElementById('fl-c').value,v=document.getElementById('fl-v').value;
+  let fl=INCS.filter(i=>(!s||JSON.stringify(i).toLowerCase().includes(s))&&(!c||i['Category']===c)&&(!v||i['Severity']===v));
+  const tb=document.getElementById('log-tb');
+  if(!fl.length){tb.innerHTML=`<tr><td colspan="8"><div class="empty"><i class="fas fa-folder-open"></i><h3>No incidents found</h3><p>Adjust your filters</p></div></td></tr>`;return;}
+  const canDel=SES.role==='Admin';
+  tb.innerHTML=fl.map(i=>{const bc=CB[i['Category']]||'bx',sc=SC[i['Severity']]||'';const ij=JSON.stringify(i).replace(/'/g,"\\'");return`<tr><td><span class="tl" onclick='opDet(${ij})'>${i['Incident #']}</span></td><td>${fd(i['Date'])}<br><span style="font-size:10.5px;color:var(--g400)">${i['Time']||''}</span></td><td style="font-size:11.5px">${i['Location']||'–'}</td><td><span class="badge ${bc}">${i['Category']||'–'}</span></td><td style="font-size:11.5px">${i['Type']||'–'}</td><td class="${sc}" style="font-size:12px">${i['Severity']||'–'}</td><td style="font-size:11.5px">${i['Reporter']||'–'}</td><td style="display:flex;gap:5px"><button class="btn btn-o btn-sm" onclick='opDet(${ij})'><i class="fas fa-eye"></i></button>${canDel?`<button class="btn btn-d btn-sm" onclick="delInc('${i['Incident #']}')"><i class="fas fa-trash"></i></button>`:''}</td></tr>`;}).join('');
+}
+function expCSV(){
+  if(!INCS.length){toast('No data to export','wrn');return;}
+  const h=['Incident #','Date','Time','Location','Category','Type','Severity','Reporter','Property','Description','Actions Taken','Follow-up','Submitted At'];
+  const rows=INCS.map(i=>h.map(k=>`"${(i[k]||'').toString().replace(/"/g,'""')}"`).join(','));
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h.map(k=>`"${k}"`).join(','),...rows].join('\n'));a.download=`ABC_Incidents_${td()}.csv`;a.click();toast('CSV exported!','ok');
+}
+async function delInc(num){
+  if(!confirm(`Delete incident ${num}? This cannot be undone.`))return;
+  showL('Deleting…');const res=await api('POST',{action:'deleteIncident',incidentNumber:num});hideL();
+  if(res.success){toast('Deleted','ok');ldInc();}else toast(res.message||'Failed','err');
+}
+
+// ══ DETAIL MODAL ══════════════════════════════════════
+function opDet(i){if(typeof i==='string')i=JSON.parse(i);detInc=i;document.getElementById('det-t').textContent=`${i['Incident #']} – Incident Report`;document.getElementById('det-b').innerHTML=`<div class="ewrap">${mkEH(i)}</div>`;document.getElementById('det-ov').classList.remove('hid');}
+function closeDet(){document.getElementById('det-ov').classList.add('hid');}
+function cpDetEmail(){if(!detInc)return;navigator.clipboard.writeText(mkET(detInc));toast('Email copied!','ok');}
+
+// ══ FORM ══════════════════════════════════════════════
+function resetF(){
+  document.getElementById('f-dt').value=td();document.getElementById('f-tm').value=tn();
+  ['f-loc','f-cat','f-per','f-wit','f-bd','f-ac','f-fu'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('f-sv').value='Medium';ldTypes();goStp(1);
+}
+function ldTypes(){const c=document.getElementById('f-cat').value,s=document.getElementById('f-typ');s.innerHTML='<option value="">-- Select Type --</option>';if(c&&TYPES[c])TYPES[c].forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;s.appendChild(o);});}
+function goStp(n){
+  [1,2,3].forEach(i=>{document.getElementById('fs'+i).style.display=i===n?'block':'none';const s=document.getElementById('stp'+i);s.className='stp'+(i===n?' on':i<n?' dn':'');if(i<3)document.getElementById('sln'+i).className='sln'+(i<n?' dn':'');});
+  if(n===3)mkPrev();
+}
+function getF(){return{date:document.getElementById('f-dt').value,time:document.getElementById('f-tm').value,location:document.getElementById('f-loc').value,category:document.getElementById('f-cat').value,type:document.getElementById('f-typ').value,severity:document.getElementById('f-sv').value,persons:document.getElementById('f-per').value,witnesses:document.getElementById('f-wit').value,body:document.getElementById('f-bd').value,actions:document.getElementById('f-ac').value,followup:document.getElementById('f-fu').value};}
+function mkPrev(){const d=getF(),m={...d,'Incident #':'INC-XXXX (auto)','Reporter':SES.fullName,'Property':SES.property};document.getElementById('ep').innerHTML=mkEH(m);}
+function cpEmail(){const d=getF(),m={...d,'Incident #':'INC-XXXX','Reporter':SES.fullName,'Property':SES.property};navigator.clipboard.writeText(mkET(m));toast('Copied!','ok');}
+
+// ══ EMAIL BUILDER ═════════════════════════════════════
+function mkEH(d){
+  const num=d['Incident #']||d.incidentNumber||'–',cat=d['Category']||d.category||'–',typ=d['Type']||d.type||'–';
+  const sev=d['Severity']||d.severity||'–',loc=d['Location']||d.location||'–';
+  const dt=fd(d['Date']||d.date),tm=d['Time']||d.time||'–';
+  const rep=d['Reporter']||d.reporter||SES?.fullName||'–',prop=d['Property']||d.property||SES?.property||'ABC Mall';
+  const body=d['Description']||d.body||'(No description provided)';
+  const act=d['Actions Taken']||d.actions||'',fu=d['Follow-up']||d.followup||'';
+  const per=d['Persons Involved']||d.persons||'',wit=d['Witnesses']||d.witnesses||'';
+  const sc=SV[sev]||'#6B7280';
+  return`<div class="ehdr"><div class="efrom">From: ${prop} Operations &lt;operations@abcmall.com.lb&gt;</div><div class="esubj">🚨 Incident Report – ${num} | ${cat} – ${typ}</div></div><div class="emeta"><div class="erow"><span class="ek">To:</span><span class="ev">Operations Manager, ${prop} Management</span></div><div class="erow"><span class="ek">Subject:</span><span class="ev">Incident Report – ${num} | ${cat} – ${typ}</span></div><div class="erow"><span class="ek">Date:</span><span class="ev">${dt} at ${tm}</span></div><div class="erow"><span class="ek">Priority:</span><span class="ev"><strong style="color:${sc}">${sev}</strong></span></div></div><div class="ebody">Dear Operations Team,
+
+Please be advised of the following incident at ${prop}.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INCIDENT REFERENCE: ${num}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 INCIDENT DETAILS
+• Date & Time      : ${dt} at ${tm}
+• Location         : ${loc}
+• Category         : ${cat}
+• Type             : ${typ}
+• Severity         : ${sev}
+• Reported By      : ${rep}${per?'\n• Persons Involved : '+per:''}${wit?'\n• Witnesses        : '+wit:''}
+
+📝 INCIDENT DESCRIPTION
+${body}
+${act?'\n✅ IMMEDIATE ACTIONS TAKEN\n'+act:''}${fu?'\n\n🔄 FOLLOW-UP REQUIRED\n'+fu:''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Regards,
+${rep}
+${prop} | ABC Mall Group Lebanon</div><div class="eftr">📌 ABC Operations System · Reference: ${num} · Generated: ${new Date().toLocaleString()}</div>`;
+}
+function mkET(d){
+  const num=d['Incident #']||'–',cat=d['Category']||'–',typ=d['Type']||'–',sev=d['Severity']||'–',loc=d['Location']||'–';
+  const dt=fd(d['Date']),tm=d['Time']||'–',rep=d['Reporter']||SES?.fullName||'–',prop=d['Property']||SES?.property||'ABC Mall';
+  return`Subject: Incident Report – ${num} | ${cat} – ${typ}\n\nDear Operations Team,\n\nIncident at ${prop}.\n\nREFERENCE: ${num}\n• Date & Time : ${dt} at ${tm}\n• Location    : ${loc}\n• Category    : ${cat}\n• Type        : ${typ}\n• Severity    : ${sev}\n• Reporter    : ${rep}\n\nDESCRIPTION\n${d['Description']||d.body||''}\n\nACTIONS TAKEN\n${d['Actions Taken']||d.actions||'N/A'}\n\nFOLLOW-UP\n${d['Follow-up']||d.followup||'N/A'}\n\nRegards,\n${rep}\n${prop} | ABC Mall Group`;
+}
+
+// ══ SUBMIT ════════════════════════════════════════════
+async function subInc(){
+  const d=getF();
+  if(!d.date||!d.time||!d.location||!d.category||!d.type||!d.body){toast('Fill all required fields.','err');return;}
+  const btn=document.getElementById('sub-btn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Submitting…';
+  showL('Saving incident report…');
+  try{const res=await api('POST',{action:'submitIncident',data:d});hideL();
+    if(res.success){toast(`✅ ${res.incidentNumber} submitted!`,'ok');setTimeout(()=>{navigate('log');ldInc();},900);}
+    else toast(res.message||'Failed','err');}
+  catch(e){hideL();toast('Connection error','err');}
+  btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> Submit & Save';
+}
+
+// ══ USERS ═════════════════════════════════════════════
+async function ldUsers(){
+  showL('Loading users…');
+  try{const res=await api('GET',{action:'getUsers'});if(res.success){USRS=res.users;renderU();}}
+  catch(e){toast('Failed','err');}hideL();
+}
+function renderU(){
+  const tb=document.getElementById('usr-tb');
+  if(!USRS.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty"><h3>No users</h3></div></td></tr>`;return;}
+  tb.innerHTML=USRS.map(u=>`<tr><td style="font-weight:600">${u.fullName}</td><td style="font-size:12px;color:var(--g500)">@${u.username}</td><td><span class="badge ${u.role==='Admin'?'bad':u.role==='Supervisor'?'bsu':'bst'}">${u.role}</span></td><td style="font-size:12px">${u.property||'–'}</td><td><span class="badge ${u.active?'bac':'bin'}">${u.active?'Active':'Disabled'}</span></td><td style="display:flex;gap:5px"><button class="btn btn-o btn-sm" onclick='opEditU(${JSON.stringify(u)})'><i class="fas fa-pen"></i></button><button class="btn btn-d btn-sm" onclick="delU('${u.id}','${u.username}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
+}
+function openAddU(){document.getElementById('umt').textContent='Add New User';document.getElementById('um-id').value='';['um-nm','um-un','um-pw','um-em'].forEach(id=>document.getElementById(id).value='');document.getElementById('um-rl').value='Staff';document.getElementById('um-pr').value='ABC Verdun Mall';document.getElementById('usr-ov').classList.remove('hid');}
+function opEditU(u){document.getElementById('umt').textContent='Edit User';document.getElementById('um-id').value=u.id;document.getElementById('um-nm').value=u.fullName;document.getElementById('um-un').value=u.username;document.getElementById('um-pw').value='';document.getElementById('um-rl').value=u.role;document.getElementById('um-pr').value=u.property||'ABC Verdun Mall';document.getElementById('um-em').value=u.email||'';document.getElementById('usr-ov').classList.remove('hid');}
+function closeUM(){document.getElementById('usr-ov').classList.add('hid');}
+async function saveU(){
+  const id=document.getElementById('um-id').value;
+  const p={fullName:document.getElementById('um-nm').value.trim(),username:document.getElementById('um-un').value.trim(),password:document.getElementById('um-pw').value,role:document.getElementById('um-rl').value,property:document.getElementById('um-pr').value,email:document.getElementById('um-em').value.trim()};
+  if(!p.fullName||!p.username||(!id&&!p.password)){toast('Fill required fields','err');return;}
+  showL('Saving…');const action=id?'updateUser':'addUser';if(id)p.id=id;
+  const res=await api('POST',{action,...p});hideL();
+  if(res.success){toast(id?'User updated!':'User added!','ok');closeUM();ldUsers();}else toast(res.message||'Failed','err');
+}
+async function delU(id,un){
+  if(!confirm(`Remove user @${un}?`))return;showL('Removing…');
+  const res=await api('POST',{action:'deleteUser',id,username:un});hideL();
+  if(res.success){toast('User removed','ok');ldUsers();}else toast(res.message||'Failed','err');
+}
+
+// ══ PASSWORD ══════════════════════════════════════════
+async function chgPwd(){
+  const o=document.getElementById('pc1').value,n=document.getElementById('pc2').value,c=document.getElementById('pc3').value;
+  if(!o||!n||!c){toast('All fields required','err');return;}
+  if(n!==c){toast('Passwords do not match','err');return;}
+  if(n.length<8){toast('Min 8 characters','err');return;}
+  showL('Updating…');const res=await api('POST',{action:'changePassword',oldPassword:o,newPassword:n});hideL();
+  if(res.success){toast('Password updated!','ok');['pc1','pc2','pc3'].forEach(id=>document.getElementById(id).value='');}
+  else toast(res.message||'Failed','err');
+}
+
+// ══ HANDOVER MODULE ═══════════════════════════════════════
+let HOS = [], currentHO = null;
+
+function hoResetForm() {
+  document.getElementById('ho-dt').value = td();
+  document.getElementById('ho-sh').value = '';
+  document.getElementById('ho-pr').value = SES?.property || 'ABC Verdun Mall';
+  document.getElementById('ho-notes').value = '';
+  ['sw','ops','ss','tmr','dat'].forEach(s => {
+    document.getElementById(`ho-${s}-list`).innerHTML = '';
+    hoAdd(s);
+  });
+  const dat = new Date(); dat.setDate(dat.getDate()+2);
+  document.getElementById('ho-dat-label').textContent =
+    'Tasks for ' + dat.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+}
+
+function hoAdd(sec) {
+  const list = document.getElementById(`ho-${sec}-list`);
+  const row  = document.createElement('div');
+  row.className = 'ho-row';
+  const colors = {sw:'#2563EB',ops:'#059669',ss:'#EA580C',tmr:'#7C3AED',dat:'#6B7280'};
+  const c = colors[sec];
+  row.innerHTML = `
+    <i class="fas fa-circle-dot" style="color:${c};font-size:12px;flex-shrink:0"></i>
+    <input type="text" class="fc" placeholder="Enter item…" style="flex:1"/>
+    ${sec==='sw'?`<input type="text" class="fc ho-time-inp" placeholder="Time e.g. After 7PM"/>`:'' }
+    <button class="ho-rm-btn" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>`;
+  list.appendChild(row);
+  row.querySelector('input').focus();
+}
+
+function hoGetSection(sec) {
+  return Array.from(document.querySelectorAll(`#ho-${sec}-list .ho-row`)).map(r => {
+    const inputs = r.querySelectorAll('input');
+    const text = inputs[0]?.value.trim() || '';
+    const time = inputs[1]?.value.trim() || '';
+    if (!text) return null;
+    return time ? `${text} — ${time}` : text;
+  }).filter(Boolean);
+}
+
+function hoGetFormData() {
+  return {
+    date: document.getElementById('ho-dt').value,
+    shift: document.getElementById('ho-sh').value,
+    property: document.getElementById('ho-pr').value,
+    notes: document.getElementById('ho-notes').value,
+    sw:  hoGetSection('sw'),
+    ops: hoGetSection('ops'),
+    ss:  hoGetSection('ss'),
+    tmr: hoGetSection('tmr'),
+    dat: hoGetSection('dat'),
+  };
+}
+
+function previewHO() {
+  const d = hoGetFormData();
+  if (!d.date || !d.shift) { toast('Please fill Date and Shift','err'); return; }
+  const mockH = {
+    'Handover #':'HO-PREVIEW','Date':d.date,'Shift':d.shift,'Property':d.property,
+    'Scheduled Works':d.sw.join('|||'),'Ops Tasks':d.ops.join('|||'),
+    'SS Tasks':d.ss.join('|||'),'Tmr Tasks':d.tmr.join('|||'),
+    'Dat Tasks':d.dat.join('|||'),'Notes':d.notes,'Reporter':SES?.fullName,
+  };
+  document.getElementById('ho-prev-title').textContent = 'Handover Preview';
+  document.getElementById('ho-prev-body').innerHTML = buildHODetail(mockH);
+  document.getElementById('ho-prev-ov').classList.remove('hid');
+}
+
+async function submitHO(fromPreview=false) {
+  const d = hoGetFormData();
+  if (!d.date || !d.shift) { toast('Date and Shift are required','err'); return; }
+  const hasContent = d.sw.length||d.ops.length||d.ss.length||d.tmr.length||d.dat.length||d.notes;
+  if (!hasContent) { toast('Please add at least one item','err'); return; }
+  if (!fromPreview) { previewHO(); return; }
+  document.getElementById('ho-prev-ov').classList.add('hid');
+  const btn = document.getElementById('ho-sub-btn');
+  btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Submitting…';
+  showL('Broadcasting handover…');
+  const payload = {
+    date:d.date, shift:d.shift, property:d.property, notes:d.notes,
+    sw:d.sw.join('|||'), ops:d.ops.join('|||'),
+    ss:d.ss.join('|||'), tmr:d.tmr.join('|||'), dat:d.dat.join('|||'),
+  };
+  try {
+    const res = await api('GET',{action:'submitHandover',data:encodeURIComponent(JSON.stringify(payload))});
+    hideL();
+    if (res.success) { toast(`✅ ${res.handoverNumber} broadcast!`,'ok'); setTimeout(()=>{navigate('ho-log');ldHO();},900); }
+    else toast(res.message||'Failed','err');
+  } catch(e){ hideL(); toast('Connection error','err'); }
+  btn.disabled=false; btn.innerHTML='<i class="fas fa-paper-plane"></i> Broadcast to Team';
+}
+
+async function ldHO() {
+  showL('Loading handovers…');
+  try {
+    const res = await api('GET',{action:'getHandovers'});
+    if (res.success) {
+      HOS = res.handovers;
+      document.getElementById('sb-ho-ct').textContent = HOS.length;
+      renderHOLog();
+    } else toast(res.message||'Failed','err');
+  } catch(e){ toast('Connection error','err'); }
+  hideL();
+}
+
+function renderHOLog() {
+  const s  = (document.getElementById('hfl-s').value||'').toLowerCase();
+  const sh = document.getElementById('hfl-sh').value;
+  let fl = HOS.filter(h =>
+    (!s  || JSON.stringify(h).toLowerCase().includes(s)) &&
+    (!sh || h['Shift']===sh)
+  );
+  const grid = document.getElementById('ho-cards-grid');
+  if (!fl.length) {
+    grid.innerHTML=`<div style="grid-column:1/-1"><div class="empty"><i class="fas fa-book-open"></i><h3>No handovers found</h3><p>Submit a new handover to get started</p></div></div>`;
+    return;
+  }
+  grid.innerHTML = fl.map((h,i) => buildHOCard(h,i)).join('');
+}
+
+function hoSplit(val) {
+  return (val||'').split('|||').map(s=>s.trim()).filter(Boolean);
+}
+
+// ── SUMMARY CARD (in log grid) ────────────────────────
+function buildHOCard(h, idx) {
+  const num   = h['Handover #']||'–';
+  const date  = fd(h['Date']||'');
+  const shift = h['Shift']||'–';
+  const prop  = h['Property']||'–';
+  const rep   = h['Reporter']||'–';
+  const sw    = hoSplit(h['Scheduled Works']);
+  const ops   = hoSplit(h['Ops Tasks']);
+  const ss    = hoSplit(h['SS Tasks']);
+  const tmr   = hoSplit(h['Tmr Tasks']);
+  const dat   = hoSplit(h['Dat Tasks']);
+  const notes = h['Notes']||'';
+  const shiftIcon = shift.includes('Morning')?'fa-sun':shift.includes('Afternoon')?'fa-cloud-sun':shift.includes('Night')?'fa-moon':'fa-rotate';
+
+  const tags = [
+    sw.length  ? `<span class="ho-card-tag" style="background:#EFF6FF;color:#1D4ED8"><i class="fas fa-hard-hat"></i> ${sw.length} work${sw.length>1?'s':''}</span>` : '',
+    ops.length ? `<span class="ho-card-tag" style="background:#F0FDF4;color:#15803D"><i class="fas fa-sun"></i> ${ops.length} ops</span>` : '',
+    ss.length  ? `<span class="ho-card-tag" style="background:#FFF7ED;color:#C2410C"><i class="fas fa-broom"></i> ${ss.length} soft svc</span>` : '',
+    tmr.length ? `<span class="ho-card-tag" style="background:#F5F3FF;color:#6D28D9"><i class="fas fa-calendar-day"></i> ${tmr.length} tmr</span>` : '',
+    dat.length ? `<span class="ho-card-tag" style="background:var(--g100);color:var(--g600)"><i class="fas fa-calendar-week"></i> ${dat.length} upcoming</span>` : '',
+  ].filter(Boolean).join('');
+
+  // First item preview from any section
+  const preview = [...sw,...ops,...ss].slice(0,2).map(t=>`<div style="font-size:12px;color:var(--g500);padding:2px 0;display:flex;align-items:flex-start;gap:6px"><i class="fas fa-circle-dot" style="font-size:9px;margin-top:4px;color:var(--g300)"></i><span>${t}</span></div>`).join('');
+
+  return `<div class="ho-card" onclick="openHODetail(${HOS.indexOf(h)})">
+    <div class="ho-card-hdr">
+      <div class="ho-card-num"><i class="fas fa-rotate"></i>${num}</div>
+      <div class="ho-card-shift">
+        <i class="fas ${shiftIcon}"></i>${shift}&nbsp;·&nbsp;${date}&nbsp;·&nbsp;${prop}
+      </div>
+    </div>
+    <div class="ho-card-preview">
+      <div style="margin-bottom:8px;flex-wrap:wrap;display:flex;gap:4px">${tags||'<span style="font-size:12px;color:var(--g400)">No items</span>'}</div>
+      ${preview}
+    </div>
+    <div class="ho-card-ftr">
+      <span><i class="fas fa-user" style="margin-right:4px"></i>${rep}</span>
+      <span style="color:var(--p600);font-weight:600;font-size:11px">View details →</span>
+    </div>
+  </div>`;
+}
+
+// ── FULL DETAIL PAGE ──────────────────────────────────
+function openHODetail(idx) {
+  currentHO = HOS[idx];
+  const h = currentHO;
+  document.getElementById('hd-title').textContent = h['Handover #']||'Handover';
+  const shiftIcon = (h['Shift']||'').includes('Morning')?'☀️':(h['Shift']||'').includes('Afternoon')?'🌤️':(h['Shift']||'').includes('Night')?'🌙':'🔄';
+  document.getElementById('hd-sub').textContent = `${shiftIcon} ${h['Shift']||'–'} · ${fd(h['Date']||'')} · ${h['Property']||'–'} · Reported by ${h['Reporter']||'–'}`;
+  const delBtn = document.getElementById('hd-del-btn');
+  if (SES?.role==='Admin') { delBtn.style.display=''; } else { delBtn.style.display='none'; }
+  document.getElementById('hd-content').innerHTML = buildHODetail(h);
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.getElementById('view-ho-detail').classList.add('on');
+}
+
+function buildHODetail(h) {
+  const sw   = hoSplit(h['Scheduled Works']);
+  const ops  = hoSplit(h['Ops Tasks']);
+  const ss   = hoSplit(h['SS Tasks']);
+  const tmr  = hoSplit(h['Tmr Tasks']);
+  const dat  = hoSplit(h['Dat Tasks']);
+  const notes= h['Notes']||'';
+
+  const baseDate = h['Date'] ? new Date(h['Date']+'T00:00:00') : new Date();
+  const tmrDate  = new Date(baseDate); tmrDate.setDate(tmrDate.getDate()+1);
+  const datDate  = new Date(baseDate); datDate.setDate(datDate.getDate()+2);
+  const fmtD = d => d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+
+  const mkSec = (items, label, barClass, icon, dotColor) => {
+    if (!items.length) return '';
+    const rows = items.map(t=>`<div class="hd-item"><i class="fas fa-circle-dot" style="color:${dotColor}"></i><span>${t}</span></div>`).join('');
+    return `<div style="border-bottom:1px solid var(--g100)">
+      <div class="hd-bar ${barClass}"><i class="fas ${icon}"></i> ${label}</div>
+      <div class="hd-items">${rows}</div>
+    </div>`;
+  };
+
+  const sections = [
+    mkSec(sw,  'Scheduled Works',           'blue',  'fa-hard-hat',    '#2563EB'),
+    mkSec(ops, 'Today — Operations',         'green', 'fa-sun',         '#059669'),
+    mkSec(ss,  'Today — Soft Services',      'orange','fa-broom',       '#EA580C'),
+    mkSec(tmr, 'Tomorrow — '+fmtD(tmrDate), 'purple','fa-calendar-day','#7C3AED'),
+    mkSec(dat, fmtD(datDate),               'gray',  'fa-calendar-week','#6B7280'),
+    notes ? `<div><div class="hd-bar notes"><i class="fas fa-note-sticky"></i> Additional Notes & Remarks</div><div class="hd-items" style="font-size:13px;color:var(--g600);line-height:1.7">${notes}</div></div>` : '',
+  ].filter(Boolean).join('');
+
+  const hasContent = sections.trim();
+
+  return `<div class="card" style="overflow:hidden;border-radius:var(--rl)">
+    ${hasContent || '<div class="cb"><p style="color:var(--g400);font-size:13px">No items recorded in this handover.</p></div>'}
+    <div class="hd-meta">
+      <span><i class="fas fa-hashtag"></i> ${h['Handover #']||'–'}</span>
+      <span><i class="fas fa-user"></i> ${h['Reporter']||'–'}</span>
+      <span><i class="fas fa-building"></i> ${h['Property']||'–'}</span>
+      ${h['Submitted At']?`<span><i class="fas fa-clock"></i> ${new Date(h['Submitted At']).toLocaleString()}</span>`:''}
+    </div>
+  </div>`;
+}
+
+function delHOFromDetail() {
+  if (!currentHO) return;
+  delHO(currentHO['Handover #']);
+}
+
+async function delHO(num) {
+  if (!confirm(`Delete handover ${num}? This cannot be undone.`)) return;
+  showL('Deleting…');
+  const res = await api('GET',{action:'deleteHandover',handoverNumber:num});
+  hideL();
+  if (res.success){ toast('Deleted','ok'); navigate('ho-log'); ldHO(); }
+  else toast(res.message||'Failed','err');
+}
+
+function hoExpCSV() {
+  if (!HOS.length){toast('No data to export','wrn');return;}
+  const h=['Handover #','Date','Shift','Property','Scheduled Works','Ops Tasks','SS Tasks','Tmr Tasks','Dat Tasks','Notes','Reporter','Submitted At'];
+  const rows=HOS.map(i=>h.map(k=>`"${(i[k]||'').toString().replace(/"/g,'""')}"`).join(','));
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h.map(k=>`"${k}"`).join(','),...rows].join('\n'));
+  a.download=`ABC_Handovers_${td()}.csv`;a.click();
+  toast('CSV exported!','ok');
+}
+
+// ══ INIT ══════════════════════════════════════════════
+(function(){
+  const saved=sessionStorage.getItem('abc_ses');
+  if(saved){try{const s=JSON.parse(saved);if(new Date(s.expiresAt)>new Date()){SES=s;showL('Restoring session…');setTimeout(()=>{hideL();startApp();},300);return;}}catch(e){}}
+  hideL();
+})();
+</script>
+</body>
+</html>
