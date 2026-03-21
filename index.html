@@ -1696,39 +1696,52 @@ async function uploadPolicy(){
   toast('Policy added! AI can now answer questions about it.','ok');
   addNotif('Policy added: "'+title+'"','info');
 
-  // Save to Sheet — use XHR (same as all other API calls)
+  // Save to Sheet in two steps: metadata first, then content
   try{
-    var regPayload={
-      title:title,
-      category:cat,
-      desc:desc,
+    // Step 1: save metadata (small — fits in URL)
+    var metaPayload={
+      title:title, category:cat, desc:desc,
       filename:polSelectedFile?polSelectedFile.name:'',
-      uploadedBy:SES?SES.fullName:'Admin',
-      content:extractedText||''
+      uploadedBy:SES?SES.fullName:'Admin'
     };
-    var regBody=JSON.stringify(regPayload);
-    var regQ=API+'?action=registerPolicy'
+    var metaQ=API+'?action=registerPolicy'
       +'&token='+encodeURIComponent(SES&&SES.token||'')
-      +'&body='+encodeURIComponent(regBody);
-    console.log('registerPolicy URL length:',regQ.length,'content length:',regPayload.content.length);
-    var xhr=new XMLHttpRequest();
-    xhr.open('GET',regQ,true);
-    xhr.timeout=20000;
-    xhr.onload=function(){
+      +'&body='+encodeURIComponent(JSON.stringify(metaPayload));
+    
+    var xhr1=new XMLHttpRequest();
+    xhr1.open('GET',metaQ,true);
+    xhr1.timeout=20000;
+    xhr1.onload=function(){
       try{
-        var res=JSON.parse(xhr.responseText);
-        if(res.success){
-          console.log('Policy saved to Sheet successfully, id:',res.id);
+        var res=JSON.parse(xhr1.responseText);
+        if(res.success && res.id && extractedText){
+          // Step 2: save content separately using the returned ID
+          var contentQ=API+'?action=updatePolicyContent'
+            +'&token='+encodeURIComponent(SES&&SES.token||'')
+            +'&id='+encodeURIComponent(res.id)
+            +'&content='+encodeURIComponent(extractedText.substring(0,6000));
+          var xhr2=new XMLHttpRequest();
+          xhr2.open('GET',contentQ,true);
+          xhr2.timeout=20000;
+          xhr2.onload=function(){
+            try{
+              var res2=JSON.parse(xhr2.responseText);
+              if(res2.success){
+                toast('Policy saved to database with full content!','ok');
+                console.log('Policy fully saved, id:',res.id);
+              }
+            }catch(e){}
+          };
+          xhr2.send();
+        } else if(res.success){
           toast('Policy saved to database!','ok');
         } else {
           console.log('Sheet save failed:',JSON.stringify(res));
-          toast('Saved locally. Sheet error: '+(res.message||res.error),'wrn');
         }
       }catch(e){console.log('Parse error:',e);}
     };
-    xhr.onerror=function(){console.log('XHR error saving policy to sheet');};
-    xhr.ontimeout=function(){console.log('XHR timeout saving policy to sheet');};
-    xhr.send();
+    xhr1.onerror=function(){console.log('XHR error');};
+    xhr1.send();
   }catch(e){console.log('registerPolicy error:',e);}
 
   // Reset form
