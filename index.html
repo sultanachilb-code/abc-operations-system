@@ -2147,16 +2147,85 @@ let rainBeforeData=null, rainAfterData=null;
 const DEFAULT_RAIN_LOCS=[];
 
 function ldRainLocations(){
-  try{RAIN_LOCATIONS=JSON.parse(localStorage.getItem('abc_rain_locations')||'null');}catch(e){RAIN_LOCATIONS=null;}
-  if(!RAIN_LOCATIONS)RAIN_LOCATIONS=[];
-  // Load current session data
-  try{RAIN_SESSION=JSON.parse(localStorage.getItem('abc_rain_session')||'{}');}catch(e){RAIN_SESSION={};}
-  // Set date
   var d=document.getElementById('rain-report-date');
   if(d)d.textContent='Session: '+new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  // Load from server first, fallback to localStorage
+  showL('Loading rain report…');
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET',API+'?action=getRainData&token='+encodeURIComponent(SES&&SES.token||''),true);
+  xhr.timeout=15000;
+  xhr.onload=function(){
+    hideL();
+    try{
+      var res=JSON.parse(xhr.responseText);
+      if(res.success){
+        RAIN_LOCATIONS=res.locations||[];
+        // Merge server session metadata with local photos
+        var serverSession=res.session||{};
+        try{var localSess=JSON.parse(localStorage.getItem('abc_rain_session')||'{}');
+          // Merge: server has status/dates, local has photos
+          Object.keys(serverSession).forEach(function(id){
+            if(!localSess[id])localSess[id]={};
+            localSess[id].condition=serverSession[id].condition||localSess[id].condition||'';
+            localSess[id].afterUpdatedAt=serverSession[id].afterUpdatedAt||localSess[id].afterUpdatedAt||'';
+            localSess[id].updatedAt=serverSession[id].updatedAt||localSess[id].updatedAt||'';
+          });
+          RAIN_SESSION=localSess;
+        }catch(e){RAIN_SESSION=serverSession;}
+        // Load photos from localStorage (device-specific)
+        loadRainPhotosFromLocal();
+        // Cache
+        localStorage.setItem('abc_rain_locations',JSON.stringify(RAIN_LOCATIONS));
+      } else {
+        loadRainFromLocal();
+      }
+    }catch(e){loadRainFromLocal();}
+    renderRainTable();
+    updateRainStats();
+  };
+  xhr.onerror=xhr.ontimeout=function(){hideL();loadRainFromLocal();renderRainTable();updateRainStats();};
+  xhr.send();
 }
-function saveRainLocations(){localStorage.setItem('abc_rain_locations',JSON.stringify(RAIN_LOCATIONS));}
-function saveRainSession(){localStorage.setItem('abc_rain_session',JSON.stringify(RAIN_SESSION));}
+function loadRainFromLocal(){
+  try{RAIN_LOCATIONS=JSON.parse(localStorage.getItem('abc_rain_locations')||'[]');}catch(e){RAIN_LOCATIONS=[];}
+  try{RAIN_SESSION=JSON.parse(localStorage.getItem('abc_rain_session')||'{}');}catch(e){RAIN_SESSION={};}
+}
+function saveRainLocations(){
+  localStorage.setItem('abc_rain_locations',JSON.stringify(RAIN_LOCATIONS));
+  // Sync to server
+  syncRainData();
+}
+function saveRainSession(){
+  localStorage.setItem('abc_rain_session',JSON.stringify(RAIN_SESSION));
+  // Sync session metadata (no photos — too large) to server
+  syncRainSessionMeta();
+}
+function syncRainData(){
+  var payload={locations:RAIN_LOCATIONS};
+  var q=API+'?action=saveRainLocations&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(payload));
+  var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=15000;
+  xhr.onload=function(){try{var r=JSON.parse(xhr.responseText);if(!r.success)console.log('Rain loc sync failed:',r);}catch(e){}};
+  xhr.send();
+}
+function syncRainSessionMeta(){
+  // Only sync metadata (status, dates) not the actual photo base64 data — too large
+  var meta={};
+  Object.keys(RAIN_SESSION).forEach(function(id){
+    var s=RAIN_SESSION[id];
+    meta[id]={
+      condition:s.condition||'',
+      updatedAt:s.updatedAt||'',
+      afterUpdatedAt:s.afterUpdatedAt||'',
+      hasBeforePhoto:!!s.beforePhoto,
+      hasAfterPhoto:!!s.afterPhoto
+    };
+  });
+  var payload={session:meta};
+  var q=API+'?action=saveRainSession&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(payload));
+  var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=15000;
+  xhr.onload=function(){try{var r=JSON.parse(xhr.responseText);if(!r.success)console.log('Rain session sync failed:',r);}catch(e){}};
+  xhr.send();
+}
 
 function rainNewSession(){
   if(!confirm('Start a new inspection session? This will clear all current photos for this session.'))return;
@@ -2287,15 +2356,45 @@ function saveRainPhoto(){
   if(!rainCurrentLocId)return;
   if(!RAIN_SESSION[rainCurrentLocId])RAIN_SESSION[rainCurrentLocId]={};
   var s=RAIN_SESSION[rainCurrentLocId];
-  if(rainBeforeData)s.beforePhoto=rainBeforeData;
-  if(rainAfterData){s.afterPhoto=rainAfterData;s.afterUpdatedAt=new Date().toISOString();}  // always overwrite after
-  if(rainAfterData||s.afterPhoto)s.condition=document.getElementById('rain-condition').value;
+  // Save photos to localStorage with location-specific key (persists across sessions)
+  if(rainBeforeData){
+    s.beforePhoto=rainBeforeData;
+    try{localStorage.setItem('rain_photo_before_'+rainCurrentLocId,rainBeforeData);}catch(e){console.log('Before photo storage error:',e);}
+  }
+  if(rainAfterData){
+    s.afterPhoto=rainAfterData;
+    s.afterUpdatedAt=new Date().toISOString();
+    try{localStorage.setItem('rain_photo_after_'+rainCurrentLocId,rainAfterData);}catch(e){console.log('After photo storage error:',e);}
+  }
+  if(document.getElementById('rain-condition').value){
+    s.condition=document.getElementById('rain-condition').value;
+  }
   s.updatedAt=new Date().toISOString();
-  saveRainSession();
+  // Save session (metadata + photos)
+  localStorage.setItem('abc_rain_session',JSON.stringify(RAIN_SESSION));
+  // Sync metadata to server
+  syncRainSessionMeta();
   closeRainPhotoModal();
   renderRainTable();
   updateRainStats();
   toast('Photo saved!','ok');
+}
+
+// Load photos from localStorage into session for current device
+function loadRainPhotosFromLocal(){
+  RAIN_LOCATIONS.forEach(function(loc){
+    if(!RAIN_SESSION[loc.id])RAIN_SESSION[loc.id]={};
+    var s=RAIN_SESSION[loc.id];
+    // Load photos if not already in session
+    if(!s.beforePhoto){
+      var bp=localStorage.getItem('rain_photo_before_'+loc.id);
+      if(bp)s.beforePhoto=bp;
+    }
+    if(!s.afterPhoto){
+      var ap=localStorage.getItem('rain_photo_after_'+loc.id);
+      if(ap)s.afterPhoto=ap;
+    }
+  });
 }
 
 // Generate printable report
