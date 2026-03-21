@@ -1655,6 +1655,7 @@ async function uploadPolicy(){
     // TEXT MODE — instant, no file needed
     extractedText=document.getElementById('pol-text-content').value.trim();
     if(!extractedText){toast('Please paste the policy text content','err');btn.disabled=false;btn.innerHTML='<i class="fas fa-plus"></i> Add Policy';return;}
+    console.log('Text content length:',extractedText.length);
   } else {
     // PDF MODE — extract text from file
     if(!polSelectedFile){toast('Please select a PDF file','err');btn.disabled=false;btn.innerHTML='<i class="fas fa-plus"></i> Add Policy';return;}
@@ -1695,22 +1696,40 @@ async function uploadPolicy(){
   toast('Policy added! AI can now answer questions about it.','ok');
   addNotif('Policy added: "'+title+'"','info');
 
-  // Save to Sheet in background (metadata + full text content)
+  // Save to Sheet — use XHR (same as all other API calls)
   try{
     var regPayload={
-      title:title, category:cat, desc:desc,
+      title:title,
+      category:cat,
+      desc:desc,
       filename:polSelectedFile?polSelectedFile.name:'',
       uploadedBy:SES?SES.fullName:'Admin',
-      content:extractedText
+      content:extractedText||''
     };
+    var regBody=JSON.stringify(regPayload);
     var regQ=API+'?action=registerPolicy'
       +'&token='+encodeURIComponent(SES&&SES.token||'')
-      +'&body='+encodeURIComponent(JSON.stringify(regPayload));
-    fetch(regQ).then(function(r){return r.json();}).then(function(res){
-      if(res.success)console.log('Policy registered to Sheet');
-      else console.log('Sheet register failed:',res);
-    }).catch(function(e){console.log('Sheet register error:',e);});
-  }catch(e){}
+      +'&body='+encodeURIComponent(regBody);
+    console.log('registerPolicy URL length:',regQ.length,'content length:',regPayload.content.length);
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET',regQ,true);
+    xhr.timeout=20000;
+    xhr.onload=function(){
+      try{
+        var res=JSON.parse(xhr.responseText);
+        if(res.success){
+          console.log('Policy saved to Sheet successfully, id:',res.id);
+          toast('Policy saved to database!','ok');
+        } else {
+          console.log('Sheet save failed:',JSON.stringify(res));
+          toast('Saved locally. Sheet error: '+(res.message||res.error),'wrn');
+        }
+      }catch(e){console.log('Parse error:',e);}
+    };
+    xhr.onerror=function(){console.log('XHR error saving policy to sheet');};
+    xhr.ontimeout=function(){console.log('XHR timeout saving policy to sheet');};
+    xhr.send();
+  }catch(e){console.log('registerPolicy error:',e);}
 
   // Reset form
   document.getElementById('pol-title').value='';
