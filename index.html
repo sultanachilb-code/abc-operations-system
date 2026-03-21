@@ -834,7 +834,6 @@ How can I help you today?</div>
           <div style="display:flex;gap:9px;flex-wrap:wrap">
             <button class="btn btn-o" onclick="navigate('snaglist')"><i class="fas fa-arrow-left"></i> Back</button>
             <button class="btn btn-o btn-sm" onclick="openRainLocModal()"><i class="fas fa-map-marker-alt"></i> Manage Locations</button>
-            <button class="btn btn-o btn-sm" onclick="rainNewSession()"><i class="fas fa-rotate"></i> New Session</button>
             <button class="btn btn-p" onclick="generateRainReport()"><i class="fas fa-file-pdf"></i> Generate Report</button>
           </div>
         </div>
@@ -2129,7 +2128,10 @@ function renderRainTable(){
     if(filter==='solved')return s.condition==='solved';
     return true;
   });
-  if(!fl.length){tbody.innerHTML='<tr><td colspan="5" style="padding:32px;text-align:center;color:var(--g400)">No locations found</td></tr>';return;}
+  if(!fl.length){
+    tbody.innerHTML='<tr><td colspan="5" style="padding:32px;text-align:center"><div style="color:var(--g400);margin-bottom:12px">No locations added yet</div><button class="btn btn-p btn-sm" onclick="openRainLocModal()"><i class="fas fa-plus"></i> Add Location</button></td></tr>';
+    return;
+  }
   tbody.innerHTML=fl.map(function(loc){
     var s=RAIN_SESSION[loc.id]||{};
     var beforeHtml=s.beforePhoto
@@ -2155,6 +2157,11 @@ function renderRainTable(){
       '<td style="padding:10px 14px;text-align:center"><button class="btn btn-o btn-sm rain-photo-btn" data-loc="'+loc.id+'" data-ptype="before"><i class="fas fa-camera"></i></button></td>'+
       '</tr>';
   }).join('');
+  // Add a "+" row at the bottom to add new locations inline
+  var addRow=document.createElement('tr');
+  addRow.innerHTML='<td colspan="5" style="padding:10px 14px;text-align:left"><button class="btn btn-o btn-sm" onclick="openRainLocModal()" style="border-style:dashed"><i class="fas fa-plus" style="color:var(--p600)"></i> <span style="color:var(--p700)">Add Location</span></button></td>';
+  tbody.appendChild(addRow);
+
   // Attach click events via delegation
   tbody.querySelectorAll('.rain-photo-thumb,.rain-photo-btn').forEach(function(el){
     el.addEventListener('click',function(e){e.stopPropagation();openRainPhotoModal(el.dataset.loc,el.dataset.ptype||'before');});
