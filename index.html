@@ -1726,11 +1726,14 @@ async function uploadPolicy(){
           xhr2.onload=function(){
             try{
               var res2=JSON.parse(xhr2.responseText);
+              console.log('updatePolicyContent response:',JSON.stringify(res2));
               if(res2.success){
                 toast('Policy saved to database with full content!','ok');
-                console.log('Policy fully saved, id:',res.id);
+              } else {
+                console.log('Content save failed:',JSON.stringify(res2));
+                toast('Metadata saved but content failed: '+(res2.error||res2.message),'wrn');
               }
-            }catch(e){}
+            }catch(e){console.log('xhr2 parse error:',e,xhr2.responseText);}
           };
           xhr2.send();
         } else if(res.success){
