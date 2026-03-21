@@ -1561,6 +1561,11 @@ async function sendPolicyChat(){
       +'&token='+encodeURIComponent(SES&&SES.token||'')
       +'&body='+encodeURIComponent(bodyParam);
 
+    // Debug: log what we're sending
+    console.log('Sending to API, body length:', bodyParam.length);
+    console.log('First 200 chars of body:', bodyParam.substring(0,200));
+    console.log('Full URL length:', url.length);
+
     var response=await fetch(url);
     var res=await response.json();
 
