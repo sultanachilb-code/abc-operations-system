@@ -830,22 +830,72 @@ How can I help you today?</div>
       <!-- RAIN REPORT PAGE -->
       <div class="view" id="view-rain-report">
         <div class="ph">
-          <div><div class="pht">Rain Report</div><div class="phs">Rain inspection snaglist — tap issue to update photos</div></div>
-          <div style="display:flex;gap:9px">
+          <div><div class="pht"><i class="fas fa-cloud-rain" style="color:#2563EB;margin-right:8px"></i>Rain Inspection Report</div><div class="phs" id="rain-report-date"></div></div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap">
             <button class="btn btn-o" onclick="navigate('snaglist')"><i class="fas fa-arrow-left"></i> Back</button>
-            <button class="btn btn-p adm" style="display:none" onclick="openNewRainSnag()"><i class="fas fa-plus"></i> Add Issue</button>
+            <button class="btn btn-o btn-sm adm" style="display:none" onclick="openRainLocModal()"><i class="fas fa-map-marker-alt"></i> Manage Locations</button>
+            <button class="btn btn-o btn-sm" onclick="rainNewSession()"><i class="fas fa-rotate"></i> New Session</button>
+            <button class="btn btn-p" onclick="generateRainReport()"><i class="fas fa-file-pdf"></i> Generate Report</button>
           </div>
         </div>
-        <div class="card" style="margin-bottom:16px"><div class="cb" style="padding:12px 16px">
-          <div class="fbar">
-            <input type="text" class="fc" id="rain-search" placeholder="🔍  Search…" oninput="renderRainList()"/>
-            <select class="fc" id="rain-status-filter" style="width:160px" onchange="renderRainList()">
-              <option value="">All Status</option>
-              <option>Open</option><option>In Progress</option><option>Closed</option>
-            </select>
+
+        <!-- INSPECTION STATUS BAR -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px">
+          <div class="sc"><div class="si sip"><i class="fas fa-location-dot"></i></div><div><div class="sv" id="rain-total">0</div><div class="sl">Locations</div></div></div>
+          <div class="sc"><div class="si sig"><i class="fas fa-circle-check"></i></div><div><div class="sv" id="rain-done">0</div><div class="sl">Inspected</div></div></div>
+          <div class="sc"><div class="si sir"><i class="fas fa-triangle-exclamation"></i></div><div><div class="sv" id="rain-issues">0</div><div class="sl">Issues Found</div></div></div>
+          <div class="sc"><div class="si sib"><i class="fas fa-clock"></i></div><div><div class="sv" id="rain-pending">0</div><div class="sl">Pending</div></div></div>
+        </div>
+
+        <!-- INSPECTION TABLE -->
+        <div class="card">
+          <div class="ch">
+            <div class="ct"><i class="fas fa-table"></i> Inspection Locations</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select class="fc" id="rain-filter" style="width:150px;padding:5px 10px;font-size:12px" onchange="renderRainTable()">
+                <option value="">All</option><option value="pending">Pending</option><option value="ok">OK</option><option value="issue">Issue Found</option>
+              </select>
+            </div>
           </div>
-        </div></div>
-        <div id="rain-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:13px" id="rain-table">
+              <thead>
+                <tr style="background:linear-gradient(135deg,#1E3A5F,#2563EB)">
+                  <th style="padding:11px 14px;text-align:left;color:white;font-family:var(--ff);font-weight:700;min-width:160px">Location</th>
+                  <th style="padding:11px 14px;text-align:center;color:white;font-family:var(--ff);font-weight:700;width:180px">Before Photo</th>
+                  <th style="padding:11px 14px;text-align:center;color:white;font-family:var(--ff);font-weight:700;width:180px">After Photo</th>
+                  <th style="padding:11px 14px;text-align:center;color:white;font-family:var(--ff);font-weight:700;width:130px">Status</th>
+                  <th style="padding:11px 14px;text-align:center;color:white;font-family:var(--ff);font-weight:700;width:100px">Action</th>
+                </tr>
+              </thead>
+              <tbody id="rain-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RAIN LOCATION MANAGEMENT (Admin) -->
+      <div class="view" id="view-rain-locations">
+        <div class="ph">
+          <div><div class="pht">Manage Rain Locations</div><div class="phs">Define inspection points for rain report</div></div>
+          <button class="btn btn-o" onclick="navigate('rain-report')"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+        <div class="card" style="max-width:600px">
+          <div class="ch"><div class="ct"><i class="fas fa-plus"></i> Add Location</div></div>
+          <div class="cb">
+            <div class="fgrid" style="margin-bottom:0">
+              <div class="fg"><label class="fl">Location Name <span class="req">*</span></label><input type="text" class="fc" id="rain-loc-name" placeholder="e.g. GF East, L1 West…"/></div>
+              <div class="fg"><label class="fl">Floor / Zone</label><input type="text" class="fc" id="rain-loc-zone" placeholder="e.g. Ground Floor"/></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:12px">
+              <button class="btn btn-p" onclick="addRainLocation()"><i class="fas fa-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="max-width:600px;margin-top:16px">
+          <div class="ch"><div class="ct"><i class="fas fa-list"></i> Locations</div><span id="rain-loc-count" style="font-size:12px;color:var(--g400)"></span></div>
+          <div id="rain-loc-list"></div>
+        </div>
       </div>
 
       <!-- USERS -->
@@ -972,6 +1022,75 @@ How can I help you today?</div>
   </div>
 </div>
 
+
+<!-- RAIN PHOTO CAPTURE MODAL -->
+<div class="overlay hid" id="rain-photo-modal">
+  <div class="modal" style="max-width:500px">
+    <div class="mhdr">
+      <div class="mt" id="rain-photo-modal-title">Take Photo</div>
+      <button class="mc" onclick="closeRainPhotoModal()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="mb">
+      <div id="rain-photo-location-info" style="font-family:var(--ff);font-weight:700;font-size:15px;color:var(--g800);margin-bottom:16px;padding:10px 14px;background:var(--p50);border-radius:var(--r);border-left:4px solid var(--p600)"></div>
+      <div id="rain-photo-tabs" style="display:flex;gap:0;border-bottom:2px solid var(--g200);margin-bottom:16px">
+        <button id="rain-photo-tab-before" onclick="rainPhotoSelectType('before')" style="padding:8px 20px;font-family:var(--ff);font-weight:700;font-size:13px;border:none;cursor:pointer;border-bottom:3px solid var(--p600);color:var(--p700);background:none">Before</button>
+        <button id="rain-photo-tab-after" onclick="rainPhotoSelectType('after')" style="padding:8px 20px;font-family:var(--ff);font-weight:700;font-size:13px;border:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--g400);background:none">After</button>
+      </div>
+      <!-- BEFORE SECTION -->
+      <div id="rain-before-section">
+        <div id="rain-before-current" style="margin-bottom:12px"></div>
+        <div class="photo-upload-zone" onclick="document.getElementById('rain-before-file').click()">
+          <i class="fas fa-camera" style="font-size:28px;color:var(--p600);margin-bottom:8px;display:block"></i>
+          <p style="font-size:13px;font-weight:700;color:var(--p700)">Tap to take Before photo</p>
+          <p style="font-size:11px;color:var(--g400);margin-top:4px">Opens camera on mobile</p>
+        </div>
+        <input type="file" id="rain-before-file" accept="image/*" capture="environment" style="display:none" onchange="handleRainPhoto(this,'before')"/>
+        <img id="rain-before-preview" style="width:100%;border-radius:var(--r);max-height:200px;object-fit:cover;display:none;margin-top:10px"/>
+      </div>
+      <!-- AFTER SECTION -->
+      <div id="rain-after-section" style="display:none">
+        <div id="rain-after-current" style="margin-bottom:12px"></div>
+        <div class="photo-upload-zone" onclick="document.getElementById('rain-after-file').click()">
+          <i class="fas fa-camera" style="font-size:28px;color:var(--ok);margin-bottom:8px;display:block"></i>
+          <p style="font-size:13px;font-weight:700;color:#065F46">Tap to take After photo</p>
+          <p style="font-size:11px;color:var(--g400);margin-top:4px">Overwrites previous after photo</p>
+        </div>
+        <input type="file" id="rain-after-file" accept="image/*" capture="environment" style="display:none" onchange="handleRainPhoto(this,'after')"/>
+        <img id="rain-after-preview" style="width:100%;border-radius:var(--r);max-height:200px;object-fit:cover;display:none;margin-top:10px"/>
+        <div class="fg" style="margin-top:14px">
+          <label class="fl">Condition</label>
+          <select class="fc" id="rain-condition">
+            <option value="ok">✅ No Issue — Dry / Normal</option>
+            <option value="issue">⚠️ Issue Found — Water / Leak detected</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-o" onclick="closeRainPhotoModal()">Cancel</button>
+      <button class="btn btn-p" onclick="saveRainPhoto()"><i class="fas fa-floppy-disk"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- RAIN LOCATION MANAGE MODAL -->
+<div class="overlay hid" id="rain-loc-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="mhdr"><div class="mt">Manage Inspection Locations</div><button class="mc" onclick="document.getElementById('rain-loc-modal').classList.add('hid')"><i class="fas fa-xmark"></i></button></div>
+    <div class="mb">
+      <div class="fgrid" style="margin-bottom:12px">
+        <div class="fg"><label class="fl">Location Name <span class="req">*</span></label><input type="text" class="fc" id="rlm-name" placeholder="e.g. GF East Colonnade"/></div>
+        <div class="fg"><label class="fl">Floor / Zone</label><input type="text" class="fc" id="rlm-zone" placeholder="e.g. Ground Floor"/></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+        <button class="btn btn-p btn-sm" onclick="addRainLocationModal()"><i class="fas fa-plus"></i> Add Location</button>
+      </div>
+      <div id="rlm-list"></div>
+    </div>
+    <div class="mf"><button class="btn btn-p" onclick="document.getElementById('rain-loc-modal').classList.add('hid')">Done</button></div>
+  </div>
+</div>
+
 <div id="toasts"></div>
 <script>
 const API="https://script.google.com/macros/s/AKfycbzMlPGDwuxx3YS9c5pmAENsChnshxtKfhvMMA3reSD69gr30AIUmVmy927t4RkRjEORZw/exec";
@@ -1082,7 +1201,8 @@ function navigate(v,btn){
   if(v==='policies'){ldPolicies();}
   if(v==='policies-admin'){ldPoliciesAdmin();}
   if(v==='snaglist'){ldSnags();renderSnagList();}
-  if(v==='rain-report'){ldRainSnags();renderRainList();}
+  if(v==='rain-report'){ldRainLocations();renderRainTable();updateRainStats();}
+  if(v==='rain-locations'){renderRainLocationList();}
 }
 function toggleSB(){sbCol=!sbCol;document.getElementById('sb').classList.toggle('col',sbCol);}
 
@@ -1961,6 +2081,228 @@ async function delPolicy(idx){
   localStorage.setItem('abc_policies',JSON.stringify(POLICIES));
   hideL();renderPolAdminList();renderPolicies();renderPolChat_context();
   toast('Document deleted','ok');
+}
+
+// ══ RAIN REPORT INSPECTION MODULE ══════════════════════════
+let RAIN_LOCATIONS=[], RAIN_SESSION={}, rainCurrentLocId=null, rainPhotoType='before';
+let rainBeforeData=null, rainAfterData=null;
+
+// Default locations if none exist
+const DEFAULT_RAIN_LOCS=[
+  {id:'rl_1',name:'GF East',zone:'Ground Floor'},
+  {id:'rl_2',name:'GF East',zone:'Ground Floor'},
+  {id:'rl_3',name:'L1 East',zone:'Level 1'},
+  {id:'rl_4',name:'L1 East',zone:'Level 1'},
+  {id:'rl_5',name:'L1 West',zone:'Level 1'},
+  {id:'rl_6',name:'L2 North',zone:'Level 2'},
+  {id:'rl_7',name:'L2 South',zone:'Level 2'},
+  {id:'rl_8',name:'Basement',zone:'Basement'}
+];
+
+function ldRainLocations(){
+  try{RAIN_LOCATIONS=JSON.parse(localStorage.getItem('abc_rain_locations')||'null');}catch(e){RAIN_LOCATIONS=null;}
+  if(!RAIN_LOCATIONS||!RAIN_LOCATIONS.length)RAIN_LOCATIONS=JSON.parse(JSON.stringify(DEFAULT_RAIN_LOCS));
+  // Load current session data
+  try{RAIN_SESSION=JSON.parse(localStorage.getItem('abc_rain_session')||'{}');}catch(e){RAIN_SESSION={};}
+  // Set date
+  var d=document.getElementById('rain-report-date');
+  if(d)d.textContent='Session: '+new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+function saveRainLocations(){localStorage.setItem('abc_rain_locations',JSON.stringify(RAIN_LOCATIONS));}
+function saveRainSession(){localStorage.setItem('abc_rain_session',JSON.stringify(RAIN_SESSION));}
+
+function rainNewSession(){
+  if(!confirm('Start a new inspection session? This will clear all current photos for this session.'))return;
+  RAIN_SESSION={};saveRainSession();renderRainTable();updateRainStats();toast('New session started','ok');
+}
+
+function updateRainStats(){
+  var total=RAIN_LOCATIONS.length;
+  var done=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&(s.beforePhoto||s.afterPhoto);}).length;
+  var issues=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&s.condition==='issue';}).length;
+  document.getElementById('rain-total').textContent=total;
+  document.getElementById('rain-done').textContent=done;
+  document.getElementById('rain-issues').textContent=issues;
+  document.getElementById('rain-pending').textContent=total-done;
+}
+
+function renderRainTable(){
+  var filter=document.getElementById('rain-filter')&&document.getElementById('rain-filter').value||'';
+  var tbody=document.getElementById('rain-table-body');if(!tbody)return;
+  var fl=RAIN_LOCATIONS.filter(function(l){
+    if(!filter)return true;
+    var s=RAIN_SESSION[l.id]||{};
+    if(filter==='pending')return !s.beforePhoto&&!s.afterPhoto;
+    if(filter==='ok')return s.condition==='ok';
+    if(filter==='issue')return s.condition==='issue';
+    return true;
+  });
+  if(!fl.length){tbody.innerHTML='<tr><td colspan="5" style="padding:32px;text-align:center;color:var(--g400)">No locations found</td></tr>';return;}
+  tbody.innerHTML=fl.map(function(loc){
+    var s=RAIN_SESSION[loc.id]||{};
+    var beforeHtml=s.beforePhoto
+      ?'<img src="'+s.beforePhoto+'" data-loc="'+loc.id+'" data-ptype="before" class="rain-photo-thumb" style="width:140px;height:90px;object-fit:cover;border-radius:var(--r);cursor:pointer">'
+      :'<div data-loc="'+loc.id+'" data-ptype="before" class="rain-photo-thumb" style="width:140px;height:90px;background:var(--g100);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;cursor:pointer;border:2px dashed var(--g300)"><i class="fas fa-camera" style="color:var(--g400);font-size:20px"></i><span style="font-size:10px;color:var(--g400)">Tap to add</span></div>';
+    var afterHtml=s.afterPhoto
+      ?'<img src="'+s.afterPhoto+'" data-loc="'+loc.id+'" data-ptype="after" class="rain-photo-thumb" style="width:140px;height:90px;object-fit:cover;border-radius:var(--r);cursor:pointer">'
+      :'<div data-loc="'+loc.id+'" data-ptype="after" class="rain-photo-thumb" style="width:140px;height:90px;background:var(--g100);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;cursor:pointer;border:2px dashed var(--g300)"><i class="fas fa-camera" style="color:var(--g400);font-size:20px"></i><span style="font-size:10px;color:var(--g400)">Tap to add</span></div>';
+    var statusHtml=s.condition==='ok'
+      ?'<span class="snag-status ss-closed">✅ OK</span>'
+      :s.condition==='issue'
+      ?'<span class="snag-status ss-open">⚠️ Issue</span>'
+      :(s.beforePhoto||s.afterPhoto)
+      ?'<span class="snag-status ss-progress">📷 In Progress</span>'
+      :'<span class="snag-status" style="background:var(--g100);color:var(--g500)">⏳ Pending</span>';
+    return '<tr style="border-bottom:1px solid var(--g100)">'+
+      '<td style="padding:12px 14px;font-weight:600;color:var(--g800)">'+loc.name+'<br><span style="font-size:11px;color:var(--g400);font-weight:400">'+loc.zone+'</span></td>'+
+      '<td style="padding:10px 14px;text-align:center">'+beforeHtml+'</td>'+
+      '<td style="padding:10px 14px;text-align:center">'+afterHtml+'</td>'+
+      '<td style="padding:10px 14px;text-align:center">'+statusHtml+'</td>'+
+      '<td style="padding:10px 14px;text-align:center"><button class="btn btn-o btn-sm rain-photo-btn" data-loc="'+loc.id+'" data-ptype="before"><i class="fas fa-camera"></i></button></td>'+
+      '</tr>';
+  }).join('');
+  // Attach click events via delegation
+  tbody.querySelectorAll('.rain-photo-thumb,.rain-photo-btn').forEach(function(el){
+    el.addEventListener('click',function(e){e.stopPropagation();openRainPhotoModal(el.dataset.loc,el.dataset.ptype||'before');});
+  });
+}
+
+
+// Photo capture modal
+function openRainPhotoModal(locId,photoType){
+  rainCurrentLocId=locId;
+  rainPhotoType=photoType||'before';
+  rainBeforeData=null;rainAfterData=null;
+  var loc=RAIN_LOCATIONS.find(function(l){return l.id===locId;});
+  if(!loc)return;
+  var s=RAIN_SESSION[locId]||{};
+  // Set location info
+  document.getElementById('rain-photo-location-info').textContent=loc.name+' — '+loc.zone;
+  // Reset previews
+  document.getElementById('rain-before-preview').style.display='none';
+  document.getElementById('rain-after-preview').style.display='none';
+  document.getElementById('rain-before-file').value='';
+  document.getElementById('rain-after-file').value='';
+  // Show existing photos
+  var beforeCur=document.getElementById('rain-before-current');
+  var afterCur=document.getElementById('rain-after-current');
+  beforeCur.innerHTML=s.beforePhoto
+    ?'<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--g400);margin-bottom:4px">Current before photo:</div><img src="'+s.beforePhoto+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:var(--r)"></div>'
+    :'<p style="font-size:12px;color:var(--g400);margin-bottom:8px">No before photo yet</p>';
+  afterCur.innerHTML=s.afterPhoto
+    ?'<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--g400);margin-bottom:4px">Current after photo:</div><img src="'+s.afterPhoto+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:var(--r)"></div>'
+    :'<p style="font-size:12px;color:var(--g400);margin-bottom:8px">No after photo yet</p>';
+  // Set condition if exists
+  if(s.condition)document.getElementById('rain-condition').value=s.condition;
+  // Switch to correct tab
+  rainPhotoSelectType(rainPhotoType);
+  document.getElementById('rain-photo-modal').classList.remove('hid');
+}
+function closeRainPhotoModal(){document.getElementById('rain-photo-modal').classList.add('hid');rainCurrentLocId=null;rainBeforeData=null;rainAfterData=null;}
+
+function rainPhotoSelectType(type){
+  rainPhotoType=type;
+  var isBefore=type==='before';
+  document.getElementById('rain-before-section').style.display=isBefore?'block':'none';
+  document.getElementById('rain-after-section').style.display=isBefore?'none':'block';
+  document.getElementById('rain-photo-tab-before').style.borderBottomColor=isBefore?'var(--p600)':'transparent';
+  document.getElementById('rain-photo-tab-before').style.color=isBefore?'var(--p700)':'var(--g400)';
+  document.getElementById('rain-photo-tab-after').style.borderBottomColor=isBefore?'transparent':'var(--p600)';
+  document.getElementById('rain-photo-tab-after').style.color=isBefore?'var(--g400)':'var(--p700)';
+}
+
+function handleRainPhoto(input,type){
+  if(!input.files[0])return;
+  var r=new FileReader();
+  r.onload=function(e){
+    var data=e.target.result;
+    if(type==='before'){rainBeforeData=data;var p=document.getElementById('rain-before-preview');p.src=data;p.style.display='block';}
+    else{rainAfterData=data;var p=document.getElementById('rain-after-preview');p.src=data;p.style.display='block';}
+  };
+  r.readAsDataURL(input.files[0]);
+}
+
+function saveRainPhoto(){
+  if(!rainCurrentLocId)return;
+  if(!RAIN_SESSION[rainCurrentLocId])RAIN_SESSION[rainCurrentLocId]={};
+  var s=RAIN_SESSION[rainCurrentLocId];
+  if(rainBeforeData)s.beforePhoto=rainBeforeData;
+  if(rainAfterData)s.afterPhoto=rainAfterData;  // always overwrite after
+  if(rainAfterData||s.afterPhoto)s.condition=document.getElementById('rain-condition').value;
+  s.updatedAt=new Date().toISOString();
+  saveRainSession();
+  closeRainPhotoModal();
+  renderRainTable();
+  updateRainStats();
+  toast('Photo saved!','ok');
+}
+
+// Generate printable report
+function generateRainReport(){
+  var hasData=RAIN_LOCATIONS.some(function(l){var s=RAIN_SESSION[l.id];return s&&(s.beforePhoto||s.afterPhoto);});
+  if(!hasData){toast('No photos captured yet. Complete the inspection first.','wrn');return;}
+  var date=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var inspector=SES?SES.fullName:'Operations Team';
+  var property=SES?SES.property:'ABC Verdun Mall';
+  var rows=RAIN_LOCATIONS.map(function(loc){
+    var s=RAIN_SESSION[loc.id]||{};
+    var beforeImg=s.beforePhoto?'<img src="'+s.beforePhoto+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
+    var afterImg=s.afterPhoto?'<img src="'+s.afterPhoto+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
+    var condBadge=s.condition==='issue'?'<span style="background:#FEE2E2;color:#991B1B;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⚠️ Issue Found</span>':s.condition==='ok'?'<span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">✅ OK</span>':'<span style="background:#F3F4F6;color:#6B7280;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⏳ Pending</span>';
+    return '<tr><td style="padding:12px 14px;font-weight:600;border-bottom:1px solid #e5e7eb;vertical-align:middle">'+loc.name+'<br><span style="font-size:11px;color:#9ca3af;font-weight:400">'+loc.zone+'</span><br><div style="margin-top:6px">'+condBadge+'</div></td><td style="padding:10px 14px;text-align:center;border-bottom:1px solid #e5e7eb">'+beforeImg+'</td><td style="padding:10px 14px;text-align:center;border-bottom:1px solid #e5e7eb">'+afterImg+'</td></tr>';
+  }).join('');
+  var total=RAIN_LOCATIONS.length;
+  var done=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&(s.beforePhoto||s.afterPhoto);}).length;
+  var issues=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&s.condition==='issue';}).length;
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rain Inspection Report</title><style>body{font-family:Arial,sans-serif;margin:0;padding:20px;color:#1f2937}@media print{.no-print{display:none}}</style></head><body>'+
+    '<div style="text-align:center;margin-bottom:24px;padding:20px;background:linear-gradient(135deg,#1E3A5F,#2563EB);border-radius:8px;color:white">'+
+    '<div style="font-size:22px;font-weight:900;margin-bottom:4px">🌧️ Rain Inspection Report</div>'+
+    '<div style="opacity:.8;font-size:14px">'+property+' · '+date+'</div>'+
+    '<div style="opacity:.7;font-size:12px;margin-top:4px">Inspector: '+inspector+'</div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">'+
+    '<div style="background:#f3f4f6;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900">'+total+'</div><div style="font-size:11px;color:#6b7280">Locations</div></div>'+
+    '<div style="background:#D1FAE5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#065F46">'+done+'</div><div style="font-size:11px;color:#065F46">Inspected</div></div>'+
+    '<div style="background:#FEE2E2;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#991B1B">'+issues+'</div><div style="font-size:11px;color:#991B1B">Issues</div></div>'+
+    '<div style="background:#DBEAFE;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#1E40AF">'+(total-done)+'</div><div style="font-size:11px;color:#1E40AF">Pending</div></div>'+
+    '</div>'+
+    '<button class="no-print" onclick="window.print()" style="background:#2563EB;color:white;border:none;padding:10px 24px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px">🖨️ Print / Save as PDF</button>'+
+    '<table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">'+
+    '<thead><tr style="background:#1E3A5F"><th style="padding:12px 14px;text-align:left;color:white;font-size:13px">Location</th><th style="padding:12px 14px;text-align:center;color:white;font-size:13px;width:180px">Before</th><th style="padding:12px 14px;text-align:center;color:white;font-size:13px;width:180px">After</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table>'+
+    '<div style="margin-top:20px;padding:12px;background:#f9fafb;border-radius:6px;font-size:12px;color:#6b7280;text-align:center">Generated by ABC Operations System · '+new Date().toLocaleString()+'</div>'+
+    '</body></html>';
+  var w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
+// Location management
+function addRainLocationModal(){
+  var name=document.getElementById('rlm-name').value.trim();
+  var zone=document.getElementById('rlm-zone').value.trim();
+  if(!name){toast('Enter location name','err');return;}
+  RAIN_LOCATIONS.push({id:'rl_'+Date.now(),name:name,zone:zone||''});
+  saveRainLocations();renderRainLocationList();renderRainTable();updateRainStats();
+  document.getElementById('rlm-name').value='';document.getElementById('rlm-zone').value='';
+  toast('Location added!','ok');
+}
+function openRainLocModal(){
+  renderRainLocationList();
+  document.getElementById('rain-loc-modal').classList.remove('hid');
+}
+function renderRainLocationList(){
+  var list=document.getElementById('rlm-list');if(!list)return;
+  var cnt=document.getElementById('rain-loc-count');if(cnt)cnt.textContent=RAIN_LOCATIONS.length+' locations';
+  if(!RAIN_LOCATIONS.length){list.innerHTML='<div class="empty" style="padding:20px"><i class="fas fa-map-marker-alt"></i><h3>No locations</h3></div>';return;}
+  list.innerHTML=RAIN_LOCATIONS.map(function(l,i){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--g100)">'+
+      '<div style="flex:1"><div style="font-weight:600;font-size:13px">'+l.name+'</div><div style="font-size:11.5px;color:var(--g400)">'+l.zone+'</div></div>'+
+      '<button class="btn btn-d btn-sm" onclick="deleteRainLocation('+i+')"><i class="fas fa-trash"></i></button>'+
+      '</div>';
+  }).join('');
+}
+function deleteRainLocation(idx){
+  if(!confirm('Remove this location?'))return;
+  RAIN_LOCATIONS.splice(idx,1);saveRainLocations();renderRainLocationList();renderRainTable();updateRainStats();toast('Removed','ok');
 }
 
 // ══ SNAGLIST MODULE ══════════════════════════════════════════
