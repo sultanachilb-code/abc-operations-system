@@ -2140,191 +2140,108 @@ async function delPolicy(idx){
 }
 
 // ══ RAIN REPORT INSPECTION MODULE ══════════════════════════
-let RAIN_LOCATIONS=[], RAIN_SESSION={}, rainCurrentLocId=null, rainPhotoType='before';
-let rainBeforeData=null, rainAfterData=null;
+// Source of truth: Google Sheet "Rain Report"
+// Photos: uploaded to Google Drive, inserted as real images in Sheet
+// All devices share same data via Sheet
 
-// No default locations — user adds their own
-const DEFAULT_RAIN_LOCS=[];
+let RAIN_LOCATIONS=[], RAIN_ROWS={}, rainCurrentLocId=null, rainPhotoType='before';
+let rainBeforeData=null, rainAfterData=null;
 
 function ldRainLocations(){
   var d=document.getElementById('rain-report-date');
   if(d)d.textContent='Session: '+new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  // Load from server first, fallback to localStorage
   showL('Loading rain report…');
   var xhr=new XMLHttpRequest();
-  xhr.open('GET',API+'?action=getRainData&token='+encodeURIComponent(SES&&SES.token||''),true);
-  xhr.timeout=15000;
+  xhr.open('GET',API+'?action=getRainReport&token='+encodeURIComponent(SES&&SES.token||''),true);
+  xhr.timeout=20000;
   xhr.onload=function(){
     hideL();
     try{
       var res=JSON.parse(xhr.responseText);
       if(res.success){
         RAIN_LOCATIONS=res.locations||[];
-        // Merge server session metadata with local photos
-        var serverSession=res.session||{};
-        try{var localSess=JSON.parse(localStorage.getItem('abc_rain_session')||'{}');
-          // Merge: server has status/dates, local has photos
-          Object.keys(serverSession).forEach(function(id){
-            if(!localSess[id])localSess[id]={};
-            localSess[id].condition=serverSession[id].condition||localSess[id].condition||'';
-            localSess[id].afterUpdatedAt=serverSession[id].afterUpdatedAt||localSess[id].afterUpdatedAt||'';
-            localSess[id].updatedAt=serverSession[id].updatedAt||localSess[id].updatedAt||'';
-          });
-          RAIN_SESSION=localSess;
-        }catch(e){RAIN_SESSION=serverSession;}
-        // Load photos from localStorage (device-specific)
-        loadRainPhotosFromLocal();
-        // Cache
-        localStorage.setItem('abc_rain_locations',JSON.stringify(RAIN_LOCATIONS));
-      } else {
-        loadRainFromLocal();
+        RAIN_ROWS=res.rows||{};
       }
-    }catch(e){loadRainFromLocal();}
-    renderRainTable();
-    updateRainStats();
+    }catch(e){}
+    renderRainTable();updateRainStats();
   };
-  xhr.onerror=xhr.ontimeout=function(){hideL();loadRainFromLocal();renderRainTable();updateRainStats();};
+  xhr.onerror=xhr.ontimeout=function(){hideL();renderRainTable();updateRainStats();toast('Could not load rain data','err');};
   xhr.send();
-}
-function loadRainFromLocal(){
-  try{RAIN_LOCATIONS=JSON.parse(localStorage.getItem('abc_rain_locations')||'[]');}catch(e){RAIN_LOCATIONS=[];}
-  try{RAIN_SESSION=JSON.parse(localStorage.getItem('abc_rain_session')||'{}');}catch(e){RAIN_SESSION={};}
-}
-function saveRainLocations(){
-  localStorage.setItem('abc_rain_locations',JSON.stringify(RAIN_LOCATIONS));
-  // Sync to server
-  syncRainData();
-}
-function saveRainSession(){
-  localStorage.setItem('abc_rain_session',JSON.stringify(RAIN_SESSION));
-  // Sync session metadata (no photos — too large) to server
-  syncRainSessionMeta();
-}
-function syncRainData(){
-  var payload={locations:RAIN_LOCATIONS};
-  var q=API+'?action=saveRainLocations&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(payload));
-  var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=15000;
-  xhr.onload=function(){try{var r=JSON.parse(xhr.responseText);if(!r.success)console.log('Rain loc sync failed:',r);}catch(e){}};
-  xhr.send();
-}
-function syncRainSessionMeta(){
-  // Only sync metadata (status, dates) not the actual photo base64 data — too large
-  var meta={};
-  Object.keys(RAIN_SESSION).forEach(function(id){
-    var s=RAIN_SESSION[id];
-    meta[id]={
-      condition:s.condition||'',
-      updatedAt:s.updatedAt||'',
-      afterUpdatedAt:s.afterUpdatedAt||'',
-      hasBeforePhoto:!!s.beforePhoto,
-      hasAfterPhoto:!!s.afterPhoto
-    };
-  });
-  var payload={session:meta};
-  var q=API+'?action=saveRainSession&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(payload));
-  var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=15000;
-  xhr.onload=function(){try{var r=JSON.parse(xhr.responseText);if(!r.success)console.log('Rain session sync failed:',r);}catch(e){}};
-  xhr.send();
-}
-
-function rainNewSession(){
-  if(!confirm('Start a new inspection session? This will clear all current photos for this session.'))return;
-  RAIN_SESSION={};saveRainSession();renderRainTable();updateRainStats();toast('New session started','ok');
 }
 
 function updateRainStats(){
   var total=RAIN_LOCATIONS.length;
-  var done=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&(s.beforePhoto||s.afterPhoto);}).length;
-  var issues=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&(s.condition==='new'||s.condition==='still');}).length;
-  document.getElementById('rain-total').textContent=total;
-  document.getElementById('rain-done').textContent=done;
-  document.getElementById('rain-issues').textContent=issues;
-  document.getElementById('rain-pending').textContent=total-done;
+  var done=RAIN_LOCATIONS.filter(function(l){var r=RAIN_ROWS[l.id];return r&&(r.beforeUrl||r.afterUrl);}).length;
+  var issues=RAIN_LOCATIONS.filter(function(l){var r=RAIN_ROWS[l.id];return r&&(r.condition==='new'||r.condition==='still');}).length;
+  var el=function(id){return document.getElementById(id);};
+  if(el('rain-total'))el('rain-total').textContent=total;
+  if(el('rain-done'))el('rain-done').textContent=done;
+  if(el('rain-issues'))el('rain-issues').textContent=issues;
+  if(el('rain-pending'))el('rain-pending').textContent=total-done;
 }
 
 function renderRainTable(){
   var filter=document.getElementById('rain-filter')&&document.getElementById('rain-filter').value||'';
   var tbody=document.getElementById('rain-table-body');if(!tbody)return;
+  var isAdmin=SES&&SES.role==='Admin';
   var fl=RAIN_LOCATIONS.filter(function(l){
     if(!filter)return true;
-    var s=RAIN_SESSION[l.id]||{};
-    if(filter==='pending')return !s.beforePhoto&&!s.afterPhoto;
-    if(filter==='new')return s.condition==='new';
-    if(filter==='still')return s.condition==='still';
-    if(filter==='solved')return s.condition==='solved';
+    var r=RAIN_ROWS[l.id]||{};
+    if(filter==='pending')return !r.beforeUrl&&!r.afterUrl;
+    if(filter==='new')return r.condition==='new';
+    if(filter==='still')return r.condition==='still';
+    if(filter==='solved')return r.condition==='solved';
     return true;
   });
   if(!fl.length){
-    tbody.innerHTML='<tr><td colspan="5" style="padding:32px;text-align:center"><div style="color:var(--g400);margin-bottom:12px">No locations added yet</div><button class="btn btn-p btn-sm" onclick="openRainLocModal()"><i class="fas fa-plus"></i> Add Location</button></td></tr>';
+    tbody.innerHTML='<tr><td colspan="5" style="padding:32px;text-align:center"><div style="color:var(--g400);margin-bottom:12px">No locations added yet</div>'+(isAdmin?'<button class="btn btn-p btn-sm" onclick="openRainLocModal()"><i class="fas fa-plus"></i> Add Location</button>':'')+'</td></tr>';
     return;
   }
   tbody.innerHTML=fl.map(function(loc){
-    var s=RAIN_SESSION[loc.id]||{};
-    var beforeHtml=s.beforePhoto
-      ?'<img src="'+s.beforePhoto+'" data-loc="'+loc.id+'" data-ptype="before" class="rain-photo-thumb" style="width:140px;height:90px;object-fit:cover;border-radius:var(--r);cursor:pointer">'
+    var r=RAIN_ROWS[loc.id]||{};
+    var beforeHtml=r.beforeUrl
+      ?'<div style="text-align:center"><img src="'+r.beforeUrl+'" data-loc="'+loc.id+'" data-ptype="before" class="rain-photo-thumb" style="width:140px;height:90px;object-fit:cover;border-radius:var(--r);cursor:pointer"><div style="font-size:9px;color:var(--g400);margin-top:2px">'+( r.beforeDate?new Date(r.beforeDate).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'')+'</div></div>'
       :'<div data-loc="'+loc.id+'" data-ptype="before" class="rain-photo-thumb" style="width:140px;height:90px;background:var(--g100);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;cursor:pointer;border:2px dashed var(--g300)"><i class="fas fa-camera" style="color:var(--g400);font-size:20px"></i><span style="font-size:10px;color:var(--g400)">Tap to add</span></div>';
-    var afterDate=s.afterUpdatedAt?'<div style="font-size:10px;color:var(--g400);margin-top:4px;text-align:center"><i class="fas fa-clock" style="margin-right:3px"></i>'+new Date(s.afterUpdatedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+'</div>':'';
-    var afterHtml=s.afterPhoto
-      ?'<div><img src="'+s.afterPhoto+'" data-loc="'+loc.id+'" data-ptype="after" class="rain-photo-thumb" style="width:140px;height:90px;object-fit:cover;border-radius:var(--r);cursor:pointer">'+afterDate+'</div>'
+    var afterHtml=r.afterUrl
+      ?'<div style="text-align:center"><img src="'+r.afterUrl+'" data-loc="'+loc.id+'" data-ptype="after" class="rain-photo-thumb" style="width:140px;height:90px;object-fit:cover;border-radius:var(--r);cursor:pointer"><div style="font-size:9px;color:var(--g400);margin-top:2px">'+(r.afterDate?new Date(r.afterDate).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'')+'</div></div>'
       :'<div data-loc="'+loc.id+'" data-ptype="after" class="rain-photo-thumb" style="width:140px;height:90px;background:var(--g100);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;cursor:pointer;border:2px dashed var(--g300)"><i class="fas fa-camera" style="color:var(--g400);font-size:20px"></i><span style="font-size:10px;color:var(--g400)">Tap to add</span></div>';
-    var statusHtml=s.condition==='solved'
-      ?'<span class="snag-status ss-closed">🟢 Solved</span>'
-      :s.condition==='still'
-      ?'<span class="snag-status ss-progress">🟡 Still</span>'
-      :s.condition==='new'
-      ?'<span class="snag-status ss-open">🔴 New</span>'
-      :(s.beforePhoto||s.afterPhoto)
-      ?'<span class="snag-status" style="background:#FEF3C7;color:#92400E">📷 Inspected</span>'
-      :'<span class="snag-status" style="background:var(--g100);color:var(--g500)">⏳ Pending</span>';
+    var sc=r.condition==='solved'?'ss-closed':r.condition==='still'?'ss-progress':r.condition==='new'?'ss-open':'';
+    var statusHtml=r.condition==='solved'?'<span class="snag-status ss-closed">🟢 Solved</span>':r.condition==='still'?'<span class="snag-status ss-progress">🟡 Still</span>':r.condition==='new'?'<span class="snag-status ss-open">🔴 New</span>':(r.beforeUrl||r.afterUrl)?'<span class="snag-status" style="background:#FEF3C7;color:#92400E">📷 Inspected</span>':'<span class="snag-status" style="background:var(--g100);color:var(--g500)">⏳ Pending</span>';
     return '<tr style="border-bottom:1px solid var(--g100)">'+
       '<td style="padding:12px 14px;font-weight:600;color:var(--g800)">'+loc.name+'<br><span style="font-size:11px;color:var(--g400);font-weight:400">'+loc.zone+'</span></td>'+
       '<td style="padding:10px 14px;text-align:center">'+beforeHtml+'</td>'+
       '<td style="padding:10px 14px;text-align:center">'+afterHtml+'</td>'+
       '<td style="padding:10px 14px;text-align:center">'+statusHtml+'</td>'+
-      '<td style="padding:10px 14px;text-align:center"><button class="btn btn-o btn-sm rain-photo-btn" data-loc="'+loc.id+'" data-ptype="before"><i class="fas fa-camera"></i></button></td>'+
+      '<td style="padding:10px 14px;text-align:center"><button class="btn btn-o btn-sm rain-cam-btn" data-loc="'+loc.id+'" data-ptype="before"><i class="fas fa-camera"></i></button></td>'+
       '</tr>';
   }).join('');
-  // Add a "+" row at the bottom — admins only
-  if(SES&&SES.role==='Admin'){
+  // Add location row for admins
+  if(isAdmin){
     var addRow=document.createElement('tr');
-    addRow.innerHTML='<td colspan="5" style="padding:10px 14px;text-align:left"><button class="btn btn-o btn-sm" onclick="openRainLocModal()" style="border-style:dashed"><i class="fas fa-plus" style="color:var(--p600)"></i> <span style="color:var(--p700)">Add Location</span></button></td>';
+    addRow.innerHTML='<td colspan="5" style="padding:10px 14px"><button class="btn btn-o btn-sm" onclick="openRainLocModal()" style="border-style:dashed"><i class="fas fa-plus" style="color:var(--p600)"></i> <span style="color:var(--p700)">Add Location</span></button></td>';
     tbody.appendChild(addRow);
   }
-
-  // Attach click events via delegation
-  tbody.querySelectorAll('.rain-photo-thumb,.rain-photo-btn').forEach(function(el){
+  tbody.querySelectorAll('.rain-photo-thumb,.rain-cam-btn').forEach(function(el){
     el.addEventListener('click',function(e){e.stopPropagation();openRainPhotoModal(el.dataset.loc,el.dataset.ptype||'before');});
   });
 }
 
-
-// Photo capture modal
 function openRainPhotoModal(locId,photoType){
-  rainCurrentLocId=locId;
-  rainPhotoType=photoType||'before';
+  rainCurrentLocId=locId;rainPhotoType=photoType||'before';
   rainBeforeData=null;rainAfterData=null;
   var loc=RAIN_LOCATIONS.find(function(l){return l.id===locId;});
   if(!loc)return;
-  var s=RAIN_SESSION[locId]||{};
-  // Set location info
-  document.getElementById('rain-photo-location-info').textContent=loc.name+' — '+loc.zone;
-  // Reset previews
+  var r=RAIN_ROWS[locId]||{};
+  document.getElementById('rain-photo-location-info').textContent=loc.name+(loc.zone?' — '+loc.zone:'');
   document.getElementById('rain-before-preview').style.display='none';
   document.getElementById('rain-after-preview').style.display='none';
   document.getElementById('rain-before-file').value='';
   document.getElementById('rain-after-file').value='';
-  // Show existing photos
   var beforeCur=document.getElementById('rain-before-current');
   var afterCur=document.getElementById('rain-after-current');
-  beforeCur.innerHTML=s.beforePhoto
-    ?'<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--g400);margin-bottom:4px">Current before photo:</div><img src="'+s.beforePhoto+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:var(--r)"></div>'
-    :'<p style="font-size:12px;color:var(--g400);margin-bottom:8px">No before photo yet</p>';
-  afterCur.innerHTML=s.afterPhoto
-    ?'<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--g400);margin-bottom:4px">Current after photo:</div><img src="'+s.afterPhoto+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:var(--r)"></div>'
-    :'<p style="font-size:12px;color:var(--g400);margin-bottom:8px">No after photo yet</p>';
-  // Set condition if exists
-  if(s.condition)document.getElementById('rain-condition').value=s.condition;
-  // Switch to correct tab
+  beforeCur.innerHTML=r.beforeUrl?'<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--g400);margin-bottom:4px">Current:</div><img src="'+r.beforeUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:var(--r)"></div>':'<p style="font-size:12px;color:var(--g400);margin-bottom:8px">No photo yet</p>';
+  afterCur.innerHTML=r.afterUrl?'<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--g400);margin-bottom:4px">Current: '+(r.afterDate?'<span style="color:var(--ok)">Updated '+new Date(r.afterDate).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+'</span>':'')+'</div><img src="'+r.afterUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:var(--r)"></div>':'<p style="font-size:12px;color:var(--g400);margin-bottom:8px">No photo yet</p>';
+  if(r.condition)document.getElementById('rain-condition').value=r.condition;
   rainPhotoSelectType(rainPhotoType);
   document.getElementById('rain-photo-modal').classList.remove('hid');
 }
@@ -2340,100 +2257,149 @@ function rainPhotoSelectType(type){
   document.getElementById('rain-photo-tab-after').style.borderBottomColor=isBefore?'transparent':'var(--p600)';
   document.getElementById('rain-photo-tab-after').style.color=isBefore?'var(--g400)':'var(--p700)';
 }
-
 function handleRainPhoto(input,type){
   if(!input.files[0])return;
   var r=new FileReader();
   r.onload=function(e){
-    var data=e.target.result;
-    if(type==='before'){rainBeforeData=data;var p=document.getElementById('rain-before-preview');p.src=data;p.style.display='block';}
-    else{rainAfterData=data;var p=document.getElementById('rain-after-preview');p.src=data;p.style.display='block';}
+    if(type==='before'){rainBeforeData=e.target.result;var p=document.getElementById('rain-before-preview');p.src=rainBeforeData;p.style.display='block';}
+    else{rainAfterData=e.target.result;var p=document.getElementById('rain-after-preview');p.src=rainAfterData;p.style.display='block';}
   };
   r.readAsDataURL(input.files[0]);
 }
 
 function saveRainPhoto(){
   if(!rainCurrentLocId)return;
-  if(!RAIN_SESSION[rainCurrentLocId])RAIN_SESSION[rainCurrentLocId]={};
-  var s=RAIN_SESSION[rainCurrentLocId];
-  // Save photos to localStorage with location-specific key (persists across sessions)
-  if(rainBeforeData){
-    s.beforePhoto=rainBeforeData;
-    try{localStorage.setItem('rain_photo_before_'+rainCurrentLocId,rainBeforeData);}catch(e){console.log('Before photo storage error:',e);}
+  var hasPhoto=rainBeforeData||rainAfterData;
+  var hasCondition=document.getElementById('rain-condition').value;
+  if(!hasPhoto&&!hasCondition){toast('Take a photo or set condition first','err');return;}
+  var btn=document.getElementById('rain-photo-modal').querySelector('.btn-p');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Saving…';}
+  showL('Uploading photo to Drive…');
+  var payload={
+    locId:rainCurrentLocId,
+    condition:document.getElementById('rain-condition').value
+  };
+  if(rainBeforeData)payload.beforePhoto=rainBeforeData.split(',')[1];
+  if(rainAfterData)payload.afterPhoto=rainAfterData.split(',')[1];
+  // Send via GET with chunked body
+  var bodyStr=JSON.stringify(payload);
+  var q=API+'?action=saveRainPhoto&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(bodyStr);
+  // If URL too long (photos), use chunked approach
+  if(q.length>7000){
+    saveRainPhotoChunked(payload,btn);
+    return;
   }
-  if(rainAfterData){
-    s.afterPhoto=rainAfterData;
-    s.afterUpdatedAt=new Date().toISOString();
-    try{localStorage.setItem('rain_photo_after_'+rainCurrentLocId,rainAfterData);}catch(e){console.log('After photo storage error:',e);}
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET',q,true);xhr.timeout=60000;
+  xhr.onload=function(){
+    hideL();if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-floppy-disk"></i> Save';}
+    try{
+      var res=JSON.parse(xhr.responseText);
+      if(res.success){
+        if(!RAIN_ROWS[rainCurrentLocId])RAIN_ROWS[rainCurrentLocId]={};
+        if(res.beforeUrl)RAIN_ROWS[rainCurrentLocId].beforeUrl=res.beforeUrl;
+        if(res.afterUrl){RAIN_ROWS[rainCurrentLocId].afterUrl=res.afterUrl;RAIN_ROWS[rainCurrentLocId].afterDate=new Date().toISOString();}
+        if(payload.condition)RAIN_ROWS[rainCurrentLocId].condition=payload.condition;
+        closeRainPhotoModal();renderRainTable();updateRainStats();toast('Saved to Google Drive + Sheet!','ok');
+      } else toast('Error: '+(res.message||res.error),'err');
+    }catch(e){toast('Parse error','err');}
+  };
+  xhr.onerror=xhr.ontimeout=function(){hideL();if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-floppy-disk"></i> Save';}toast('Network error saving photo','err');};
+  xhr.send();
+}
+
+function saveRainPhotoChunked(payload,btn){
+  // Photos are too large for URL — send metadata first, then photos separately
+  var meta={locId:payload.locId,condition:payload.condition};
+  var metaQ=API+'?action=saveRainPhoto&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(meta));
+  var xhr0=new XMLHttpRequest();xhr0.open('GET',metaQ,true);xhr0.timeout=30000;
+  xhr0.onload=function(){
+    try{
+      var res=JSON.parse(xhr0.responseText);
+      if(res.success){
+        // Now send before photo
+        if(payload.beforePhoto){
+          sendRainPhotoChunk(payload.locId,'before',payload.beforePhoto,function(){
+            if(payload.afterPhoto)sendRainPhotoChunk(payload.locId,'after',payload.afterPhoto,function(){finishRainSave(payload,btn);});
+            else finishRainSave(payload,btn);
+          });
+        } else if(payload.afterPhoto){
+          sendRainPhotoChunk(payload.locId,'after',payload.afterPhoto,function(){finishRainSave(payload,btn);});
+        } else finishRainSave(payload,btn);
+      } else {hideL();if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-floppy-disk"></i> Save';}toast('Error: '+(res.message||'Failed'),'err');}
+    }catch(e){hideL();toast('Error','err');}
+  };
+  xhr0.onerror=xhr0.ontimeout=function(){hideL();if(btn){btn.disabled=false;}toast('Network error','err');};
+  xhr0.send();
+}
+
+function sendRainPhotoChunk(locId,type,base64,callback){
+  var chunkSize=5000;
+  var total=Math.ceil(base64.length/chunkSize);
+  var sent=0;
+  function sendNext(){
+    if(sent>=total){callback();return;}
+    var chunk=base64.substring(sent*chunkSize,(sent+1)*chunkSize);
+    var q=API+'?action=rainPhotoChunk&token='+encodeURIComponent(SES&&SES.token||'')
+      +'&locId='+encodeURIComponent(locId)+'&type='+type
+      +'&chunk='+encodeURIComponent(chunk)+'&idx='+sent+'&total='+total;
+    var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=30000;
+    xhr.onload=function(){sent++;sendNext();};
+    xhr.onerror=function(){toast('Chunk upload error','err');};
+    xhr.send();
   }
-  if(document.getElementById('rain-condition').value){
-    s.condition=document.getElementById('rain-condition').value;
-  }
-  s.updatedAt=new Date().toISOString();
-  // Save session (metadata + photos)
-  localStorage.setItem('abc_rain_session',JSON.stringify(RAIN_SESSION));
-  // Sync metadata to server
-  syncRainSessionMeta();
+  sendNext();
+}
+
+function finishRainSave(payload,btn){
+  hideL();
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-floppy-disk"></i> Save';}
+  if(!RAIN_ROWS[payload.locId])RAIN_ROWS[payload.locId]={};
+  if(payload.condition)RAIN_ROWS[payload.locId].condition=payload.condition;
+  RAIN_ROWS[payload.locId].afterDate=new Date().toISOString();
   closeRainPhotoModal();
-  renderRainTable();
-  updateRainStats();
+  ldRainLocations(); // refresh from server to get URLs
   toast('Photo saved!','ok');
 }
 
-// Load photos from localStorage into session for current device
-function loadRainPhotosFromLocal(){
-  RAIN_LOCATIONS.forEach(function(loc){
-    if(!RAIN_SESSION[loc.id])RAIN_SESSION[loc.id]={};
-    var s=RAIN_SESSION[loc.id];
-    // Load photos if not already in session
-    if(!s.beforePhoto){
-      var bp=localStorage.getItem('rain_photo_before_'+loc.id);
-      if(bp)s.beforePhoto=bp;
-    }
-    if(!s.afterPhoto){
-      var ap=localStorage.getItem('rain_photo_after_'+loc.id);
-      if(ap)s.afterPhoto=ap;
-    }
-  });
-}
-
-// Generate printable report
 function generateRainReport(){
-  var hasData=RAIN_LOCATIONS.some(function(l){var s=RAIN_SESSION[l.id];return s&&(s.beforePhoto||s.afterPhoto);});
-  if(!hasData){toast('No photos captured yet. Complete the inspection first.','wrn');return;}
+  if(!RAIN_LOCATIONS.length){toast('No locations added yet','wrn');return;}
   var date=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var inspector=SES?SES.fullName:'Operations Team';
   var property=SES?SES.property:'ABC Verdun Mall';
   var rows=RAIN_LOCATIONS.map(function(loc){
-    var s=RAIN_SESSION[loc.id]||{};
-    var beforeImg=s.beforePhoto?'<img src="'+s.beforePhoto+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
-    var afterDateStr=s.afterUpdatedAt?'<div style="font-size:10px;color:#6b7280;margin-top:4px">Updated: '+new Date(s.afterUpdatedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+'</div>':'';
-    var afterImg=s.afterPhoto?'<img src="'+s.afterPhoto+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">'+afterDateStr:'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
-    var condBadge=s.condition==='solved'?'<span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🟢 Solved</span>':s.condition==='still'?'<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🟡 Still Present</span>':s.condition==='new'?'<span style="background:#FEE2E2;color:#991B1B;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🔴 New Issue</span>':'<span style="background:#F3F4F6;color:#6B7280;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⏳ Pending</span>';
+    var r=RAIN_ROWS[loc.id]||{};
+    var beforeImg=r.beforeUrl?'<img src="'+r.beforeUrl+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
+    var afterImg=r.afterUrl?'<img src="'+r.afterUrl+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px"><div style="font-size:10px;color:#6b7280;text-align:center;margin-top:3px">'+(r.afterDate?new Date(r.afterDate).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'')+'</div>':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
+    var condBadge=r.condition==='solved'?'<span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🟢 Solved</span>':r.condition==='still'?'<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🟡 Still Present</span>':r.condition==='new'?'<span style="background:#FEE2E2;color:#991B1B;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🔴 New Issue</span>':'<span style="background:#F3F4F6;color:#6B7280;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⏳ Pending</span>';
     return '<tr><td style="padding:12px 14px;font-weight:600;border-bottom:1px solid #e5e7eb;vertical-align:middle">'+loc.name+'<br><span style="font-size:11px;color:#9ca3af;font-weight:400">'+loc.zone+'</span><br><div style="margin-top:6px">'+condBadge+'</div></td><td style="padding:10px 14px;text-align:center;border-bottom:1px solid #e5e7eb">'+beforeImg+'</td><td style="padding:10px 14px;text-align:center;border-bottom:1px solid #e5e7eb">'+afterImg+'</td></tr>';
   }).join('');
-  var total=RAIN_LOCATIONS.length;
-  var done=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&(s.beforePhoto||s.afterPhoto);}).length;
-  var issues=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&(s.condition==='new'||s.condition==='still');}).length;
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rain Inspection Report</title><style>body{font-family:Arial,sans-serif;margin:0;padding:20px;color:#1f2937}@media print{.no-print{display:none}}</style></head><body>'+
-    '<div style="text-align:center;margin-bottom:24px;padding:20px;background:linear-gradient(135deg,#1E3A5F,#2563EB);border-radius:8px;color:white">'+
-    '<div style="font-size:22px;font-weight:900;margin-bottom:4px">🌧️ Rain Inspection Report</div>'+
-    '<div style="opacity:.8;font-size:14px">'+property+' · '+date+'</div>'+
-    '<div style="opacity:.7;font-size:12px;margin-top:4px">Inspector: '+inspector+'</div>'+
-    '</div>'+
-    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">'+
-    '<div style="background:#f3f4f6;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900">'+total+'</div><div style="font-size:11px;color:#6b7280">Locations</div></div>'+
-    '<div style="background:#D1FAE5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#065F46">'+done+'</div><div style="font-size:11px;color:#065F46">Inspected</div></div>'+
-    '<div style="background:#FEE2E2;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#991B1B">'+issues+'</div><div style="font-size:11px;color:#991B1B">Issues</div></div>'+
-    '<div style="background:#DBEAFE;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#1E40AF">'+(total-done)+'</div><div style="font-size:11px;color:#1E40AF">Pending</div></div>'+
-    '</div>'+
+  var total=RAIN_LOCATIONS.length,done=RAIN_LOCATIONS.filter(function(l){var r=RAIN_ROWS[l.id];return r&&(r.beforeUrl||r.afterUrl);}).length,issues=RAIN_LOCATIONS.filter(function(l){var r=RAIN_ROWS[l.id];return r&&(r.condition==='new'||r.condition==='still');}).length;
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rain Inspection Report</title><style>body{font-family:Arial,sans-serif;margin:0;padding:20px}@media print{.no-print{display:none}}</style></head><body>'+
+    '<div style="text-align:center;margin-bottom:24px;padding:20px;background:linear-gradient(135deg,#1E3A5F,#2563EB);border-radius:8px;color:white"><div style="font-size:22px;font-weight:900;margin-bottom:4px">🌧️ Rain Inspection Report</div><div style="opacity:.8;font-size:14px">'+property+' · '+date+'</div><div style="opacity:.7;font-size:12px;margin-top:4px">Inspector: '+inspector+'</div></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px"><div style="background:#f3f4f6;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900">'+total+'</div><div style="font-size:11px;color:#6b7280">Locations</div></div><div style="background:#D1FAE5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#065F46">'+done+'</div><div style="font-size:11px;color:#065F46">Inspected</div></div><div style="background:#FEE2E2;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#991B1B">'+issues+'</div><div style="font-size:11px;color:#991B1B">Issues</div></div><div style="background:#DBEAFE;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#1E40AF">'+(total-done)+'</div><div style="font-size:11px;color:#1E40AF">Pending</div></div></div>'+
     '<button class="no-print" onclick="window.print()" style="background:#2563EB;color:white;border:none;padding:10px 24px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px">🖨️ Print / Save as PDF</button>'+
-    '<table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">'+
-    '<thead><tr style="background:#1E3A5F"><th style="padding:12px 14px;text-align:left;color:white;font-size:13px">Location</th><th style="padding:12px 14px;text-align:center;color:white;font-size:13px;width:180px">Before</th><th style="padding:12px 14px;text-align:center;color:white;font-size:13px;width:180px">After</th></tr></thead>'+
-    '<tbody>'+rows+'</tbody></table>'+
-    '<div style="margin-top:20px;padding:12px;background:#f9fafb;border-radius:6px;font-size:12px;color:#6b7280;text-align:center">Generated by ABC Operations System · '+new Date().toLocaleString()+'</div>'+
-    '</body></html>';
+    '<table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden"><thead><tr style="background:#1E3A5F"><th style="padding:12px 14px;text-align:left;color:white;font-size:13px">Location</th><th style="padding:12px 14px;text-align:center;color:white;font-size:13px;width:180px">Before</th><th style="padding:12px 14px;text-align:center;color:white;font-size:13px;width:180px">After</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    '<div style="margin-top:20px;padding:12px;background:#f9fafb;border-radius:6px;font-size:12px;color:#6b7280;text-align:center">Generated by ABC Operations System · '+new Date().toLocaleString()+'</div></body></html>';
   var w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
+function exportRainExcel(){
+  if(!RAIN_LOCATIONS.length){toast('No locations to export','wrn');return;}
+  var headers=['Location','Zone','Status','After Photo Date','Before Photo URL','After Photo URL'];
+  var rows=RAIN_LOCATIONS.map(function(loc){
+    var r=RAIN_ROWS[loc.id]||{};
+    var status=r.condition==='solved'?'Solved':r.condition==='still'?'Still Present':r.condition==='new'?'New Issue':(r.beforeUrl||r.afterUrl)?'Inspected':'Pending';
+    var afterDate=r.afterDate?new Date(r.afterDate).toLocaleString('en-GB'):'';
+    return [loc.name,loc.zone||'',status,afterDate,r.beforeUrl||'',r.afterUrl||''].map(function(v){return '"'+v.toString().replace(/"/g,'""')+'"';}).join(',');
+  });
+  var bom='﻿';
+  var csv=bom+[headers.map(function(h){return '"'+h+'"';}).join(',')].concat(rows).join('\n');
+  var a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='Rain_Inspection_'+new Date().toLocaleDateString('en-GB').replace(/[/]/g,'-')+'.csv';
+  a.click();
+  toast('Excel file downloaded!','ok');
 }
 
 // Location management
@@ -2441,15 +2407,18 @@ function addRainLocationModal(){
   var name=document.getElementById('rlm-name').value.trim();
   var zone=document.getElementById('rlm-zone').value.trim();
   if(!name){toast('Enter location name','err');return;}
-  RAIN_LOCATIONS.push({id:'rl_'+Date.now(),name:name,zone:zone||''});
-  saveRainLocations();renderRainLocationList();renderRainTable();updateRainStats();
+  var newLoc={id:'rl_'+Date.now(),name:name,zone:zone||''};
+  RAIN_LOCATIONS.push(newLoc);
+  // Save to server
+  var payload={locations:RAIN_LOCATIONS};
+  var q=API+'?action=saveRainLocations&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(payload));
+  var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=15000;
+  xhr.onload=function(){try{var r=JSON.parse(xhr.responseText);if(r.success){toast('Location added!','ok');}else toast('Saved locally only','wrn');}catch(e){}};
+  xhr.send();
+  renderRainLocationList();renderRainTable();updateRainStats();
   document.getElementById('rlm-name').value='';document.getElementById('rlm-zone').value='';
-  toast('Location added!','ok');
 }
-function openRainLocModal(){
-  renderRainLocationList();
-  document.getElementById('rain-loc-modal').classList.remove('hid');
-}
+function openRainLocModal(){renderRainLocationList();document.getElementById('rain-loc-modal').classList.remove('hid');}
 function renderRainLocationList(){
   var list=document.getElementById('rlm-list');if(!list)return;
   var cnt=document.getElementById('rain-loc-count');if(cnt)cnt.textContent=RAIN_LOCATIONS.length+' locations';
@@ -2457,13 +2426,17 @@ function renderRainLocationList(){
   list.innerHTML=RAIN_LOCATIONS.map(function(l,i){
     return '<div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--g100)">'+
       '<div style="flex:1"><div style="font-weight:600;font-size:13px">'+l.name+'</div><div style="font-size:11.5px;color:var(--g400)">'+l.zone+'</div></div>'+
-      '<button class="btn btn-d btn-sm" onclick="deleteRainLocation('+i+')"><i class="fas fa-trash"></i></button>'+
+      (SES&&SES.role==='Admin'?'<button class="btn btn-d btn-sm" onclick="deleteRainLocation('+i+')"><i class="fas fa-trash"></i></button>':'')+
       '</div>';
   }).join('');
 }
 function deleteRainLocation(idx){
   if(!confirm('Remove this location?'))return;
-  RAIN_LOCATIONS.splice(idx,1);saveRainLocations();renderRainLocationList();renderRainTable();updateRainStats();toast('Removed','ok');
+  RAIN_LOCATIONS.splice(idx,1);
+  var payload={locations:RAIN_LOCATIONS};
+  var q=API+'?action=saveRainLocations&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(payload));
+  var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=15000;xhr.send();
+  renderRainLocationList();renderRainTable();updateRainStats();toast('Removed','ok');
 }
 
 // ══ SNAGLIST MODULE ══════════════════════════════════════════
