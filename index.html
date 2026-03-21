@@ -818,7 +818,7 @@ How can I help you today?</div>
               <input type="text" class="fc" id="snag-search" placeholder="🔍  Search issues…" oninput="renderSnagList()"/>
               <select class="fc" id="snag-status-filter" style="width:160px" onchange="renderSnagList()">
                 <option value="">All Status</option>
-                <option>Open</option><option>In Progress</option><option>Closed</option>
+                <option>Open</option><option>In Progress</option><option>Solved</option>
               </select>
               <button class="btn btn-o btn-sm" onclick="ldSnags()"><i class="fas fa-rotate"></i> Refresh</button>
             </div>
@@ -833,7 +833,7 @@ How can I help you today?</div>
           <div><div class="pht"><i class="fas fa-cloud-rain" style="color:#2563EB;margin-right:8px"></i>Rain Inspection Report</div><div class="phs" id="rain-report-date"></div></div>
           <div style="display:flex;gap:9px;flex-wrap:wrap">
             <button class="btn btn-o" onclick="navigate('snaglist')"><i class="fas fa-arrow-left"></i> Back</button>
-            <button class="btn btn-o btn-sm adm" style="display:none" onclick="openRainLocModal()"><i class="fas fa-map-marker-alt"></i> Manage Locations</button>
+            <button class="btn btn-o btn-sm" onclick="openRainLocModal()"><i class="fas fa-map-marker-alt"></i> Manage Locations</button>
             <button class="btn btn-o btn-sm" onclick="rainNewSession()"><i class="fas fa-rotate"></i> New Session</button>
             <button class="btn btn-p" onclick="generateRainReport()"><i class="fas fa-file-pdf"></i> Generate Report</button>
           </div>
@@ -991,7 +991,7 @@ How can I help you today?</div>
       </div>
       <div class="fgrid" style="margin-bottom:14px">
         <div class="fg"><label class="fl">Status</label>
-          <select class="fc" id="snag-status"><option>Open</option><option>In Progress</option><option>Closed</option></select>
+          <select class="fc" id="snag-status"><option>Open</option><option>In Progress</option><option>Solved</option></select>
         </div>
         <div class="fg"><label class="fl">Location</label>
           <input type="text" class="fc" id="snag-location" placeholder="e.g. Level 2, Zone A"/>
@@ -2087,21 +2087,12 @@ async function delPolicy(idx){
 let RAIN_LOCATIONS=[], RAIN_SESSION={}, rainCurrentLocId=null, rainPhotoType='before';
 let rainBeforeData=null, rainAfterData=null;
 
-// Default locations if none exist
-const DEFAULT_RAIN_LOCS=[
-  {id:'rl_1',name:'GF East',zone:'Ground Floor'},
-  {id:'rl_2',name:'GF East',zone:'Ground Floor'},
-  {id:'rl_3',name:'L1 East',zone:'Level 1'},
-  {id:'rl_4',name:'L1 East',zone:'Level 1'},
-  {id:'rl_5',name:'L1 West',zone:'Level 1'},
-  {id:'rl_6',name:'L2 North',zone:'Level 2'},
-  {id:'rl_7',name:'L2 South',zone:'Level 2'},
-  {id:'rl_8',name:'Basement',zone:'Basement'}
-];
+// No default locations — user adds their own
+const DEFAULT_RAIN_LOCS=[];
 
 function ldRainLocations(){
   try{RAIN_LOCATIONS=JSON.parse(localStorage.getItem('abc_rain_locations')||'null');}catch(e){RAIN_LOCATIONS=null;}
-  if(!RAIN_LOCATIONS||!RAIN_LOCATIONS.length)RAIN_LOCATIONS=JSON.parse(JSON.stringify(DEFAULT_RAIN_LOCS));
+  if(!RAIN_LOCATIONS)RAIN_LOCATIONS=[];
   // Load current session data
   try{RAIN_SESSION=JSON.parse(localStorage.getItem('abc_rain_session')||'{}');}catch(e){RAIN_SESSION={};}
   // Set date
@@ -2119,7 +2110,7 @@ function rainNewSession(){
 function updateRainStats(){
   var total=RAIN_LOCATIONS.length;
   var done=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&(s.beforePhoto||s.afterPhoto);}).length;
-  var issues=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&s.condition==='issue';}).length;
+  var issues=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&(s.condition==='new'||s.condition==='still');}).length;
   document.getElementById('rain-total').textContent=total;
   document.getElementById('rain-done').textContent=done;
   document.getElementById('rain-issues').textContent=issues;
@@ -2133,8 +2124,9 @@ function renderRainTable(){
     if(!filter)return true;
     var s=RAIN_SESSION[l.id]||{};
     if(filter==='pending')return !s.beforePhoto&&!s.afterPhoto;
-    if(filter==='ok')return s.condition==='ok';
-    if(filter==='issue')return s.condition==='issue';
+    if(filter==='new')return s.condition==='new';
+    if(filter==='still')return s.condition==='still';
+    if(filter==='solved')return s.condition==='solved';
     return true;
   });
   if(!fl.length){tbody.innerHTML='<tr><td colspan="5" style="padding:32px;text-align:center;color:var(--g400)">No locations found</td></tr>';return;}
@@ -2146,12 +2138,14 @@ function renderRainTable(){
     var afterHtml=s.afterPhoto
       ?'<img src="'+s.afterPhoto+'" data-loc="'+loc.id+'" data-ptype="after" class="rain-photo-thumb" style="width:140px;height:90px;object-fit:cover;border-radius:var(--r);cursor:pointer">'
       :'<div data-loc="'+loc.id+'" data-ptype="after" class="rain-photo-thumb" style="width:140px;height:90px;background:var(--g100);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;cursor:pointer;border:2px dashed var(--g300)"><i class="fas fa-camera" style="color:var(--g400);font-size:20px"></i><span style="font-size:10px;color:var(--g400)">Tap to add</span></div>';
-    var statusHtml=s.condition==='ok'
-      ?'<span class="snag-status ss-closed">✅ OK</span>'
-      :s.condition==='issue'
-      ?'<span class="snag-status ss-open">⚠️ Issue</span>'
+    var statusHtml=s.condition==='solved'
+      ?'<span class="snag-status ss-closed">🟢 Solved</span>'
+      :s.condition==='still'
+      ?'<span class="snag-status ss-progress">🟡 Still</span>'
+      :s.condition==='new'
+      ?'<span class="snag-status ss-open">🔴 New</span>'
       :(s.beforePhoto||s.afterPhoto)
-      ?'<span class="snag-status ss-progress">📷 In Progress</span>'
+      ?'<span class="snag-status" style="background:#FEF3C7;color:#92400E">📷 Inspected</span>'
       :'<span class="snag-status" style="background:var(--g100);color:var(--g500)">⏳ Pending</span>';
     return '<tr style="border-bottom:1px solid var(--g100)">'+
       '<td style="padding:12px 14px;font-weight:600;color:var(--g800)">'+loc.name+'<br><span style="font-size:11px;color:var(--g400);font-weight:400">'+loc.zone+'</span></td>'+
@@ -2248,12 +2242,12 @@ function generateRainReport(){
     var s=RAIN_SESSION[loc.id]||{};
     var beforeImg=s.beforePhoto?'<img src="'+s.beforePhoto+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
     var afterImg=s.afterPhoto?'<img src="'+s.afterPhoto+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
-    var condBadge=s.condition==='issue'?'<span style="background:#FEE2E2;color:#991B1B;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⚠️ Issue Found</span>':s.condition==='ok'?'<span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">✅ OK</span>':'<span style="background:#F3F4F6;color:#6B7280;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⏳ Pending</span>';
+    var condBadge=s.condition==='solved'?'<span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🟢 Solved</span>':s.condition==='still'?'<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🟡 Still Present</span>':s.condition==='new'?'<span style="background:#FEE2E2;color:#991B1B;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🔴 New Issue</span>':'<span style="background:#F3F4F6;color:#6B7280;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⏳ Pending</span>';
     return '<tr><td style="padding:12px 14px;font-weight:600;border-bottom:1px solid #e5e7eb;vertical-align:middle">'+loc.name+'<br><span style="font-size:11px;color:#9ca3af;font-weight:400">'+loc.zone+'</span><br><div style="margin-top:6px">'+condBadge+'</div></td><td style="padding:10px 14px;text-align:center;border-bottom:1px solid #e5e7eb">'+beforeImg+'</td><td style="padding:10px 14px;text-align:center;border-bottom:1px solid #e5e7eb">'+afterImg+'</td></tr>';
   }).join('');
   var total=RAIN_LOCATIONS.length;
   var done=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&(s.beforePhoto||s.afterPhoto);}).length;
-  var issues=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&s.condition==='issue';}).length;
+  var issues=RAIN_LOCATIONS.filter(function(l){var s=RAIN_SESSION[l.id];return s&&(s.condition==='new'||s.condition==='still');}).length;
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rain Inspection Report</title><style>body{font-family:Arial,sans-serif;margin:0;padding:20px;color:#1f2937}@media print{.no-print{display:none}}</style></head><body>'+
     '<div style="text-align:center;margin-bottom:24px;padding:20px;background:linear-gradient(135deg,#1E3A5F,#2563EB);border-radius:8px;color:white">'+
     '<div style="font-size:22px;font-weight:900;margin-bottom:4px">🌧️ Rain Inspection Report</div>'+
@@ -2351,7 +2345,7 @@ function renderRainList(){
 }
 
 function buildSnagCard(item,type){
-  var sc=item.status==='Open'?'ss-open':item.status==='In Progress'?'ss-progress':'ss-closed';
+  var sc=item.status==='Open'?'ss-open':item.status==='In Progress'?'ss-progress':item.status==='Solved'?'ss-closed':'ss-closed';
   var hasAfter=item.afterPhoto&&item.afterPhoto.length>10;
   var hasBefore=item.beforePhoto&&item.beforePhoto.length>10;
   var photoHtml=hasBefore
@@ -2376,7 +2370,7 @@ function openSnagDetail(id,type){
   if(!item)return;
   snagCurrentId=id;snagCurrentType=type;
   document.getElementById('snag-det-title').textContent=(type==='rain'?'Rain Issue':'Snag Issue')+' — '+item.status;
-  var sc=item.status==='Open'?'ss-open':item.status==='In Progress'?'ss-progress':'ss-closed';
+  var sc=item.status==='Open'?'ss-open':item.status==='In Progress'?'ss-progress':item.status==='Solved'?'ss-closed':'ss-closed';
   var beforeHtml=item.beforePhoto&&item.beforePhoto.length>10
     ?'<img src="'+item.beforePhoto+'" style="width:100%;border-radius:var(--r);max-height:200px;object-fit:cover">'
     :'<div style="background:var(--g100);border-radius:var(--r);height:120px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px"><i class="fas fa-image" style="font-size:28px;color:var(--g300)"></i><span style="font-size:12px;color:var(--g400)">No before photo</span></div>';
@@ -2400,7 +2394,7 @@ function openSnagDetail(id,type){
     '<select class="fc" id="snag-det-status" style="margin-top:5px">'+
     '<option '+(item.status==='Open'?'selected':'')+'>Open</option>'+
     '<option '+(item.status==='In Progress'?'selected':'')+'>In Progress</option>'+
-    '<option '+(item.status==='Closed'?'selected':'')+'>Closed</option>'+
+    '<option '+(item.status==='Solved'?'selected':'')+'>Solved</option>'+
     '</select></div>';
   document.getElementById('snag-det-footer').innerHTML=
     '<button class="btn btn-o" onclick="closeSnagDetail()">Close</button>'+
@@ -2428,8 +2422,13 @@ function saveSnagDetail(){
   var list=snagCurrentType==='rain'?RAIN_SNAGS:SNAGS;
   var idx=list.findIndex(function(s){return s.id===snagCurrentId;});
   if(idx<0)return;
-  list[idx].status=document.getElementById('snag-det-status').value;
-  if(afterPhotoData)list[idx].afterPhoto=afterPhotoData;
+  if(afterPhotoData){
+    list[idx].afterPhoto=afterPhotoData;
+    list[idx].status='Solved'; // auto-set to Solved when after photo uploaded
+    document.getElementById('snag-det-status').value='Solved';
+  } else {
+    list[idx].status=document.getElementById('snag-det-status').value;
+  }
   list[idx].updatedAt=new Date().toISOString();
   if(snagCurrentType==='rain')saveRainSnags();else saveSnags();
   closeSnagDetail();
