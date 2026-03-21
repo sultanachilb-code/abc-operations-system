@@ -2394,8 +2394,11 @@ function exportRainExcel(){
     var r=RAIN_ROWS[loc.id]||{};
     var status=r.condition==='solved'?'Solved':r.condition==='still'?'Still Present':r.condition==='new'?'New Issue':(r.beforeUrl||r.afterUrl)?'Inspected':'Pending';
     var afterDate=r.afterDate?new Date(r.afterDate).toLocaleString('en-GB'):'';
-    var beforeImg=r.beforeUrl?('<img src="'+r.beforeUrl+'" width="150" height="100">'):'No photo';
-    var afterImg=r.afterUrl?('<img src="'+r.afterUrl+'" width="150" height="100">'):'No photo';
+    // Only use Drive URLs (https://drive.google.com) - local blob: URLs don't work in Excel
+    var bUrl=r.beforeUrl&&r.beforeUrl.indexOf('drive.google.com')>-1?r.beforeUrl:'';
+    var aUrl=r.afterUrl&&r.afterUrl.indexOf('drive.google.com')>-1?r.afterUrl:'';
+    var beforeImg=bUrl?('<img src="'+bUrl+'" width="150" height="100">'):'<span style="color:#9ca3af;font-size:11px">No photo uploaded to Drive yet</span>';
+    var afterImg=aUrl?('<img src="'+aUrl+'" width="150" height="100">'):'<span style="color:#9ca3af;font-size:11px">No photo uploaded to Drive yet</span>';
     return '<tr>'
       +'<td style="padding:8px;border:1px solid #ccc;font-weight:600;vertical-align:middle">'+loc.name+'<br><span style="font-size:10px;color:#666;font-weight:400">'+( loc.zone||'')+'</span></td>'
       +'<td style="padding:4px;border:1px solid #ccc;text-align:center;vertical-align:middle">'+status+'</td>'
@@ -2458,6 +2461,48 @@ function deleteRainLocation(idx){
   var q=API+'?action=saveRainLocations&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(payload));
   var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=15000;xhr.send();
   renderRainLocationList();renderRainTable();updateRainStats();toast('Removed','ok');
+}
+
+// ══ RAIN REPORT SHARE LINK ══════════════════════════════════
+function shareRainLink(){
+  var base=window.location.href.split('?')[0];
+  var link=base+'?redirect=rain';
+  document.getElementById('rain-share-url').value=link;
+  generateQR(link);
+  document.getElementById('rain-share-modal').classList.remove('hid');
+}
+function copyRainLink(){
+  var url=document.getElementById('rain-share-url').value;
+  navigator.clipboard.writeText(url).then(function(){toast('Link copied!','ok');}).catch(function(){
+    var el=document.getElementById('rain-share-url');el.select();document.execCommand('copy');toast('Link copied!','ok');
+  });
+}
+function shareViaWhatsApp(){
+  var url=document.getElementById('rain-share-url').value;
+  var msg='Rain Inspection Report - ABC Operations System\n\nOpen this link to access the Rain Report directly after login:\n'+url;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+function shareViaEmail(){
+  var url=document.getElementById('rain-share-url').value;
+  var subject='Rain Inspection Report Link - ABC Operations';
+  var body='Dear Team,\n\nPlease use the following link to access the Rain Inspection Report directly:\n\n'+url+'\n\nLog in with your ABC Operations credentials and the Rain Report will open automatically.\n\nRegards,\nABC Operations Team';
+  window.open('mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body));
+}
+function generateQR(text){
+  var canvas=document.getElementById('rain-qr-canvas');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  var size=160;
+  var img=new Image();
+  img.crossOrigin='anonymous';
+  img.onload=function(){ctx.drawImage(img,0,0,size,size);};
+  img.onerror=function(){
+    ctx.fillStyle='white';ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='#1f2937';ctx.font='bold 10px Arial';ctx.textAlign='center';
+    ctx.fillText('QR Code',size/2,size/2);
+    ctx.font='9px Arial';ctx.fillText('(scan link above)',size/2,size/2+16);
+  };
+  img.src='https://api.qrserver.com/v1/create-qr-code/?size=160x160&data='+encodeURIComponent(text);
 }
 
 // INIT
