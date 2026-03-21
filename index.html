@@ -1521,19 +1521,16 @@ async function sendPolicyChat(){
   ].join('\n');
 
   try{
-    // POST to Apps Script to avoid URL length limits with large policy content
+    // Use GET — Apps Script builds context server-side from the Sheet
+    // Only send recent chat history + current message to stay within URL limits
+    var recentHistory=polChatHistory.slice(-6); // last 3 exchanges
     var payload={
       action:'policyChat',
       token:SES&&SES.token||'',
-      systemPrompt:sysPrompt,
-      messages:polChatHistory.slice(0,-1).concat([{role:'user',content:msg}])
+      messages:JSON.stringify(recentHistory)
     };
-    var res=await fetch(API,{
-      method:'POST',
-      mode:'cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
-    }).then(function(r){return r.json();});
+    var q=new URLSearchParams(payload);
+    var res=await fetch(API+'?'+q).then(function(r){return r.json();});
   }catch(e){
     removeTypingIndicator(typingId);
     addChatMsg('Unable to connect to AI. Please try again shortly.','bot');
