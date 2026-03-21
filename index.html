@@ -1528,36 +1528,36 @@ async function sendPolicyChat(){
   if(polChatHistory.length>20)polChatHistory=polChatHistory.slice(-20);
 
   try{
-    var recentHistory=polChatHistory.slice(-6);
-
-    // Send just the messages — Apps Script reads policy content from Sheet
-    var bodyParam=JSON.stringify({messages:recentHistory});
+    // Send only current message + token — keep URL short
     var url=API
       +'?action=policyChat'
       +'&token='+encodeURIComponent(SES&&SES.token||'')
-      +'&body='+encodeURIComponent(bodyParam);
+      +'&msg='+encodeURIComponent(msg);
 
-    var response=await fetch(url);
+    var controller=new AbortController();
+    var timer=setTimeout(function(){controller.abort();},30000);
+    var response=await fetch(url,{signal:controller.signal});
+    clearTimeout(timer);
     var res=await response.json();
 
     removeTypingIndicator(typingId);
+    console.log('policyChat response:', JSON.stringify(res).substring(0,200));
 
-    // Log full response for debugging
-    console.log('policyChat response:', JSON.stringify(res));
-
-    // Handle response — check multiple possible shapes
     var reply=res.reply||res.message||res.content||(res.error?'Error: '+res.error:null);
-
     if(reply){
       polChatHistory.push({role:'assistant',content:reply});
       addChatMsg(reply,'bot');
     } else {
-      // Show raw response so we can debug
-      addChatMsg('Debug — raw response: '+JSON.stringify(res),'bot');
+      addChatMsg('No response received. Raw: '+JSON.stringify(res).substring(0,100),'bot');
     }
   }catch(e){
     removeTypingIndicator(typingId);
-    addChatMsg('Connection error: '+e.message,'bot');
+    if(e.name==='AbortError'){
+      addChatMsg('Request timed out after 30 seconds. Apps Script may be slow. Please try again.','bot');
+    } else {
+      addChatMsg('Error: '+e.message+'. Check browser console (F12) for details.','bot');
+      console.error('policyChat error:', e);
+    }
   }
 
   btn.disabled=false;
