@@ -2291,7 +2291,7 @@ function saveRainPhoto(){
   }
   var btn=document.getElementById('rain-photo-modal').querySelector('.btn-p');
   if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Saving…';}
-  showL('Compressing and uploading…');
+  showL('Saving photo… (5-15 seconds)');
   var condition=document.getElementById('rain-condition').value;
   var locId=rainCurrentLocId;
 
@@ -2305,7 +2305,7 @@ function saveRainPhoto(){
       +'&body='+encodeURIComponent(JSON.stringify(payload));
     console.log('Rain photo URL length:',q.length);
     var xhr=new XMLHttpRequest();
-    xhr.open('GET',q,true);xhr.timeout=90000;
+    xhr.open('GET',q,true);xhr.timeout=45000;
     xhr.onload=function(){
       hideL();if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-floppy-disk"></i> Save';}
       try{
@@ -2327,12 +2327,12 @@ function saveRainPhoto(){
     xhr.send();
   }
 
-  // Compress: max 600px wide, 40% quality — keeps JPEG under 80KB
+  // Compress aggressively: max 400px, 25% quality — keeps under 25KB per photo
   var pending=0;
   var beforeB64=null,afterB64=null;
-  if(rainBeforeData){pending++;compressImage(rainBeforeData,600,0.4,function(b){beforeB64=b;pending--;if(!pending)doSend(beforeB64,afterB64);});}
-  if(rainAfterData){pending++;compressImage(rainAfterData,600,0.4,function(a){afterB64=a;pending--;if(!pending)doSend(beforeB64,afterB64);});}
-  if(!pending)doSend(null,null); // condition only update
+  if(rainBeforeData){pending++;compressImage(rainBeforeData,400,0.25,function(b){beforeB64=b;pending--;if(!pending)doSend(beforeB64,afterB64);});}
+  if(rainAfterData){pending++;compressImage(rainAfterData,400,0.25,function(a){afterB64=a;pending--;if(!pending)doSend(beforeB64,afterB64);});}
+  if(!pending)doSend(null,null);
 }
 
 function generateRainReport(){
