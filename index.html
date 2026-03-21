@@ -1540,22 +1540,18 @@ async function sendPolicyChat(){
 
     removeTypingIndicator(typingId);
 
-    if(res.success&&res.reply){
-      polChatHistory.push({role:'assistant',content:res.reply});
-      addChatMsg(res.reply,'bot');
-      // Auto-link document if user asks for it
-      var lower=msg.toLowerCase();
-      if(lower.includes('download')||lower.includes('view')||lower.includes('send')||lower.includes('share')){
-        var matched=POLICIES.find(function(p){
-          return p.fileUrl&&p.title&&lower.includes(p.title.toLowerCase().split(' ').slice(0,2).join(' ').toLowerCase());
-        });
-        if(matched&&matched.fileUrl){
-          addChatMsg('Here is the document: <a href="'+matched.fileUrl+'" target="_blank" style="color:var(--p600);font-weight:700;text-decoration:underline">'+matched.title+' (View PDF)</a>','bot',true);
-        }
-      }
+    // Log full response for debugging
+    console.log('policyChat response:', JSON.stringify(res));
+
+    // Handle response — check multiple possible shapes
+    var reply=res.reply||res.message||res.content||(res.error?'Error: '+res.error:null);
+
+    if(reply){
+      polChatHistory.push({role:'assistant',content:reply});
+      addChatMsg(reply,'bot');
     } else {
-      var errMsg=res.reply||'Sorry, I could not get a response. Please try again.';
-      addChatMsg(errMsg,'bot');
+      // Show raw response so we can debug
+      addChatMsg('Debug — raw response: '+JSON.stringify(res),'bot');
     }
   }catch(e){
     removeTypingIndicator(typingId);
