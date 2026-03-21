@@ -860,7 +860,15 @@ async function api(method,params){
   const tok=SES?.token||'';
   const body=encodeURIComponent(JSON.stringify({...params,token:tok}));
   const q=new URLSearchParams({...params,token:tok,body});
-  const r=await fetch(`${API}?${q}`);return r.json();
+  return new Promise(function(resolve,reject){
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET',API+'?'+q,true);
+    xhr.timeout=25000;
+    xhr.onload=function(){try{resolve(JSON.parse(xhr.responseText));}catch(e){reject(e);}};
+    xhr.onerror=function(){reject(new Error('Network error'));};
+    xhr.ontimeout=function(){reject(new Error('Timeout'));};
+    xhr.send();
+  });
 }
 const showL=m=>{document.getElementById('ldr').classList.remove('hid');document.getElementById('lmsg').textContent=m||'Loading…'};
 const hideL=()=>document.getElementById('ldr').classList.add('hid');
@@ -879,7 +887,15 @@ async function doLogin(){
   const btn=document.getElementById('lbtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Signing in…';
   try{
     const lb=encodeURIComponent(JSON.stringify({username:u,password:p}));
-    const res=await fetch(`${API}?action=login&body=${lb}`).then(r=>r.json());
+    const res=await new Promise(function(resolve,reject){
+      var xhr=new XMLHttpRequest();
+      xhr.open('GET',API+'?action=login&body='+lb,true);
+      xhr.timeout=20000;
+      xhr.onload=function(){try{resolve(JSON.parse(xhr.responseText));}catch(e){reject(e);}};
+      xhr.onerror=function(){reject(new Error('Network error'));};
+      xhr.ontimeout=function(){reject(new Error('Timeout'));};
+      xhr.send();
+    });
     if(res.success){SES={token:res.token,...res.user,expiresAt:res.expiresAt};sessionStorage.setItem('abc_ses',JSON.stringify(SES));startApp();}
     else{document.getElementById('lerr-msg').textContent=res.message||'Invalid credentials.';er.classList.add('show');}
   }catch(e){document.getElementById('lerr-msg').textContent='Connection error.';er.classList.add('show');}
@@ -1534,11 +1550,19 @@ async function sendPolicyChat(){
       +'&token='+encodeURIComponent(SES&&SES.token||'')
       +'&msg='+encodeURIComponent(msg);
 
-    var controller=new AbortController();
-    var timer=setTimeout(function(){controller.abort();},30000);
-    var response=await fetch(url,{signal:controller.signal});
-    clearTimeout(timer);
-    var res=await response.json();
+    // Use XMLHttpRequest — handles Apps Script redirects better than fetch
+    var res=await new Promise(function(resolve,reject){
+      var xhr=new XMLHttpRequest();
+      xhr.open('GET',url,true);
+      xhr.timeout=30000;
+      xhr.onload=function(){
+        try{resolve(JSON.parse(xhr.responseText));}
+        catch(e){reject(new Error('Invalid JSON: '+xhr.responseText.substring(0,100)));}
+      };
+      xhr.onerror=function(){reject(new Error('Network error'));};
+      xhr.ontimeout=function(){reject(new Error('Request timed out after 30s'));};
+      xhr.send();
+    });
 
     removeTypingIndicator(typingId);
     console.log('policyChat response:', JSON.stringify(res).substring(0,200));
