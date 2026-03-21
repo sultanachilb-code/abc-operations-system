@@ -222,6 +222,23 @@ tr:hover td{background:var(--p50)}
 .upload-zone p{font-size:13px;color:var(--g500)}
 .upload-zone .hint{font-size:11px;color:var(--g400);margin-top:4px}
 @media(max-width:720px){.sidebar{display:none}.fgrid,.fg3{grid-template-columns:1fr}.sr{grid-template-columns:1fr 1fr}.ui{display:none}}
+/* SNAGLIST */
+.snag-tab-btn{padding:9px 22px;font-family:var(--ff);font-weight:700;font-size:13px;border:none;cursor:pointer;border-bottom:3px solid transparent;background:none;color:var(--g500);transition:.2s}
+.snag-tab-btn.on{color:var(--p700);border-bottom-color:var(--p600)}
+.snag-card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);overflow:hidden;transition:.2s;cursor:pointer}
+.snag-card:hover{box-shadow:var(--s2);transform:translateY(-2px);border-color:var(--p400)}
+.snag-photo{width:100%;height:160px;object-fit:cover;background:var(--g100);display:flex;align-items:center;justify-content:center}
+.snag-photo img{width:100%;height:160px;object-fit:cover}
+.snag-status{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--ff)}
+.ss-open{background:#FEE2E2;color:#991B1B}
+.ss-progress{background:#DBEAFE;color:#1E40AF}
+.ss-closed{background:#D1FAE5;color:#065F46}
+.photo-upload-zone{border:2px dashed var(--g300);border-radius:var(--rm);padding:24px;text-align:center;cursor:pointer;transition:.2s;background:var(--g50);position:relative}
+.photo-upload-zone:hover{border-color:var(--p500);background:var(--p50)}
+.photo-preview{width:100%;max-height:220px;object-fit:cover;border-radius:var(--r);margin-top:10px;display:none}
+.rain-link-card{background:linear-gradient(135deg,#1E3A5F,#2563EB);border-radius:var(--rl);padding:32px;text-align:center;cursor:pointer;transition:.2s;color:white}
+.rain-link-card:hover{transform:translateY(-3px);box-shadow:var(--s3)}
+
 /* POLICIES */
 .pol-card{background:white;border-radius:var(--rl);border:1px solid var(--g200);box-shadow:var(--s1);padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s}
 .pol-card:hover{box-shadow:var(--s2);transform:translateY(-1px);border-color:var(--p400)}
@@ -305,6 +322,8 @@ tr:hover td{background:var(--p50)}
       <span class="ns">Handover</span>
       <button class="ni" onclick="navigate('new-ho',this)"><i class="fas fa-rotate"></i><span class="nl">New Handover</span></button>
       <button class="ni" onclick="navigate('ho-log',this)"><i class="fas fa-book-open"></i><span class="nl">Handover Log</span><span class="nb" id="sb-ho-ct">–</span></button>
+      <span class="ns">Follow Up</span>
+      <button class="ni" onclick="navigate('snaglist',this)"><i class="fas fa-clipboard-list"></i><span class="nl">Follow Up Snaglist</span></button>
       <span class="ns">Projects</span>
       <button class="ni" onclick="navigate('projects',this)"><i class="fas fa-diagram-project"></i><span class="nl">Project Management</span></button>
       <span class="ns">Knowledge</span>
@@ -758,6 +777,77 @@ How can I help you today?</div>
         </div>
       </div>
 
+
+      <!-- FOLLOW UP SNAGLIST -->
+      <div class="view" id="view-snaglist">
+        <div class="ph">
+          <div><div class="pht">Follow Up Snaglist</div><div class="phs">Rain reports and issue tracking with before/after photos</div></div>
+        </div>
+        <!-- TABS -->
+        <div style="border-bottom:2px solid var(--g200);margin-bottom:20px;display:flex;gap:0">
+          <button class="snag-tab-btn on" id="snag-tab-rain-btn" onclick="snagSwitchTab('rain')"><i class="fas fa-cloud-rain" style="margin-right:6px"></i>Rain Report</button>
+          <button class="snag-tab-btn" id="snag-tab-new-btn" onclick="snagSwitchTab('new')"><i class="fas fa-clipboard-list" style="margin-right:6px"></i>New Snaglist</button>
+        </div>
+
+        <!-- RAIN REPORT TAB -->
+        <div id="snag-rain-tab">
+          <div style="max-width:700px;margin:0 auto">
+            <div class="rain-link-card" onclick="navigate('rain-report')">
+              <i class="fas fa-cloud-rain" style="font-size:48px;margin-bottom:16px;opacity:.9"></i>
+              <div style="font-family:var(--ff);font-weight:900;font-size:22px;margin-bottom:8px">Rain Report</div>
+              <div style="opacity:.75;font-size:14px;margin-bottom:20px">Tap to open the rain inspection snaglist</div>
+              <div style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:var(--r);padding:10px 24px;display:inline-flex;align-items:center;gap:8px;font-family:var(--ff);font-weight:700;font-size:14px">
+                <i class="fas fa-arrow-right"></i> Open Rain Report
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW SNAGLIST TAB -->
+        <div id="snag-new-tab" style="display:none">
+          <div class="ph" style="margin-bottom:14px">
+            <div style="font-family:var(--ff);font-weight:700;font-size:14px;color:var(--g600)">
+              <i class="fas fa-list" style="margin-right:6px;color:var(--p600)"></i>
+              Issues (<span id="snag-count">0</span>)
+            </div>
+            <button class="btn btn-p" onclick="openNewSnag()"><i class="fas fa-plus"></i> New Issue</button>
+          </div>
+          <!-- FILTER BAR -->
+          <div class="card" style="margin-bottom:16px"><div class="cb" style="padding:12px 16px">
+            <div class="fbar">
+              <input type="text" class="fc" id="snag-search" placeholder="🔍  Search issues…" oninput="renderSnagList()"/>
+              <select class="fc" id="snag-status-filter" style="width:160px" onchange="renderSnagList()">
+                <option value="">All Status</option>
+                <option>Open</option><option>In Progress</option><option>Closed</option>
+              </select>
+              <button class="btn btn-o btn-sm" onclick="ldSnags()"><i class="fas fa-rotate"></i> Refresh</button>
+            </div>
+          </div></div>
+          <div id="snag-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+        </div>
+      </div>
+
+      <!-- RAIN REPORT PAGE -->
+      <div class="view" id="view-rain-report">
+        <div class="ph">
+          <div><div class="pht">Rain Report</div><div class="phs">Rain inspection snaglist — tap issue to update photos</div></div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-o" onclick="navigate('snaglist')"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn btn-p adm" style="display:none" onclick="openNewRainSnag()"><i class="fas fa-plus"></i> Add Issue</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px"><div class="cb" style="padding:12px 16px">
+          <div class="fbar">
+            <input type="text" class="fc" id="rain-search" placeholder="🔍  Search…" oninput="renderRainList()"/>
+            <select class="fc" id="rain-status-filter" style="width:160px" onchange="renderRainList()">
+              <option value="">All Status</option>
+              <option>Open</option><option>In Progress</option><option>Closed</option>
+            </select>
+          </div>
+        </div></div>
+        <div id="rain-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+      </div>
+
       <!-- USERS -->
       <div class="view" id="view-users">
         <div class="ph"><div><div class="pht">User Management</div></div><button class="btn btn-p" onclick="openAddU()"><i class="fas fa-user-plus"></i> Add User</button></div>
@@ -836,6 +926,50 @@ How can I help you today?</div>
     <div class="fg"><label class="fl">Email</label><input type="email" class="fc" id="um-em" placeholder="user@abcmall.com.lb"/></div>
   </div>
   <div class="mf"><button class="btn btn-o" onclick="closeUM()">Cancel</button><button class="btn btn-p" onclick="saveU()"><i class="fas fa-floppy-disk"></i> Save</button></div></div>
+</div>
+
+
+<!-- SNAG ISSUE MODAL (create/edit) -->
+<div class="overlay hid" id="snag-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="mhdr"><div class="mt" id="snag-modal-title">New Issue</div><button class="mc" onclick="closeSnagModal()"><i class="fas fa-xmark"></i></button></div>
+    <div class="mb">
+      <input type="hidden" id="snag-edit-id"/>
+      <input type="hidden" id="snag-edit-type"/>
+      <div class="fg"><label class="fl">Issue Description <span class="req">*</span></label>
+        <textarea class="fc" id="snag-desc" style="min-height:80px" placeholder="Describe the issue clearly…"></textarea>
+      </div>
+      <div class="fgrid" style="margin-bottom:14px">
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fc" id="snag-status"><option>Open</option><option>In Progress</option><option>Closed</option></select>
+        </div>
+        <div class="fg"><label class="fl">Location</label>
+          <input type="text" class="fc" id="snag-location" placeholder="e.g. Level 2, Zone A"/>
+        </div>
+      </div>
+      <!-- BEFORE PHOTO -->
+      <div class="fg" style="margin-bottom:14px">
+        <label class="fl">Before Photo</label>
+        <div class="photo-upload-zone" onclick="triggerPhoto('before')" id="before-zone">
+          <i class="fas fa-camera" style="font-size:24px;color:var(--g400);margin-bottom:6px;display:block"></i>
+          <p style="font-size:13px;color:var(--g500);font-weight:600">Tap to take or upload photo</p>
+          <p style="font-size:11px;color:var(--g400)">Before condition</p>
+        </div>
+        <input type="file" id="before-input" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this,'before')"/>
+        <img id="before-preview" class="photo-preview"/>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-o" onclick="closeSnagModal()">Cancel</button><button class="btn btn-p" onclick="saveSnag()"><i class="fas fa-floppy-disk"></i> Save Issue</button></div>
+  </div>
+</div>
+
+<!-- SNAG DETAIL / AFTER PHOTO MODAL -->
+<div class="overlay hid" id="snag-detail-modal">
+  <div class="modal" style="max-width:600px">
+    <div class="mhdr"><div class="mt" id="snag-det-title">Issue Detail</div><button class="mc" onclick="closeSnagDetail()"><i class="fas fa-xmark"></i></button></div>
+    <div class="mb" id="snag-det-body"></div>
+    <div class="mf" id="snag-det-footer"></div>
+  </div>
 </div>
 
 <div id="toasts"></div>
@@ -947,6 +1081,8 @@ function navigate(v,btn){
   if(v==='prj-opex')renderBgtTable('opex');
   if(v==='policies'){ldPolicies();}
   if(v==='policies-admin'){ldPoliciesAdmin();}
+  if(v==='snaglist'){ldSnags();renderSnagList();}
+  if(v==='rain-report'){ldRainSnags();renderRainList();}
 }
 function toggleSB(){sbCol=!sbCol;document.getElementById('sb').classList.toggle('col',sbCol);}
 
@@ -1825,6 +1961,223 @@ async function delPolicy(idx){
   localStorage.setItem('abc_policies',JSON.stringify(POLICIES));
   hideL();renderPolAdminList();renderPolicies();renderPolChat_context();
   toast('Document deleted','ok');
+}
+
+// ══ SNAGLIST MODULE ══════════════════════════════════════════
+let SNAGS=[], RAIN_SNAGS=[], snagCurrentId=null, snagCurrentType=null;
+let beforePhotoData=null, afterPhotoData=null;
+
+function snagSwitchTab(tab){
+  var isRain=tab==='rain';
+  document.getElementById('snag-rain-tab').style.display=isRain?'block':'none';
+  document.getElementById('snag-new-tab').style.display=isRain?'none':'block';
+  document.getElementById('snag-tab-rain-btn').classList.toggle('on',isRain);
+  document.getElementById('snag-tab-new-btn').classList.toggle('on',!isRain);
+}
+
+// Load from localStorage
+function ldSnags(){
+  try{SNAGS=JSON.parse(localStorage.getItem('abc_snags')||'[]');}catch(e){SNAGS=[];}
+  renderSnagList();
+}
+function ldRainSnags(){
+  try{RAIN_SNAGS=JSON.parse(localStorage.getItem('abc_rain_snags')||'[]');}catch(e){RAIN_SNAGS=[];}
+  renderRainList();
+}
+function saveSnags(){localStorage.setItem('abc_snags',JSON.stringify(SNAGS));}
+function saveRainSnags(){localStorage.setItem('abc_rain_snags',JSON.stringify(RAIN_SNAGS));}
+
+// Render snaglist grid
+function renderSnagList(){
+  var s=(document.getElementById('snag-search')&&document.getElementById('snag-search').value||'').toLowerCase();
+  var st=document.getElementById('snag-status-filter')&&document.getElementById('snag-status-filter').value||'';
+  var fl=SNAGS.filter(function(i){return(!s||i.desc.toLowerCase().includes(s)||(i.location||'').toLowerCase().includes(s))&&(!st||i.status===st);});
+  var cnt=document.getElementById('snag-count');if(cnt)cnt.textContent=fl.length;
+  var grid=document.getElementById('snag-grid');if(!grid)return;
+  if(!fl.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><i class="fas fa-clipboard-list"></i><h3>No issues yet</h3><p>Click New Issue to add one</p></div>';return;}
+  grid.innerHTML=fl.map(function(s){return buildSnagCard(s,'snag');}).join('');
+  grid.querySelectorAll('.snag-card').forEach(function(el){el.addEventListener('click',function(){openSnagDetail(el.dataset.id,'snag');});});
+}
+function renderRainList(){
+  var s=(document.getElementById('rain-search')&&document.getElementById('rain-search').value||'').toLowerCase();
+  var st=document.getElementById('rain-status-filter')&&document.getElementById('rain-status-filter').value||'';
+  var fl=RAIN_SNAGS.filter(function(i){return(!s||i.desc.toLowerCase().includes(s)||(i.location||'').toLowerCase().includes(s))&&(!st||i.status===st);});
+  var grid=document.getElementById('rain-grid');if(!grid)return;
+  if(!fl.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><i class="fas fa-cloud-rain"></i><h3>No rain issues yet</h3>'+(SES&&SES.role==='Admin'?'<p>Click Add Issue to create one</p>':'<p>No issues logged yet</p>')+'</div>';return;}
+  grid.innerHTML=fl.map(function(s){return buildSnagCard(s,'rain');}).join('');
+  grid.querySelectorAll('.snag-card').forEach(function(el){el.addEventListener('click',function(){openSnagDetail(el.dataset.id,'rain');});});
+}
+
+function buildSnagCard(item,type){
+  var sc=item.status==='Open'?'ss-open':item.status==='In Progress'?'ss-progress':'ss-closed';
+  var hasAfter=item.afterPhoto&&item.afterPhoto.length>10;
+  var hasBefore=item.beforePhoto&&item.beforePhoto.length>10;
+  var photoHtml=hasBefore
+    ?'<img src="'+item.beforePhoto+'" style="width:100%;height:150px;object-fit:cover">'
+    :'<div style="width:100%;height:150px;background:var(--g100);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px"><i class="fas fa-image" style="font-size:28px;color:var(--g300)"></i><span style="font-size:11px;color:var(--g400)">No photo</span></div>';
+  var afterBadge=hasAfter?'<span style="position:absolute;top:8px;right:8px;background:var(--ok);color:white;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--ff)">✓ After</span>':'';
+  return '<div class="snag-card" data-id="'+item.id+'" data-type="'+type+'" style="cursor:pointer">'+
+    '<div style="position:relative">'+photoHtml+afterBadge+'</div>'+
+    '<div style="padding:12px 14px">'+
+    '<div style="font-size:13px;font-weight:600;color:var(--g800);margin-bottom:6px;line-height:1.4">'+item.desc+'</div>'+
+    (item.location?'<div style="font-size:11.5px;color:var(--g400);margin-bottom:6px"><i class="fas fa-location-dot" style="margin-right:4px"></i>'+item.location+'</div>':'')+
+    '<div style="display:flex;align-items:center;justify-content:space-between">'+
+    '<span class="snag-status '+sc+'">'+item.status+'</span>'+
+    '<span style="font-size:10.5px;color:var(--g400)">'+new Date(item.createdAt).toLocaleDateString('en-GB')+'</span>'+
+    '</div></div></div>';
+}
+
+// Open detail modal
+function openSnagDetail(id,type){
+  var list=type==='rain'?RAIN_SNAGS:SNAGS;
+  var item=list.find(function(s){return s.id===id;});
+  if(!item)return;
+  snagCurrentId=id;snagCurrentType=type;
+  document.getElementById('snag-det-title').textContent=(type==='rain'?'Rain Issue':'Snag Issue')+' — '+item.status;
+  var sc=item.status==='Open'?'ss-open':item.status==='In Progress'?'ss-progress':'ss-closed';
+  var beforeHtml=item.beforePhoto&&item.beforePhoto.length>10
+    ?'<img src="'+item.beforePhoto+'" style="width:100%;border-radius:var(--r);max-height:200px;object-fit:cover">'
+    :'<div style="background:var(--g100);border-radius:var(--r);height:120px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px"><i class="fas fa-image" style="font-size:28px;color:var(--g300)"></i><span style="font-size:12px;color:var(--g400)">No before photo</span></div>';
+  var afterHtml=item.afterPhoto&&item.afterPhoto.length>10
+    ?'<img src="'+item.afterPhoto+'" style="width:100%;border-radius:var(--r);max-height:200px;object-fit:cover">'
+    :'<div style="background:var(--g100);border-radius:var(--r);height:120px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px"><i class="fas fa-image" style="font-size:28px;color:var(--g300)"></i><span style="font-size:12px;color:var(--g400)">No after photo yet</span></div>';
+  document.getElementById('snag-det-body').innerHTML=
+    '<div style="margin-bottom:14px"><span class="snag-status '+sc+'">'+item.status+'</span>'+(item.location?'<span style="margin-left:10px;font-size:12px;color:var(--g400)"><i class="fas fa-location-dot" style="margin-right:4px"></i>'+item.location+'</span>':'')+'</div>'+
+    '<div style="font-size:13.5px;color:var(--g700);margin-bottom:18px;line-height:1.6">'+item.desc+'</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'+
+    '<div><div style="font-size:10.5px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Before</div>'+beforeHtml+'</div>'+
+    '<div><div style="font-size:10.5px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">After</div>'+afterHtml+'</div>'+
+    '</div>'+
+    '<div class="photo-upload-zone" onclick="triggerAfterPhoto()" id="after-upload-zone" style="margin-bottom:8px">'+
+    '<i class="fas fa-camera" style="font-size:22px;color:var(--p600);margin-bottom:6px;display:block"></i>'+
+    '<p style="font-size:13px;color:var(--p700);font-weight:700">Tap to take or upload After photo</p>'+
+    '<p style="font-size:11px;color:var(--g400)">Replaces previous after photo</p>'+
+    '</div>'+
+    '<input type="file" id="after-input" accept="image/*" capture="environment" style="display:none" onchange="handleAfterPhoto(this)"/>'+
+    '<div style="margin-top:12px"><label class="fl">Update Status</label>'+
+    '<select class="fc" id="snag-det-status" style="margin-top:5px">'+
+    '<option '+(item.status==='Open'?'selected':'')+'>Open</option>'+
+    '<option '+(item.status==='In Progress'?'selected':'')+'>In Progress</option>'+
+    '<option '+(item.status==='Closed'?'selected':'')+'>Closed</option>'+
+    '</select></div>';
+  document.getElementById('snag-det-footer').innerHTML=
+    '<button class="btn btn-o" onclick="closeSnagDetail()">Close</button>'+
+    '<button class="btn btn-p" onclick="saveSnagDetail()"><i class="fas fa-floppy-disk"></i> Save Changes</button>';
+  document.getElementById('snag-detail-modal').classList.remove('hid');
+  afterPhotoData=item.afterPhoto||null;
+}
+function closeSnagDetail(){document.getElementById('snag-detail-modal').classList.add('hid');snagCurrentId=null;snagCurrentType=null;afterPhotoData=null;}
+
+function triggerAfterPhoto(){document.getElementById('after-input').click();}
+function handleAfterPhoto(input){
+  if(!input.files[0])return;
+  var r=new FileReader();
+  r.onload=function(e){
+    afterPhotoData=e.target.result;
+    // Update preview in modal
+    var zone=document.getElementById('after-upload-zone');
+    zone.innerHTML='<img src="'+afterPhotoData+'" style="width:100%;border-radius:var(--r);max-height:160px;object-fit:cover"><p style="font-size:11px;color:var(--ok);font-weight:700;margin-top:6px">✓ New photo ready — click Save Changes</p>';
+  };
+  r.readAsDataURL(input.files[0]);
+}
+
+function saveSnagDetail(){
+  if(!snagCurrentId||!snagCurrentType)return;
+  var list=snagCurrentType==='rain'?RAIN_SNAGS:SNAGS;
+  var idx=list.findIndex(function(s){return s.id===snagCurrentId;});
+  if(idx<0)return;
+  list[idx].status=document.getElementById('snag-det-status').value;
+  if(afterPhotoData)list[idx].afterPhoto=afterPhotoData;
+  list[idx].updatedAt=new Date().toISOString();
+  if(snagCurrentType==='rain')saveRainSnags();else saveSnags();
+  closeSnagDetail();
+  if(snagCurrentType==='rain')renderRainList();else renderSnagList();
+  toast('Issue updated!','ok');
+  // Try save to Sheet
+  syncSnagToSheet(list[idx],snagCurrentType);
+}
+
+// NEW ISSUE FORM
+function openNewSnag(){resetSnagForm('snag');document.getElementById('snag-modal-title').textContent='New Issue';document.getElementById('snag-modal').classList.remove('hid');}
+function openNewRainSnag(){resetSnagForm('rain');document.getElementById('snag-modal-title').textContent='New Rain Issue';document.getElementById('snag-modal').classList.remove('hid');}
+function resetSnagForm(type){
+  document.getElementById('snag-edit-id').value='';
+  document.getElementById('snag-edit-type').value=type||'snag';
+  document.getElementById('snag-desc').value='';
+  document.getElementById('snag-status').value='Open';
+  document.getElementById('snag-location').value='';
+  document.getElementById('before-preview').style.display='none';
+  document.getElementById('before-preview').src='';
+  document.getElementById('before-input').value='';
+  beforePhotoData=null;
+}
+function closeSnagModal(){document.getElementById('snag-modal').classList.add('hid');}
+
+function triggerPhoto(which){document.getElementById(which+'-input').click();}
+function handlePhoto(input,which){
+  if(!input.files[0])return;
+  var r=new FileReader();
+  r.onload=function(e){
+    if(which==='before'){
+      beforePhotoData=e.target.result;
+      var prev=document.getElementById('before-preview');
+      prev.src=beforePhotoData;prev.style.display='block';
+      document.getElementById('before-zone').style.borderColor='var(--ok)';
+    }
+  };
+  r.readAsDataURL(input.files[0]);
+}
+
+function saveSnag(){
+  var desc=document.getElementById('snag-desc').value.trim();
+  var type=document.getElementById('snag-edit-type').value||'snag';
+  if(!desc){toast('Please enter issue description','err');return;}
+  var id=document.getElementById('snag-edit-id').value||'snag_'+Date.now();
+  var item={
+    id:id,
+    desc:desc,
+    status:document.getElementById('snag-status').value,
+    location:document.getElementById('snag-location').value.trim(),
+    beforePhoto:beforePhotoData||'',
+    afterPhoto:'',
+    createdBy:SES?SES.fullName:'Staff',
+    createdAt:new Date().toISOString(),
+    updatedAt:new Date().toISOString(),
+    type:type
+  };
+  if(type==='rain'){
+    var idx=RAIN_SNAGS.findIndex(function(s){return s.id===id;});
+    if(idx>=0)RAIN_SNAGS[idx]=item;else RAIN_SNAGS.unshift(item);
+    saveRainSnags();renderRainList();
+  } else {
+    var idx2=SNAGS.findIndex(function(s){return s.id===id;});
+    if(idx2>=0)SNAGS[idx2]=item;else SNAGS.unshift(item);
+    saveSnags();renderSnagList();
+  }
+  closeSnagModal();
+  toast('Issue saved!','ok');
+  syncSnagToSheet(item,type);
+}
+
+// Sync to Google Sheet (background)
+function syncSnagToSheet(item,type){
+  if(!SES||!SES.token)return;
+  var payload={
+    id:item.id, desc:item.desc, status:item.status,
+    location:item.location||'', type:type,
+    createdBy:item.createdBy, createdAt:item.createdAt,
+    updatedAt:item.updatedAt
+    // Note: photos stored locally — too large for Sheet
+  };
+  var q=API+'?action=saveSnag'
+    +'&token='+encodeURIComponent(SES.token)
+    +'&body='+encodeURIComponent(JSON.stringify(payload));
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET',q,true);xhr.timeout=15000;
+  xhr.onload=function(){
+    try{var r=JSON.parse(xhr.responseText);if(!r.success)console.log('Snag sheet sync failed:',r);}catch(e){}
+  };
+  xhr.send();
 }
 
 // INIT
