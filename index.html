@@ -693,9 +693,16 @@ How can I help you today?</div>
           <button class="btn btn-o" onclick="navigate('policies')"><i class="fas fa-arrow-left"></i> Back</button>
         </div>
 
-        <!-- UPLOAD ZONE -->
+        <!-- ADD POLICY -->
         <div class="card" style="margin-bottom:16px">
-          <div class="ch"><div class="ct"><i class="fas fa-upload" style="color:#16a34a"></i> Upload New Policy Document</div></div>
+          <div class="ch">
+            <div class="ct"><i class="fas fa-plus-circle" style="color:#16a34a"></i> Add New Policy Document</div>
+            <!-- Toggle tabs -->
+            <div style="display:flex;gap:0;border:1.5px solid var(--g200);border-radius:var(--r);overflow:hidden">
+              <button id="pol-tab-text" onclick="polSwitchTab('text')" style="padding:5px 14px;font-size:12px;font-family:var(--ff);font-weight:700;border:none;cursor:pointer;background:var(--p600);color:white">✏️ Paste Text</button>
+              <button id="pol-tab-pdf" onclick="polSwitchTab('pdf')" style="padding:5px 14px;font-size:12px;font-family:var(--ff);font-weight:700;border:none;cursor:pointer;background:white;color:var(--g500)">📄 Upload PDF</button>
+            </div>
+          </div>
           <div class="cb">
             <div class="fgrid" style="margin-bottom:14px">
               <div class="fg"><label class="fl">Document Title <span class="req">*</span></label><input type="text" class="fc" id="pol-title" placeholder="e.g. Fire Safety Evacuation Procedure"/></div>
@@ -712,15 +719,32 @@ How can I help you today?</div>
               <label class="fl">Description</label>
               <input type="text" class="fc" id="pol-desc" placeholder="Brief description of this document…"/>
             </div>
-            <div class="pol-drop-zone" id="pol-drop" onclick="document.getElementById('pol-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--p500)'" ondragleave="this.style.borderColor='var(--g300)'" ondrop="handlePolDrop(event)">
-              <i class="fas fa-file-pdf" style="font-size:32px;color:#EF4444;margin-bottom:10px;display:block"></i>
-              <p style="font-size:13px;color:var(--g600);font-weight:600">Click to select or drag & drop PDF</p>
-              <p style="font-size:11.5px;color:var(--g400);margin-top:4px">Max 10MB · PDF only</p>
-              <div id="pol-file-name" style="margin-top:10px;font-size:12px;color:var(--p700);font-weight:700"></div>
+
+            <!-- TEXT TAB -->
+            <div id="pol-text-tab">
+              <div class="fg">
+                <label class="fl">Policy Content <span class="req">*</span></label>
+                <textarea class="fc" id="pol-text-content" style="min-height:200px;font-size:13px" placeholder="Paste the full policy text here…&#10;&#10;Example:&#10;1. Purpose&#10;This policy covers...&#10;&#10;2. Scope&#10;Applies to all staff..."></textarea>
+              </div>
+              <div style="background:var(--p50);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--p700);margin-top:8px">
+                <i class="fas fa-robot" style="margin-right:5px"></i>
+                The AI will read this text and answer questions about it instantly.
+              </div>
             </div>
-            <input type="file" id="pol-file" accept=".pdf" style="display:none" onchange="polFileSelected(this)"/>
+
+            <!-- PDF TAB -->
+            <div id="pol-pdf-tab" style="display:none">
+              <div class="pol-drop-zone" id="pol-drop" onclick="document.getElementById('pol-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--p500)'" ondragleave="this.style.borderColor='var(--g300)'" ondrop="handlePolDrop(event)">
+                <i class="fas fa-file-pdf" style="font-size:32px;color:#EF4444;margin-bottom:10px;display:block"></i>
+                <p style="font-size:13px;color:var(--g600);font-weight:600">Click to select or drag & drop PDF</p>
+                <p style="font-size:11.5px;color:var(--g400);margin-top:4px">PDF only · Text will be extracted for AI</p>
+                <div id="pol-file-name" style="margin-top:10px;font-size:12px;color:var(--p700);font-weight:700"></div>
+              </div>
+              <input type="file" id="pol-file" accept=".pdf" style="display:none" onchange="polFileSelected(this)"/>
+            </div>
+
             <div style="display:flex;justify-content:flex-end;margin-top:14px">
-              <button class="btn btn-p" onclick="uploadPolicy()" id="pol-upload-btn"><i class="fas fa-cloud-arrow-up"></i> Add Document</button>
+              <button class="btn btn-p" onclick="uploadPolicy()" id="pol-upload-btn"><i class="fas fa-plus"></i> Add Policy</button>
             </div>
           </div>
         </div>
@@ -1578,71 +1602,85 @@ function handlePolDrop(e){
   document.getElementById('pol-drop').style.borderColor='var(--ok)';
 }
 
+function polSwitchTab(tab){
+  var isText=tab==='text';
+  document.getElementById('pol-text-tab').style.display=isText?'block':'none';
+  document.getElementById('pol-pdf-tab').style.display=isText?'none':'block';
+  document.getElementById('pol-tab-text').style.background=isText?'var(--p600)':'white';
+  document.getElementById('pol-tab-text').style.color=isText?'white':'var(--g500)';
+  document.getElementById('pol-tab-pdf').style.background=isText?'white':'var(--p600)';
+  document.getElementById('pol-tab-pdf').style.color=isText?'var(--g500)':'white';
+}
+
 async function uploadPolicy(){
   var title=document.getElementById('pol-title').value.trim();
   var cat=document.getElementById('pol-cat').value;
   var desc=document.getElementById('pol-desc').value.trim();
   if(!title||!cat){toast('Please fill Title and Category','err');return;}
-  if(!polSelectedFile){toast('Please select a PDF file','err');return;}
 
   var btn=document.getElementById('pol-upload-btn');
   btn.disabled=true;
-  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Processing…';
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Adding…';
 
-  try{
-    showL('Extracting PDF content for AI…');
+  // Determine if text or PDF tab is active
+  var isTextTab=document.getElementById('pol-text-tab').style.display!=='none';
+  var extractedText='';
 
-    // Extract readable text from PDF bytes
-    var extractedText=await extractPdfText(polSelectedFile);
-
-    // Create a local blob URL so user can view the PDF
-    var fileUrl=URL.createObjectURL(polSelectedFile);
-
-    // Build policy record
-    var pol={
-      id:'pol_'+Date.now(),
-      title:title,
-      category:cat,
-      desc:desc,
-      filename:polSelectedFile.name,
-      uploadedBy:SES?SES.fullName:'Admin',
-      uploadedAt:new Date().toISOString(),
-      fileUrl:fileUrl,
-      extractedText:extractedText,
-      local:true
-    };
-
-    // Add to in-memory list
-    POLICIES.unshift(pol);
-
-    // Save metadata to localStorage (text only, no binary)
-    var toSave=POLICIES.map(function(p){
-      return {
-        id:p.id, title:p.title, category:p.category,
-        desc:p.desc||'', filename:p.filename||'',
-        uploadedBy:p.uploadedBy||'', uploadedAt:p.uploadedAt||'',
-        extractedText:p.extractedText||'', local:true
-      };
-    });
-    try{localStorage.setItem('abc_policies_meta',JSON.stringify(toSave));}catch(e){}
-
-    // Update AI context
-    renderPolChat_context();
-
+  if(isTextTab){
+    // TEXT MODE — instant, no file needed
+    extractedText=document.getElementById('pol-text-content').value.trim();
+    if(!extractedText){toast('Please paste the policy text content','err');btn.disabled=false;btn.innerHTML='<i class="fas fa-plus"></i> Add Policy';return;}
+  } else {
+    // PDF MODE — extract text from file
+    if(!polSelectedFile){toast('Please select a PDF file','err');btn.disabled=false;btn.innerHTML='<i class="fas fa-plus"></i> Add Policy';return;}
+    showL('Reading PDF…');
+    extractedText=await extractPdfText(polSelectedFile);
     hideL();
-    toast(extractedText?'Document loaded! AI has read the content.':'Document added. AI knows the title and category.','ok');
-    polResetForm();
-    renderPolAdminList();
-    renderPolicies();
-    addNotif('Policy added: "'+title+'"','info');
-
-  }catch(e){
-    hideL();
-    toast('Error processing file: '+e.message,'err');
-    console.error(e);
   }
+
+  // Build policy object
+  var fileUrl=polSelectedFile?URL.createObjectURL(polSelectedFile):'';
+  var pol={
+    id:'pol_'+Date.now(),
+    title:title,
+    category:cat,
+    desc:desc,
+    filename:polSelectedFile?polSelectedFile.name:'',
+    uploadedBy:SES?SES.fullName:'Admin',
+    uploadedAt:new Date().toISOString(),
+    fileUrl:fileUrl,
+    extractedText:extractedText,
+    local:true
+  };
+
+  POLICIES.unshift(pol);
+
+  // Save to localStorage
+  var meta=POLICIES.map(function(p){
+    return {id:p.id,title:p.title,category:p.category,desc:p.desc||'',
+      filename:p.filename||'',uploadedBy:p.uploadedBy||'',
+      uploadedAt:p.uploadedAt||'',extractedText:p.extractedText||'',local:true};
+  });
+  try{localStorage.setItem('abc_policies_meta',JSON.stringify(meta));}catch(e){}
+
+  renderPolChat_context();
+  renderPolicies();
+  renderPolAdminList();
+
+  toast('Policy added! AI can now answer questions about it.','ok');
+  addNotif('Policy added: "'+title+'"','info');
+
+  // Reset form
+  document.getElementById('pol-title').value='';
+  document.getElementById('pol-desc').value='';
+  document.getElementById('pol-cat').value='';
+  if(document.getElementById('pol-text-content'))document.getElementById('pol-text-content').value='';
+  polSelectedFile=null;
+  document.getElementById('pol-file-name').textContent='';
+  document.getElementById('pol-drop').style.borderColor='var(--g300)';
+
   btn.disabled=false;
-  btn.innerHTML='<i class="fas fa-cloud-arrow-up"></i> Add Document';
+  btn.innerHTML='<i class="fas fa-plus"></i> Add Policy';
 }
 
 function polResetForm(){
