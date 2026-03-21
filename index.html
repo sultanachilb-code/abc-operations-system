@@ -1539,9 +1539,20 @@ async function sendPolicyChat(){
       return e;
     }).join('\n---\n'):'No policies added yet.';
 
+    // Inject localCtx into the LAST user message so Claude receives it
+    // This avoids URL length limits entirely
+    var messagesWithCtx=recentHistory.map(function(m,i){
+      if(i===recentHistory.length-1 && m.role==='user'){
+        return {
+          role:'user',
+          content:'[POLICY CONTEXT START]\n'+localCtx+'\n[POLICY CONTEXT END]\n\nUser question: '+m.content
+        };
+      }
+      return m;
+    });
+
     var bodyParam=JSON.stringify({
-      messages:recentHistory,
-      localContext:localCtx
+      messages:messagesWithCtx
     });
 
     // Build URL manually to avoid double-encoding by URLSearchParams
