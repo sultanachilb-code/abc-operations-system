@@ -833,8 +833,9 @@ How can I help you today?</div>
           <div><div class="pht"><i class="fas fa-cloud-rain" style="color:#2563EB;margin-right:8px"></i>Rain Inspection Report</div><div class="phs" id="rain-report-date"></div></div>
           <div style="display:flex;gap:9px;flex-wrap:wrap">
             <button class="btn btn-o" onclick="navigate('snaglist')"><i class="fas fa-arrow-left"></i> Back</button>
-            <button class="btn btn-o btn-sm" onclick="openRainLocModal()"><i class="fas fa-map-marker-alt"></i> Manage Locations</button>
+            <button class="btn btn-o btn-sm adm" style="display:none" onclick="openRainLocModal()"><i class="fas fa-map-marker-alt"></i> Manage Locations</button>
             <button class="btn btn-o btn-sm" onclick="shareRainLink()"><i class="fas fa-share-nodes"></i> Share Link</button>
+            <button class="btn btn-o btn-sm" onclick="exportRainExcel()"><i class="fas fa-file-excel" style="color:#16a34a"></i> Export Excel</button>
             <button class="btn btn-p" onclick="generateRainReport()"><i class="fas fa-file-pdf"></i> Generate Report</button>
           </div>
         </div>
@@ -2193,8 +2194,9 @@ function renderRainTable(){
     var beforeHtml=s.beforePhoto
       ?'<img src="'+s.beforePhoto+'" data-loc="'+loc.id+'" data-ptype="before" class="rain-photo-thumb" style="width:140px;height:90px;object-fit:cover;border-radius:var(--r);cursor:pointer">'
       :'<div data-loc="'+loc.id+'" data-ptype="before" class="rain-photo-thumb" style="width:140px;height:90px;background:var(--g100);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;cursor:pointer;border:2px dashed var(--g300)"><i class="fas fa-camera" style="color:var(--g400);font-size:20px"></i><span style="font-size:10px;color:var(--g400)">Tap to add</span></div>';
+    var afterDate=s.afterUpdatedAt?'<div style="font-size:10px;color:var(--g400);margin-top:4px;text-align:center"><i class="fas fa-clock" style="margin-right:3px"></i>'+new Date(s.afterUpdatedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+'</div>':'';
     var afterHtml=s.afterPhoto
-      ?'<img src="'+s.afterPhoto+'" data-loc="'+loc.id+'" data-ptype="after" class="rain-photo-thumb" style="width:140px;height:90px;object-fit:cover;border-radius:var(--r);cursor:pointer">'
+      ?'<div><img src="'+s.afterPhoto+'" data-loc="'+loc.id+'" data-ptype="after" class="rain-photo-thumb" style="width:140px;height:90px;object-fit:cover;border-radius:var(--r);cursor:pointer">'+afterDate+'</div>'
       :'<div data-loc="'+loc.id+'" data-ptype="after" class="rain-photo-thumb" style="width:140px;height:90px;background:var(--g100);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;cursor:pointer;border:2px dashed var(--g300)"><i class="fas fa-camera" style="color:var(--g400);font-size:20px"></i><span style="font-size:10px;color:var(--g400)">Tap to add</span></div>';
     var statusHtml=s.condition==='solved'
       ?'<span class="snag-status ss-closed">🟢 Solved</span>'
@@ -2213,10 +2215,12 @@ function renderRainTable(){
       '<td style="padding:10px 14px;text-align:center"><button class="btn btn-o btn-sm rain-photo-btn" data-loc="'+loc.id+'" data-ptype="before"><i class="fas fa-camera"></i></button></td>'+
       '</tr>';
   }).join('');
-  // Add a "+" row at the bottom to add new locations inline
-  var addRow=document.createElement('tr');
-  addRow.innerHTML='<td colspan="5" style="padding:10px 14px;text-align:left"><button class="btn btn-o btn-sm" onclick="openRainLocModal()" style="border-style:dashed"><i class="fas fa-plus" style="color:var(--p600)"></i> <span style="color:var(--p700)">Add Location</span></button></td>';
-  tbody.appendChild(addRow);
+  // Add a "+" row at the bottom — admins only
+  if(SES&&SES.role==='Admin'){
+    var addRow=document.createElement('tr');
+    addRow.innerHTML='<td colspan="5" style="padding:10px 14px;text-align:left"><button class="btn btn-o btn-sm" onclick="openRainLocModal()" style="border-style:dashed"><i class="fas fa-plus" style="color:var(--p600)"></i> <span style="color:var(--p700)">Add Location</span></button></td>';
+    tbody.appendChild(addRow);
+  }
 
   // Attach click events via delegation
   tbody.querySelectorAll('.rain-photo-thumb,.rain-photo-btn').forEach(function(el){
@@ -2284,7 +2288,7 @@ function saveRainPhoto(){
   if(!RAIN_SESSION[rainCurrentLocId])RAIN_SESSION[rainCurrentLocId]={};
   var s=RAIN_SESSION[rainCurrentLocId];
   if(rainBeforeData)s.beforePhoto=rainBeforeData;
-  if(rainAfterData)s.afterPhoto=rainAfterData;  // always overwrite after
+  if(rainAfterData){s.afterPhoto=rainAfterData;s.afterUpdatedAt=new Date().toISOString();}  // always overwrite after
   if(rainAfterData||s.afterPhoto)s.condition=document.getElementById('rain-condition').value;
   s.updatedAt=new Date().toISOString();
   saveRainSession();
@@ -2304,7 +2308,8 @@ function generateRainReport(){
   var rows=RAIN_LOCATIONS.map(function(loc){
     var s=RAIN_SESSION[loc.id]||{};
     var beforeImg=s.beforePhoto?'<img src="'+s.beforePhoto+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
-    var afterImg=s.afterPhoto?'<img src="'+s.afterPhoto+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
+    var afterDateStr=s.afterUpdatedAt?'<div style="font-size:10px;color:#6b7280;margin-top:4px">Updated: '+new Date(s.afterUpdatedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+'</div>':'';
+    var afterImg=s.afterPhoto?'<img src="'+s.afterPhoto+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">'+afterDateStr:'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
     var condBadge=s.condition==='solved'?'<span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🟢 Solved</span>':s.condition==='still'?'<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🟡 Still Present</span>':s.condition==='new'?'<span style="background:#FEE2E2;color:#991B1B;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🔴 New Issue</span>':'<span style="background:#F3F4F6;color:#6B7280;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⏳ Pending</span>';
     return '<tr><td style="padding:12px 14px;font-weight:600;border-bottom:1px solid #e5e7eb;vertical-align:middle">'+loc.name+'<br><span style="font-size:11px;color:#9ca3af;font-weight:400">'+loc.zone+'</span><br><div style="margin-top:6px">'+condBadge+'</div></td><td style="padding:10px 14px;text-align:center;border-bottom:1px solid #e5e7eb">'+beforeImg+'</td><td style="padding:10px 14px;text-align:center;border-bottom:1px solid #e5e7eb">'+afterImg+'</td></tr>';
   }).join('');
@@ -2637,6 +2642,37 @@ function generateQR(text){
   };
   img.src='https://api.qrserver.com/v1/create-qr-code/?size=160x160&data='+encodeURIComponent(text);
   img.crossOrigin='anonymous';
+}
+
+// ══ RAIN REPORT EXCEL EXPORT ════════════════════════════════
+function exportRainExcel(){
+  if(!RAIN_LOCATIONS.length){toast('No locations to export','wrn');return;}
+  // Build CSV (Excel-compatible)
+  var headers=['Location','Zone','Status','After Photo Date','Has Before Photo','Has After Photo'];
+  var rows=RAIN_LOCATIONS.map(function(loc){
+    var s=RAIN_SESSION[loc.id]||{};
+    var status=s.condition==='solved'?'Solved':s.condition==='still'?'Still Present':s.condition==='new'?'New Issue':(s.beforePhoto||s.afterPhoto)?'Inspected':'Pending';
+    var afterDate=s.afterUpdatedAt?new Date(s.afterUpdatedAt).toLocaleString('en-GB'):'';
+    return [
+      loc.name,
+      loc.zone||'',
+      status,
+      afterDate,
+      s.beforePhoto?'Yes':'No',
+      s.afterPhoto?'Yes':'No'
+    ].map(function(v){return '"'+v.toString().replace(/"/g,'""')+'"';}).join(',');
+  });
+  var csv=[headers.map(function(h){return '"'+h+'"';}).join(',')].concat(rows).join('\n');
+  // Add BOM for Excel UTF-8
+  var bom='﻿';
+  var blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='Rain_Inspection_'+new Date().toLocaleDateString('en-GB').replace(/[/]/g,'-')+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Excel file downloaded!','ok');
 }
 
 // INIT
