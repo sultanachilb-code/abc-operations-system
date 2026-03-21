@@ -1544,13 +1544,13 @@ async function sendPolicyChat(){
       localContext:localCtx
     });
 
-    var q=new URLSearchParams({
-      action:'policyChat',
-      token:SES&&SES.token||'',
-      body:encodeURIComponent(bodyParam)
-    });
+    // Build URL manually to avoid double-encoding by URLSearchParams
+    var url=API
+      +'?action=policyChat'
+      +'&token='+encodeURIComponent(SES&&SES.token||'')
+      +'&body='+encodeURIComponent(bodyParam);
 
-    var response=await fetch(API+'?'+q);
+    var response=await fetch(url);
     var res=await response.json();
 
     removeTypingIndicator(typingId);
