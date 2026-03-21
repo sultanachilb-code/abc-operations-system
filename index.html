@@ -2366,12 +2366,106 @@ function generateRainReport(){
   var date=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var inspector=SES?SES.fullName:'Operations Team';
   var property=SES?SES.property:'ABC Verdun Mall';
+  var total=RAIN_LOCATIONS.length;
+  var done=RAIN_LOCATIONS.filter(function(l){var r=RAIN_ROWS[l.id];return r&&(r.beforeUrl||r.afterUrl);}).length;
+  var issues=RAIN_LOCATIONS.filter(function(l){var r=RAIN_ROWS[l.id];return r&&(r.condition==='new'||r.condition==='still');}).length;
   var rows=RAIN_LOCATIONS.map(function(loc){
     var r=RAIN_ROWS[loc.id]||{};
-    var beforeImg=r.beforeUrl?'<img src="'+r.beforeUrl+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
-    var afterImg=r.afterUrl?'<img src="'+r.afterUrl+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px"><div style="font-size:10px;color:#6b7280;text-align:center;margin-top:3px">'+(r.afterDate?new Date(r.afterDate).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'')+'</div>':'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
-    var condBadge=r.condition==='solved'?'<span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🟢 Solved</span>':r.condition==='still'?'<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🟡 Still Present</span>':r.condition==='new'?'<span style="background:#FEE2E2;color:#991B1B;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🔴 New Issue</span>':'<span style="background:#F3F4F6;color:#6B7280;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⏳ Pending</span>';
+    var beforeImg=r.beforeUrl?('<img src="'+r.beforeUrl+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px">'):'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
+    var afterImg=r.afterUrl?('<img src="'+r.afterUrl+'" style="width:160px;height:110px;object-fit:cover;border-radius:4px"><div style="font-size:10px;color:#6b7280;text-align:center;margin-top:3px">'+(r.afterDate?new Date(r.afterDate).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'')+'</div>'):'<div style="width:160px;height:110px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No photo</div>';
+    var condBadge=r.condition==='solved'?'<span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">Solved</span>':r.condition==='still'?'<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">Still Present</span>':r.condition==='new'?'<span style="background:#FEE2E2;color:#991B1B;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">New Issue</span>':'<span style="background:#F3F4F6;color:#6B7280;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">Pending</span>';
     return '<tr><td style="padding:12px 14px;font-weight:600;border-bottom:1px solid #e5e7eb;vertical-align:middle">'+loc.name+'<br><span style="font-size:11px;color:#9ca3af;font-weight:400">'+loc.zone+'</span><br><div style="margin-top:6px">'+condBadge+'</div></td><td style="padding:10px 14px;text-align:center;border-bottom:1px solid #e5e7eb">'+beforeImg+'</td><td style="padding:10px 14px;text-align:center;border-bottom:1px solid #e5e7eb">'+afterImg+'</td></tr>';
   }).join('');
-  var total=RAIN_LOCATIONS.length,done=RAIN_LOCATIONS.filter(function(l){var r=RAIN_ROWS[l.id];return r&&(r.beforeUrl||r.afterUrl);}).length,issues=RAIN_LOCATIONS.filter(function(l){var r=RAIN_ROWS[l.id];return r&&(r.condition==='new'||r.condition==='still');}).length;
-  var html='
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rain Inspection Report</title><style>body{font-family:Arial,sans-serif;margin:0;padding:20px}@media print{.no-print{display:none}}</style></head><body>'
+    +'<div style="text-align:center;margin-bottom:24px;padding:20px;background:linear-gradient(135deg,#1E3A5F,#2563EB);border-radius:8px;color:white"><div style="font-size:22px;font-weight:900;margin-bottom:4px">Rain Inspection Report</div><div style="opacity:.8;font-size:14px">'+property+' - '+date+'</div><div style="opacity:.7;font-size:12px;margin-top:4px">Inspector: '+inspector+'</div></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px"><div style="background:#f3f4f6;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900">'+total+'</div><div style="font-size:11px;color:#6b7280">Locations</div></div><div style="background:#D1FAE5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#065F46">'+done+'</div><div style="font-size:11px;color:#065F46">Inspected</div></div><div style="background:#FEE2E2;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#991B1B">'+issues+'</div><div style="font-size:11px;color:#991B1B">Issues</div></div><div style="background:#DBEAFE;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#1E40AF">'+(total-done)+'</div><div style="font-size:11px;color:#1E40AF">Pending</div></div></div>'
+    +'<button class="no-print" onclick="window.print()" style="background:#2563EB;color:white;border:none;padding:10px 24px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px">Print / Save as PDF</button>'
+    +'<table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb"><thead><tr style="background:#1E3A5F"><th style="padding:12px 14px;text-align:left;color:white;font-size:13px">Location</th><th style="padding:12px 14px;text-align:center;color:white;font-size:13px;width:180px">Before</th><th style="padding:12px 14px;text-align:center;color:white;font-size:13px;width:180px">After</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +'<div style="margin-top:20px;padding:12px;background:#f9fafb;border-radius:6px;font-size:12px;color:#6b7280;text-align:center">Generated by ABC Operations System - '+new Date().toLocaleString()+'</div></body></html>';
+  var w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
+function exportRainExcel(){
+  if(!RAIN_LOCATIONS.length){toast('No locations to export','wrn');return;}
+  var date=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  var inspector=SES?SES.fullName:'Operations Team';
+  var property=SES?SES.property:'ABC Verdun Mall';
+  var trows=RAIN_LOCATIONS.map(function(loc){
+    var r=RAIN_ROWS[loc.id]||{};
+    var status=r.condition==='solved'?'Solved':r.condition==='still'?'Still Present':r.condition==='new'?'New Issue':(r.beforeUrl||r.afterUrl)?'Inspected':'Pending';
+    var afterDate=r.afterDate?new Date(r.afterDate).toLocaleString('en-GB'):'';
+    var beforeImg=r.beforeUrl?('<img src="'+r.beforeUrl+'" width="150" height="100">'):'No photo';
+    var afterImg=r.afterUrl?('<img src="'+r.afterUrl+'" width="150" height="100">'):'No photo';
+    return '<tr>'
+      +'<td style="padding:8px;border:1px solid #ccc;font-weight:600;vertical-align:middle">'+loc.name+'<br><span style="font-size:10px;color:#666;font-weight:400">'+( loc.zone||'')+'</span></td>'
+      +'<td style="padding:4px;border:1px solid #ccc;text-align:center;vertical-align:middle">'+status+'</td>'
+      +'<td style="padding:4px;border:1px solid #ccc;text-align:center;vertical-align:middle;height:110px">'+beforeImg+'</td>'
+      +'<td style="padding:4px;border:1px solid #ccc;text-align:center;vertical-align:middle;height:110px">'+afterImg+'</td>'
+      +'<td style="padding:8px;border:1px solid #ccc;font-size:11px;vertical-align:middle">'+afterDate+'</td>'
+      +'</tr>';
+  }).join('');
+  var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Rain Report</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>'
+    +'<body><table border="1" style="border-collapse:collapse;font-family:Arial;font-size:12px">'
+    +'<thead><tr style="background:#1E3A5F;color:white">'
+    +'<th style="padding:10px;border:1px solid #999;min-width:140px">Location</th>'
+    +'<th style="padding:10px;border:1px solid #999;min-width:100px">Status</th>'
+    +'<th style="padding:10px;border:1px solid #999;min-width:160px">Before Photo</th>'
+    +'<th style="padding:10px;border:1px solid #999;min-width:160px">After Photo</th>'
+    +'<th style="padding:10px;border:1px solid #999;min-width:140px">After Date</th>'
+    +'</tr></thead><tbody>'+trows+'</tbody>'
+    +'<tfoot><tr><td colspan="5" style="padding:8px;font-size:11px;color:#666">'+property+' - Rain Inspection - '+date+' - Inspector: '+inspector+'</td></tr></tfoot>'
+    +'</table></body></html>';
+  var blob=new Blob([html],{type:'application/vnd.ms-excel;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='Rain_'+new Date().toLocaleDateString('en-GB').replace(/[/]/g,'-')+'.xls';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  toast('Excel downloaded!','ok');
+}
+
+// Location management
+function addRainLocationModal(){
+  var name=document.getElementById('rlm-name').value.trim();
+  var zone=document.getElementById('rlm-zone').value.trim();
+  if(!name){toast('Enter location name','err');return;}
+  var newLoc={id:'rl_'+Date.now(),name:name,zone:zone||''};
+  RAIN_LOCATIONS.push(newLoc);
+  var payload={locations:RAIN_LOCATIONS};
+  var q=API+'?action=saveRainLocations&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(payload));
+  var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=15000;
+  xhr.onload=function(){try{var r=JSON.parse(xhr.responseText);if(r.success)toast('Location added!','ok');else toast('Saved locally only','wrn');}catch(e){}};
+  xhr.send();
+  renderRainLocationList();renderRainTable();updateRainStats();
+  document.getElementById('rlm-name').value='';document.getElementById('rlm-zone').value='';
+}
+function openRainLocModal(){renderRainLocationList();document.getElementById('rain-loc-modal').classList.remove('hid');}
+function renderRainLocationList(){
+  var list=document.getElementById('rlm-list');if(!list)return;
+  var cnt=document.getElementById('rain-loc-count');if(cnt)cnt.textContent=RAIN_LOCATIONS.length+' locations';
+  if(!RAIN_LOCATIONS.length){list.innerHTML='<div class="empty" style="padding:20px"><i class="fas fa-map-marker-alt"></i><h3>No locations</h3></div>';return;}
+  list.innerHTML=RAIN_LOCATIONS.map(function(l,i){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--g100)">'
+      +'<div style="flex:1"><div style="font-weight:600;font-size:13px">'+l.name+'</div><div style="font-size:11.5px;color:var(--g400)">'+l.zone+'</div></div>'
+      +(SES&&SES.role==='Admin'?'<button class="btn btn-d btn-sm" onclick="deleteRainLocation('+i+')"><i class="fas fa-trash"></i></button>':'')
+      +'</div>';
+  }).join('');
+}
+function deleteRainLocation(idx){
+  if(!confirm('Remove this location?'))return;
+  RAIN_LOCATIONS.splice(idx,1);
+  var payload={locations:RAIN_LOCATIONS};
+  var q=API+'?action=saveRainLocations&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(payload));
+  var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=15000;xhr.send();
+  renderRainLocationList();renderRainTable();updateRainStats();toast('Removed','ok');
+}
+
+// INIT
+(function(){
+  const saved=sessionStorage.getItem('abc_ses');
+  if(saved){try{const s=JSON.parse(saved);if(new Date(s.expiresAt)>new Date()){SES=s;showL('Restoring session…');setTimeout(()=>{hideL();startApp();},300);return;}}catch(e){}}
+  hideL();
+})();
+</script>
+</body>
+</html>
