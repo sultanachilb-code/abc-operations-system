@@ -835,8 +835,8 @@ How can I help you today?</div>
             <button class="btn btn-o" onclick="navigate('snaglist')"><i class="fas fa-arrow-left"></i> Back</button>
             <button class="btn btn-o btn-sm adm" style="display:none" onclick="openRainLocModal()"><i class="fas fa-map-marker-alt"></i> Manage Locations</button>
             <button class="btn btn-o btn-sm" onclick="shareRainLink()"><i class="fas fa-share-nodes"></i> Share Link</button>
-            <button class="btn btn-o btn-sm" onclick="exportRainExcel()"><i class="fas fa-file-excel" style="color:#16a34a"></i> Export Excel</button>
-            <button class="btn btn-p" onclick="generateRainReport()"><i class="fas fa-file-pdf"></i> Generate Report</button>
+            <button class="btn btn-o btn-sm" onclick="openRainExport('excel')"><i class="fas fa-file-excel" style="color:#16a34a"></i> Export Excel</button>
+            <button class="btn btn-o btn-sm" onclick="generateRainReport()"><i class="fas fa-file-pdf"></i> Preview Report</button><button class="btn btn-p" onclick="openRainExport('pdf')"><i class="fas fa-file-pdf"></i> Export PDF</button>
           </div>
         </div>
 
@@ -2281,83 +2281,96 @@ function compressImage(dataUrl,maxWidth,quality,callback){
   img.src=dataUrl;
 }
 
+function uploadRainPhotoToSheet(locId,photoType,dataUrl,condition,callback){
+  // Send single photo to Apps Script — insertImage() into Sheet
+  var b64=dataUrl.split(',')[1]; // strip data:image/jpeg;base64,
+  var payload={locId:locId,photoType:photoType,photo:b64,condition:condition||''};
+  var q=API+'?action=saveRainPhoto'
+    +'&token='+encodeURIComponent(SES&&SES.token||'')
+    +'&body='+encodeURIComponent(JSON.stringify(payload));
+  console.log('Upload URL length:',q.length);
+  var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=60000;
+  xhr.onload=function(){
+    try{
+      var r=JSON.parse(xhr.responseText);
+      if(r.success){console.log('Photo inserted in Sheet row:',r.rowIndex);}
+      else console.log('Photo insert failed:',r);
+      if(callback)callback(r);
+    }catch(e){console.log('Upload parse error:',e);if(callback)callback({success:false});}
+  };
+  xhr.onerror=xhr.ontimeout=function(){console.log('Upload error/timeout');if(callback)callback({success:false});};
+  xhr.send();
+}
+
 function saveRainPhoto(){
   if(!rainCurrentLocId)return;
   var condition=document.getElementById('rain-condition').value;
   if(!rainBeforeData&&!rainAfterData&&!condition){toast('Take a photo or set condition','err');return;}
-  var btn=document.getElementById('rain-photo-modal').querySelector('.btn-p');
+  var btn=document.querySelector('#rain-photo-modal .btn-p');
   if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Saving…';}
   var locId=rainCurrentLocId;
   var now=new Date().toISOString();
 
-  function finish(beforeDataUrl,afterDataUrl){
-    // 1. Save to local memory + localStorage
+  // If only condition update
+  if(!rainBeforeData&&!rainAfterData){
     if(!RAIN_ROWS[locId])RAIN_ROWS[locId]={};
-    if(beforeDataUrl){RAIN_ROWS[locId].beforeUrl=beforeDataUrl;RAIN_ROWS[locId].beforeDate=now;}
-    if(afterDataUrl){RAIN_ROWS[locId].afterUrl=afterDataUrl;RAIN_ROWS[locId].afterDate=now;}
-    if(condition)RAIN_ROWS[locId].condition=condition;
-    // Save photos to localStorage per location
-    try{
-      if(beforeDataUrl)localStorage.setItem('rpb_'+locId,beforeDataUrl);
-      if(afterDataUrl)localStorage.setItem('rpa_'+locId,afterDataUrl);
-      localStorage.setItem('rpr_'+locId,JSON.stringify({condition:RAIN_ROWS[locId].condition,beforeDate:RAIN_ROWS[locId].beforeDate,afterDate:RAIN_ROWS[locId].afterDate}));
-    }catch(e){console.log('localStorage full, clearing old photos');
-      // Clear old photos if storage full
-      Object.keys(localStorage).filter(function(k){return k.startsWith('rpb_')||k.startsWith('rpa_');}).forEach(function(k){localStorage.removeItem(k);});
-    }
-    closeRainPhotoModal();renderRainTable();updateRainStats();
-    if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-floppy-disk"></i> Save';}
-    toast('Photo saved!','ok');
-
-    // 2. Sync photos + metadata to Sheet so ALL devices can see them
-    // Send compressed photo data (already compressed) to server
-    var syncPayload={
-      locId:locId,
-      condition:RAIN_ROWS[locId].condition||'',
-      beforeDate:RAIN_ROWS[locId].beforeDate||'',
-      afterDate:RAIN_ROWS[locId].afterDate||''
-    };
-    // Include photo data (compressed, already ~30-50KB each)
-    if(beforeDataUrl)syncPayload.beforePhoto=beforeDataUrl;
-    if(afterDataUrl)syncPayload.afterPhoto=afterDataUrl;
-    var syncBody=JSON.stringify(syncPayload);
-    var syncQ=API+'?action=saveRainMeta&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(syncBody);
-    if(syncQ.length<30000){
-      var xhr=new XMLHttpRequest();xhr.open('GET',syncQ,true);xhr.timeout=30000;
-      xhr.onload=function(){
-        try{
-          var r=JSON.parse(xhr.responseText);
-          if(r.success&&r.beforeUrl)RAIN_ROWS[locId].beforeUrl=r.beforeUrl;
-          if(r.success&&r.afterUrl)RAIN_ROWS[locId].afterUrl=r.afterUrl;
-          console.log('Photo synced to server');
-          renderRainTable();
-        }catch(e){}
-      };
-      xhr.send();
-    } else {
-      // Too large - sync metadata only
-      var metaOnly={locId:locId,condition:syncPayload.condition,beforeDate:syncPayload.beforeDate,afterDate:syncPayload.afterDate};
-      var metaQ=API+'?action=saveRainMeta&token='+encodeURIComponent(SES&&SES.token||'')+'&body='+encodeURIComponent(JSON.stringify(metaOnly));
-      var xhr2=new XMLHttpRequest();xhr2.open('GET',metaQ,true);xhr2.timeout=20000;xhr2.send();
-    }
+    RAIN_ROWS[locId].condition=condition;
+    var metaQ=API+'?action=saveRainMeta&token='+encodeURIComponent(SES&&SES.token||'')
+      +'&body='+encodeURIComponent(JSON.stringify({locId:locId,condition:condition}));
+    var xhrM=new XMLHttpRequest();xhrM.open('GET',metaQ,true);xhrM.timeout=15000;
+    xhrM.onload=function(){if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-floppy-disk"></i> Save';}};
+    xhrM.send();
+    closeRainPhotoModal();renderRainTable();updateRainStats();toast('Status updated!','ok');return;
   }
 
-  // Compress both photos then finish
-  var pending=0,beforeDU=null,afterDU=null;
-  if(rainBeforeData){pending++;compressImage(rainBeforeData,500,0.5,function(du){beforeDU=du;pending--;if(!pending)finish(beforeDU,afterDU);});}
-  if(rainAfterData){pending++;compressImage(rainAfterData,500,0.5,function(du){afterDU=du;pending--;if(!pending)finish(beforeDU,afterDU);});}
-  if(!pending)finish(null,null);
+  closeRainPhotoModal();
+
+  function processPhoto(type,rawData){
+    compressImage(rawData,400,0.4,function(dataUrl){
+      // Instant local save
+      if(!RAIN_ROWS[locId])RAIN_ROWS[locId]={};
+      RAIN_ROWS[locId][type+'Url']=dataUrl;
+      RAIN_ROWS[locId][type+'Date']=now;
+      if(condition)RAIN_ROWS[locId].condition=condition;
+      try{localStorage.setItem('rp_'+type+'_'+locId,dataUrl);}catch(e){}
+      try{localStorage.setItem('rpmeta_'+locId,JSON.stringify({
+        condition:RAIN_ROWS[locId].condition||'',
+        beforeDate:RAIN_ROWS[locId].beforeDate||'',
+        afterDate:RAIN_ROWS[locId].afterDate||''
+      }));}catch(e){}
+      renderRainTable();updateRainStats();
+      toast('Uploading to Sheet…','ok');
+      // Upload physical image to Sheet
+      uploadRainPhotoToSheet(locId,type,dataUrl,condition,function(res){
+        if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-floppy-disk"></i> Save';}
+        if(res&&res.success){
+          toast('Photo saved to Sheet — visible on all devices!','ok');
+        } else {
+          toast('Saved locally. Check Drive permission in Apps Script.','wrn');
+        }
+      });
+    });
+  }
+
+  if(rainBeforeData)processPhoto('before',rainBeforeData);
+  if(rainAfterData) processPhoto('after',rainAfterData);
 }
 
-// Restore photos from localStorage into RAIN_ROWS
+// Restore photos from localStorage (this device's photos)
 function restoreRainPhotos(){
   RAIN_LOCATIONS.forEach(function(loc){
     if(!RAIN_ROWS[loc.id])RAIN_ROWS[loc.id]={};
     var r=RAIN_ROWS[loc.id];
-    if(!r.beforeUrl){var b=localStorage.getItem('rpb_'+loc.id);if(b)r.beforeUrl=b;}
-    if(!r.afterUrl){var a=localStorage.getItem('rpa_'+loc.id);if(a)r.afterUrl=a;}
-    var meta=localStorage.getItem('rpr_'+loc.id);
-    if(meta){try{var m=JSON.parse(meta);if(!r.condition&&m.condition)r.condition=m.condition;if(!r.afterDate&&m.afterDate)r.afterDate=m.afterDate;if(!r.beforeDate&&m.beforeDate)r.beforeDate=m.beforeDate;}catch(e){}}
+    // Load photos from localStorage (device-specific)
+    if(!r.beforeUrl){var b=localStorage.getItem('rp_before_'+loc.id)||localStorage.getItem('rpb_'+loc.id);if(b)r.beforeUrl=b;}
+    if(!r.afterUrl){var a=localStorage.getItem('rp_after_'+loc.id)||localStorage.getItem('rpa_'+loc.id);if(a)r.afterUrl=a;}
+    // Merge local metadata
+    var meta=localStorage.getItem('rpmeta_'+loc.id)||localStorage.getItem('rpr_'+loc.id);
+    if(meta){try{var m=JSON.parse(meta);
+      if(!r.condition&&m.condition)r.condition=m.condition;
+      if(!r.afterDate&&m.afterDate)r.afterDate=m.afterDate;
+      if(!r.beforeDate&&m.beforeDate)r.beforeDate=m.beforeDate;
+    }catch(e){}}
   });
 }
 
@@ -2383,6 +2396,22 @@ function generateRainReport(){
     +'<table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb"><thead><tr style="background:#1E3A5F"><th style="padding:12px 14px;text-align:left;color:white;font-size:13px">Location</th><th style="padding:12px 14px;text-align:center;color:white;font-size:13px;width:180px">Before</th><th style="padding:12px 14px;text-align:center;color:white;font-size:13px;width:180px">After</th></tr></thead><tbody>'+rows+'</tbody></table>'
     +'<div style="margin-top:20px;padding:12px;background:#f9fafb;border-radius:6px;font-size:12px;color:#6b7280;text-align:center">Generated by ABC Operations System - '+new Date().toLocaleString()+'</div></body></html>';
   var w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
+function openRainExport(type){
+  // Use Google Sheets export — physical images are baked in
+  var q=API+'?action=getRainExportUrls&token='+encodeURIComponent(SES&&SES.token||'');
+  var xhr=new XMLHttpRequest();xhr.open('GET',q,true);xhr.timeout=15000;
+  xhr.onload=function(){
+    try{
+      var r=JSON.parse(xhr.responseText);
+      if(r.success){
+        var url=type==='excel'?r.excelUrl:r.pdfUrl;
+        window.open(url,'_blank');
+      } else toast('Could not get export URL','err');
+    }catch(e){toast('Error','err');}
+  };
+  xhr.send();
 }
 
 function exportRainExcel(){
