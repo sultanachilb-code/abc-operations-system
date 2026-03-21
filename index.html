@@ -1529,10 +1529,21 @@ async function sendPolicyChat(){
 
   try{
     var recentHistory=polChatHistory.slice(-6);
+
+    // Build local policy context from localStorage policies (text content included)
+    var localCtx=POLICIES.length?POLICIES.map(function(p){
+      var e='POLICY: '+p.title+' ['+p.category+']';
+      if(p.desc)e+='\nDescription: '+p.desc;
+      if(p.extractedText)e+='\nContent: '+p.extractedText.substring(0,1500);
+      if(p.fileUrl&&!p.local)e+='\nPDF: '+p.fileUrl;
+      return e;
+    }).join('\n---\n'):'No policies added yet.';
+
     var q=new URLSearchParams({
       action:'policyChat',
       token:SES&&SES.token||'',
-      messages:JSON.stringify(recentHistory)
+      messages:JSON.stringify(recentHistory),
+      localContext:localCtx.substring(0,4000)
     });
 
     var response=await fetch(API+'?'+q);
