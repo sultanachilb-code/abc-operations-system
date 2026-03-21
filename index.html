@@ -1513,52 +1513,55 @@ function askAboutPolicy(id){
 }
 
 async function sendPolicyChat(){
-  const input=document.getElementById('pol-chat-input');
-  const msg=input.value.trim();if(!msg)return;
+  var input=document.getElementById('pol-chat-input');
+  var msg=input.value.trim();
+  if(!msg)return;
   input.value='';
-  const btn=document.getElementById('pol-send-btn');btn.disabled=true;
+  var btn=document.getElementById('pol-send-btn');
+  btn.disabled=true;
 
   addChatMsg(msg,'user');
-  const typingId='typing_'+Date.now();
+  var typingId='typing_'+Date.now();
   addTypingIndicator(typingId);
 
   polChatHistory.push({role:'user',content:msg});
   if(polChatHistory.length>20)polChatHistory=polChatHistory.slice(-20);
 
-  // Build system prompt
-  var ctx=polCurrentContext||'No policies uploaded yet.';
-  var sysPrompt=[
-    'You are the ABC Policy Assistant for ABC Mall Group Lebanon.',
-    'Help staff find and understand company policies.',
-    '',
-    'AVAILABLE POLICIES:',
-    ctx,
-    '',
-    'INSTRUCTIONS:',
-    '- Answer clearly and professionally',
-    '- Explain key points of specific policies',
-    '- Mention View PDF button if document is available',
-    '- If policy does not exist say so clearly',
-    '- Use bullet points for key info',
-    '- Professional corporate tone',
-    '- You work for ABC Verdun Mall'
-  ].join('\n');
-
   try{
-    // Use GET — Apps Script builds context server-side from the Sheet
-    // Only send recent chat history + current message to stay within URL limits
-    var recentHistory=polChatHistory.slice(-6); // last 3 exchanges
-    var payload={
+    var recentHistory=polChatHistory.slice(-6);
+    var q=new URLSearchParams({
       action:'policyChat',
       token:SES&&SES.token||'',
       messages:JSON.stringify(recentHistory)
-    };
-    var q=new URLSearchParams(payload);
-    var res=await fetch(API+'?'+q).then(function(r){return r.json();});
+    });
+
+    var response=await fetch(API+'?'+q);
+    var res=await response.json();
+
+    removeTypingIndicator(typingId);
+
+    if(res.success&&res.reply){
+      polChatHistory.push({role:'assistant',content:res.reply});
+      addChatMsg(res.reply,'bot');
+      // Auto-link document if user asks for it
+      var lower=msg.toLowerCase();
+      if(lower.includes('download')||lower.includes('view')||lower.includes('send')||lower.includes('share')){
+        var matched=POLICIES.find(function(p){
+          return p.fileUrl&&p.title&&lower.includes(p.title.toLowerCase().split(' ').slice(0,2).join(' ').toLowerCase());
+        });
+        if(matched&&matched.fileUrl){
+          addChatMsg('Here is the document: <a href="'+matched.fileUrl+'" target="_blank" style="color:var(--p600);font-weight:700;text-decoration:underline">'+matched.title+' (View PDF)</a>','bot',true);
+        }
+      }
+    } else {
+      var errMsg=res.reply||'Sorry, I could not get a response. Please try again.';
+      addChatMsg(errMsg,'bot');
+    }
   }catch(e){
     removeTypingIndicator(typingId);
-    addChatMsg('Unable to connect to AI. Please try again shortly.','bot');
+    addChatMsg('Connection error: '+e.message,'bot');
   }
+
   btn.disabled=false;
   scrollChat();
 }
