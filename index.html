@@ -834,6 +834,7 @@ How can I help you today?</div>
           <div style="display:flex;gap:9px;flex-wrap:wrap">
             <button class="btn btn-o" onclick="navigate('snaglist')"><i class="fas fa-arrow-left"></i> Back</button>
             <button class="btn btn-o btn-sm" onclick="openRainLocModal()"><i class="fas fa-map-marker-alt"></i> Manage Locations</button>
+            <button class="btn btn-o btn-sm" onclick="shareRainLink()"><i class="fas fa-share-nodes"></i> Share Link</button>
             <button class="btn btn-p" onclick="generateRainReport()"><i class="fas fa-file-pdf"></i> Generate Report</button>
           </div>
         </div>
@@ -1090,6 +1091,49 @@ How can I help you today?</div>
   </div>
 </div>
 
+
+<!-- RAIN REPORT SHARE LINK MODAL -->
+<div class="overlay hid" id="rain-share-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="mhdr">
+      <div class="mt"><i class="fas fa-share-nodes" style="color:var(--p600);margin-right:8px"></i>Share Rain Report Link</div>
+      <button class="mc" onclick="document.getElementById('rain-share-modal').classList.add('hid')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="mb">
+      <div style="background:var(--p50);border-radius:var(--rm);padding:16px;margin-bottom:16px;border-left:4px solid var(--p600)">
+        <div style="font-family:var(--ff);font-weight:700;font-size:13px;color:var(--p800);margin-bottom:4px">How it works</div>
+        <div style="font-size:12.5px;color:var(--g600);line-height:1.6">
+          Share this link with your team. When they open it on their phone and log in, the system will take them directly to the Rain Inspection Report.
+        </div>
+      </div>
+      <!-- LINK BOX -->
+      <div class="fg">
+        <label class="fl">Direct Rain Report Link</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" class="fc" id="rain-share-url" readonly style="font-size:12px;color:var(--g600);background:var(--g50)"/>
+          <button class="btn btn-p btn-sm" onclick="copyRainLink()" style="flex-shrink:0"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+      </div>
+      <!-- QR CODE -->
+      <div style="text-align:center;margin-top:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Or scan QR code on mobile</div>
+        <div id="rain-qr-container" style="display:inline-block;padding:16px;background:white;border-radius:var(--rm);border:2px solid var(--g200)">
+          <canvas id="rain-qr-canvas" width="160" height="160"></canvas>
+        </div>
+        <div style="font-size:11.5px;color:var(--g400);margin-top:8px">Scan with phone camera → Login → Rain Report opens instantly</div>
+      </div>
+      <!-- SHARE OPTIONS -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+        <button class="btn btn-o" onclick="shareViaWhatsApp()"><i class="fab fa-whatsapp" style="color:#25D366"></i> WhatsApp</button>
+        <button class="btn btn-o" onclick="shareViaEmail()"><i class="fas fa-envelope" style="color:var(--p600)"></i> Email</button>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-p btn-full" onclick="document.getElementById('rain-share-modal').classList.add('hid')">Done</button>
+    </div>
+  </div>
+</div>
+
 <div id="toasts"></div>
 <script>
 const API="https://script.google.com/macros/s/AKfycbzMlPGDwuxx3YS9c5pmAENsChnshxtKfhvMMA3reSD69gr30AIUmVmy927t4RkRjEORZw/exec";
@@ -1153,7 +1197,19 @@ async function doLogin(){
   }catch(e){document.getElementById('lerr-msg').textContent='Connection error.';er.classList.add('show');}
   btn.disabled=false;btn.innerHTML='<i class="fas fa-arrow-right-to-bracket"></i> Sign In';
 }
-function startApp(){document.getElementById('login-page').style.display='none';document.getElementById('app').classList.add('on');applySession();ldDash();}
+function startApp(){
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app').classList.add('on');
+  applySession();
+  // Check for redirect param
+  var params=new URLSearchParams(window.location.search);
+  var redirect=params.get('redirect');
+  if(redirect==='rain'){
+    navigate('rain-report');
+  } else {
+    ldDash();
+  }
+}
 function applySession(){
   const s=SES,av=ini(s.fullName);
   ['tb-av','pav'].forEach(id=>document.getElementById(id).textContent=av);
@@ -2526,6 +2582,61 @@ function syncSnagToSheet(item,type){
     try{var r=JSON.parse(xhr.responseText);if(!r.success)console.log('Snag sheet sync failed:',r);}catch(e){}
   };
   xhr.send();
+}
+
+// ══ RAIN REPORT SHARE LINK ══════════════════════════════════
+function shareRainLink(){
+  // Build the direct link with redirect param
+  var base=window.location.href.split('?')[0];
+  var link=base+'?redirect=rain';
+  document.getElementById('rain-share-url').value=link;
+  // Generate QR code
+  generateQR(link);
+  document.getElementById('rain-share-modal').classList.remove('hid');
+}
+
+function copyRainLink(){
+  var url=document.getElementById('rain-share-url').value;
+  navigator.clipboard.writeText(url).then(function(){toast('Link copied!','ok');}).catch(function(){
+    document.getElementById('rain-share-url').select();document.execCommand('copy');toast('Link copied!','ok');
+  });
+}
+
+function shareViaWhatsApp(){
+  var url=document.getElementById('rain-share-url').value;
+  var msg='Rain Inspection Report - ABC Operations System\n\nUse this link to access the Rain Report directly after login:\n'+url;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+function shareViaEmail(){
+  var url=document.getElementById('rain-share-url').value;
+  var subject='Rain Inspection Report Link — ABC Operations';
+  var body='Dear Team,\n\nPlease use the following link to access the Rain Inspection Report directly:\n\n'+url+'\n\nLog in with your ABC Operations credentials and the Rain Report will open automatically.\n\nRegards,\nABC Operations Team';
+  window.open('mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body));
+}
+
+// Simple QR code generator (no external library needed)
+function generateQR(text){
+  var canvas=document.getElementById('rain-qr-canvas');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  var size=160;
+  // Draw a placeholder with the URL text if QR library not available
+  // Using a simple QR API via image
+  var img=new Image();
+  img.onload=function(){ctx.drawImage(img,0,0,size,size);};
+  img.onerror=function(){
+    // Fallback: draw text
+    ctx.fillStyle='white';ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='#1f2937';ctx.font='bold 11px Arial';ctx.textAlign='center';
+    ctx.fillText('Scan QR:',size/2,30);
+    ctx.font='9px Arial';
+    // Wrap text
+    var words=text.split('/');var y=50;
+    words.forEach(function(w){ctx.fillText(w,size/2,y);y+=14;});
+  };
+  img.src='https://api.qrserver.com/v1/create-qr-code/?size=160x160&data='+encodeURIComponent(text);
+  img.crossOrigin='anonymous';
 }
 
 // INIT
